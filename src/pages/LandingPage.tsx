@@ -107,25 +107,25 @@ export const LandingPage = () => {
               jump-starts, fuel delivery — help is just a tap away.
             </p>
 
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button
-                variant="amber"
-                size="xl"
-                onClick={() => navigate("/customer")}
-                className="w-full sm:w-auto"
-              >
-                Request Help Now
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="xl"
+            <Button
+              variant="amber"
+              size="xl"
+              onClick={() => navigate("/customer")}
+              className="w-full px-12 py-6 text-lg sm:w-auto"
+            >
+              Request Help Now
+              <ArrowRight className="ml-2 h-6 w-6" />
+            </Button>
+
+            <p className="mt-4 text-sm text-muted-foreground">
+              Want to earn as a responder?{" "}
+              <button
                 onClick={() => navigate("/driver")}
-                className="w-full sm:w-auto"
+                className="font-medium text-primary underline-offset-4 hover:underline"
               >
-                Become a Responder
-              </Button>
-            </div>
+                Join our team
+              </button>
+            </p>
           </motion.div>
         </div>
 
@@ -273,24 +273,25 @@ export const LandingPage = () => {
                   <p className="mb-8 text-brand-white/70">
                     Join thousands of drivers who trust Now-Now Assist for fast, reliable roadside assistance.
                   </p>
-                  <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <Button
-                      variant="amber"
-                      size="xl"
-                      onClick={() => navigate("/customer")}
-                    >
-                      Get Started Free
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                    <Button
-                      variant="glass"
-                      size="xl"
+                  <Button
+                    variant="amber"
+                    size="xl"
+                    onClick={() => navigate("/customer")}
+                    className="px-12"
+                  >
+                    Get Started Free
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                  
+                  <p className="mt-4 text-sm text-brand-white/60">
+                    Interested in becoming a responder?{" "}
+                    <button
                       onClick={() => navigate("/driver")}
+                      className="font-medium text-primary underline-offset-4 hover:underline"
                     >
-                      <Users className="mr-2 h-5 w-5" />
-                      Join as Responder
-                    </Button>
-                  </div>
+                      Learn more
+                    </button>
+                  </p>
                 </div>
               </CardContent>
             </Card>

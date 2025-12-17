@@ -1,10 +1,9 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Logo } from "@/components/shared/Logo";
-import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, WrenchIcon, MapPinIcon } from "@/components/icons/ServiceIcons";
-import { StatusBadge } from "@/components/shared/StatusBadge";
-import { ArrowLeft, MapPin, Clock, CreditCard, Shield, ChevronRight, Check } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, WrenchIcon } from "@/components/icons/ServiceIcons";
+import { ArrowLeft, MapPin, Clock, CreditCard, Shield, ChevronRight, Check, User, Phone, Users } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -23,6 +22,12 @@ export const ServiceRequest = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [requestForOther, setRequestForOther] = useState(false);
+  const [friendDetails, setFriendDetails] = useState({
+    name: "",
+    phone: "",
+    location: "",
+  });
 
   const service = services[serviceId || "tyre"];
   const ServiceIcon = service?.icon || TyreIcon;
@@ -106,6 +111,90 @@ export const ServiceRequest = () => {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Request For Toggle */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="mb-4"
+        >
+          <div className="flex gap-2">
+            <Button
+              variant={!requestForOther ? "amber" : "outline"}
+              className="flex-1"
+              onClick={() => setRequestForOther(false)}
+            >
+              <User className="mr-2 h-4 w-4" />
+              For Me
+            </Button>
+            <Button
+              variant={requestForOther ? "amber" : "outline"}
+              className="flex-1"
+              onClick={() => setRequestForOther(true)}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              For Someone Else
+            </Button>
+          </div>
+        </motion.div>
+
+        {/* Friend Details (when requesting for someone else) */}
+        {requestForOther && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-4"
+          >
+            <Card variant="default" className="border-2 border-primary/20">
+              <CardContent className="space-y-4 p-4">
+                <div className="flex items-center gap-2 text-primary">
+                  <Users className="h-5 w-5" />
+                  <span className="font-semibold">Friend's Details</span>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-1 block text-sm text-muted-foreground">Name</label>
+                    <Input
+                      placeholder="Enter friend's name"
+                      value={friendDetails.name}
+                      onChange={(e) => setFriendDetails({ ...friendDetails, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm text-muted-foreground">Phone Number</label>
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-10 items-center rounded-lg bg-muted px-3 text-sm text-muted-foreground">
+                        +27
+                      </div>
+                      <Input
+                        placeholder="Enter phone number"
+                        value={friendDetails.phone}
+                        onChange={(e) => setFriendDetails({ ...friendDetails, phone: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm text-muted-foreground">Location</label>
+                    <div className="relative">
+                      <Input
+                        placeholder="Enter address or drop pin"
+                        value={friendDetails.location}
+                        onChange={(e) => setFriendDetails({ ...friendDetails, location: e.target.value })}
+                        className="pr-10"
+                      />
+                      <MapPin className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Your friend will receive an SMS with the responder's details
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Location */}
         <motion.div

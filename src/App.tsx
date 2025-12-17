@@ -27,11 +27,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Landing */}
-          <Route path="/" element={<LandingPage />} />
-          
-          {/* Customer Routes */}
-          <Route path="/customer" element={<CustomerHome />} />
+          {/* Customer Routes - Home is default */}
+          <Route path="/" element={<CustomerHome />} />
+          <Route path="/welcome" element={<LandingPage />} />
           <Route path="/customer/history" element={<CustomerHistory />} />
           <Route path="/customer/profile" element={<CustomerProfile />} />
           <Route path="/customer/support" element={<CustomerSupport />} />

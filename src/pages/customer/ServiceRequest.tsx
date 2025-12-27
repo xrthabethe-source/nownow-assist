@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, WrenchIcon } from "@/components/icons/ServiceIcons";
-import { ArrowLeft, MapPin, Clock, CreditCard, Shield, ChevronRight, Check, User, Phone, Users } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, CreditCard, Shield, ChevronRight, Check, User, Phone, Users, AlertCircle } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { friendDetailsSchema } from "@/lib/validations";
+import { toast } from "sonner";
 
 const services: Record<string, any> = {
   tyre: { name: "Change a Tyre", icon: TyreIcon, price: 350, eta: "15-25 min", description: "Professional tyre change service" },
@@ -28,15 +30,49 @@ export const ServiceRequest = () => {
     phone: "",
     location: "",
   });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const service = services[serviceId || "tyre"];
   const ServiceIcon = service?.icon || TyreIcon;
 
+  const validateFriendDetails = () => {
+    if (!requestForOther) return true;
+    
+    const result = friendDetailsSchema.safeParse(friendDetails);
+    
+    if (!result.success) {
+      const errors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        const path = err.path[0] as string;
+        errors[path] = err.message;
+      });
+      setFieldErrors(errors);
+      return false;
+    }
+    
+    setFieldErrors({});
+    return true;
+  };
+
   const handleConfirm = () => {
+    // Validate friend details if requesting for someone else
+    if (!validateFriendDetails()) {
+      toast.error("Please fix the errors in friend's details");
+      return;
+    }
+    
     setIsProcessing(true);
     setTimeout(() => {
       navigate("/customer/tracking");
     }, 1500);
+  };
+
+  const handleFriendDetailChange = (field: string, value: string) => {
+    setFriendDetails({ ...friendDetails, [field]: value });
+    // Clear error for this field when user starts typing
+    if (fieldErrors[field]) {
+      setFieldErrors({ ...fieldErrors, [field]: '' });
+    }
   };
 
   return (
@@ -123,7 +159,10 @@ export const ServiceRequest = () => {
             <Button
               variant={!requestForOther ? "amber" : "outline"}
               className="flex-1"
-              onClick={() => setRequestForOther(false)}
+              onClick={() => {
+                setRequestForOther(false);
+                setFieldErrors({});
+              }}
             >
               <User className="mr-2 h-4 w-4" />
               For Me
@@ -159,8 +198,16 @@ export const ServiceRequest = () => {
                     <Input
                       placeholder="Enter friend's name"
                       value={friendDetails.name}
-                      onChange={(e) => setFriendDetails({ ...friendDetails, name: e.target.value })}
+                      onChange={(e) => handleFriendDetailChange('name', e.target.value)}
+                      maxLength={100}
+                      className={fieldErrors.name ? 'border-destructive' : ''}
                     />
+                    {fieldErrors.name && (
+                      <p className="mt-1 flex items-center gap-1 text-sm text-destructive">
+                        <AlertCircle className="h-3 w-3" />
+                        {fieldErrors.name}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="mb-1 block text-sm text-muted-foreground">Phone Number</label>
@@ -171,9 +218,21 @@ export const ServiceRequest = () => {
                       <Input
                         placeholder="Enter phone number"
                         value={friendDetails.phone}
-                        onChange={(e) => setFriendDetails({ ...friendDetails, phone: e.target.value })}
+                        onChange={(e) => {
+                          // Only allow numeric input
+                          const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                          handleFriendDetailChange('phone', numericValue);
+                        }}
+                        maxLength={10}
+                        className={fieldErrors.phone ? 'border-destructive' : ''}
                       />
                     </div>
+                    {fieldErrors.phone && (
+                      <p className="mt-1 flex items-center gap-1 text-sm text-destructive">
+                        <AlertCircle className="h-3 w-3" />
+                        {fieldErrors.phone}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="mb-1 block text-sm text-muted-foreground">Location</label>
@@ -181,11 +240,18 @@ export const ServiceRequest = () => {
                       <Input
                         placeholder="Enter address or drop pin"
                         value={friendDetails.location}
-                        onChange={(e) => setFriendDetails({ ...friendDetails, location: e.target.value })}
-                        className="pr-10"
+                        onChange={(e) => handleFriendDetailChange('location', e.target.value)}
+                        maxLength={200}
+                        className={`pr-10 ${fieldErrors.location ? 'border-destructive' : ''}`}
                       />
                       <MapPin className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     </div>
+                    {fieldErrors.location && (
+                      <p className="mt-1 flex items-center gap-1 text-sm text-destructive">
+                        <AlertCircle className="h-3 w-3" />
+                        {fieldErrors.location}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">

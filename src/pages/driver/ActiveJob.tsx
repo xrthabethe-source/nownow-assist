@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { isValidCoordinate } from "@/lib/validations";
+import { toast } from "sonner";
 
 const mockJob = {
   id: "JOB-001",
@@ -85,7 +87,23 @@ export const ActiveJob = () => {
     setPreferredNav(appId);
     const app = navApps.find((a) => a.id === appId);
     if (app) {
-      window.open(app.getUrl(mockJob.coordinates.lat, mockJob.coordinates.lng), "_blank");
+      const { lat, lng } = mockJob.coordinates;
+      
+      // Validate coordinates before navigation
+      if (!isValidCoordinate(lat, lng)) {
+        toast.error('Invalid location coordinates');
+        setShowNavPicker(false);
+        return;
+      }
+      
+      const url = app.getUrl(lat, lng);
+      
+      // Validate URL is HTTPS and open with security flags
+      if (url.startsWith('https://')) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        toast.error('Invalid navigation URL');
+      }
     }
     setShowNavPicker(false);
   };

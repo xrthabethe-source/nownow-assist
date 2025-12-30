@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { Loader2, Mail, Lock, User, AlertCircle, Car, Users } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Logo } from '@/components/shared/Logo';
 
 // Validation schemas
@@ -24,6 +25,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [accountType, setAccountType] = useState<'customer' | 'driver'>('customer');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -91,7 +93,7 @@ export default function Auth() {
           }
         }
       } else {
-        const { error } = await signUp(email, password, fullName);
+        const { error } = await signUp(email, password, fullName, accountType);
         if (error) {
           if (error.message.includes('already registered')) {
             setError('This email is already registered. Please sign in instead.');
@@ -144,26 +146,68 @@ export default function Auth() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      id="fullName"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={fullName}
-                      onChange={(e) => {
-                        setFullName(e.target.value);
-                        setFieldErrors((prev) => ({ ...prev, fullName: '' }));
-                      }}
-                      className="pl-10"
-                    />
+                <>
+                  <div className="space-y-3">
+                    <Label>I want to sign up as a</Label>
+                    <RadioGroup
+                      value={accountType}
+                      onValueChange={(value) => setAccountType(value as 'customer' | 'driver')}
+                      className="grid grid-cols-2 gap-4"
+                    >
+                      <div>
+                        <RadioGroupItem
+                          value="customer"
+                          id="customer"
+                          className="peer sr-only"
+                        />
+                        <Label
+                          htmlFor="customer"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                        >
+                          <Users className="mb-2 h-6 w-6" />
+                          <span className="font-medium">Customer</span>
+                          <span className="text-xs text-muted-foreground">Request services</span>
+                        </Label>
+                      </div>
+                      <div>
+                        <RadioGroupItem
+                          value="driver"
+                          id="driver"
+                          className="peer sr-only"
+                        />
+                        <Label
+                          htmlFor="driver"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                        >
+                          <Car className="mb-2 h-6 w-6" />
+                          <span className="font-medium">Driver</span>
+                          <span className="text-xs text-muted-foreground">Provide services</span>
+                        </Label>
+                      </div>
+                    </RadioGroup>
                   </div>
-                  {fieldErrors.fullName && (
-                    <p className="text-sm text-destructive">{fieldErrors.fullName}</p>
-                  )}
-                </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="fullName"
+                        type="text"
+                        placeholder="Enter your full name"
+                        value={fullName}
+                        onChange={(e) => {
+                          setFullName(e.target.value);
+                          setFieldErrors((prev) => ({ ...prev, fullName: '' }));
+                        }}
+                        className="pl-10"
+                      />
+                    </div>
+                    {fieldErrors.fullName && (
+                      <p className="text-sm text-destructive">{fieldErrors.fullName}</p>
+                    )}
+                  </div>
+                </>
               )}
 
               <div className="space-y-2">

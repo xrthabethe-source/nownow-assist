@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/shared/Logo";
-import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, WrenchIcon, MapPinIcon } from "@/components/icons/ServiceIcons";
+import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, MechanicIcon, DiagnosticsIcon } from "@/components/icons/ServiceIcons";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { MapPin, Navigation, Clock, Star, ChevronRight, Phone } from "lucide-react";
@@ -10,11 +10,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const services = [
-  { id: "tyre", name: "Change a Tyre", icon: TyreIcon, price: "R350", eta: "15-25 min" },
-  { id: "battery", name: "Jump-start Battery", icon: BatteryIcon, price: "R250", eta: "10-20 min" },
-  { id: "fuel", name: "Fuel Delivery", icon: FuelIcon, price: "R180", eta: "15-30 min" },
-  { id: "inflate", name: "Inflate Tyre", icon: PumpIcon, price: "R150", eta: "10-20 min" },
-  { id: "other", name: "Other Help", icon: WrenchIcon, price: "From R200", eta: "20-40 min" },
+  { id: "fuel", name: "Fuel Rescue", icon: FuelIcon, price: "R349", eta: "15-25 min", description: "We bring fuel to get you moving now", featured: true },
+  { id: "jumpstart", name: "Jump-Start", icon: BatteryIcon, price: "R199", eta: "10-20 min", description: "Quick emergency restart" },
+  { id: "tyre", name: "Tyre Change", icon: TyreIcon, price: "R249", eta: "15-25 min", description: "Safe tyre change assistance" },
+  { id: "diagnostics", name: "Battery Boost + Diagnostics", icon: DiagnosticsIcon, price: "R299", eta: "15-25 min", description: "Boost and basic electrical check" },
+  { id: "mechanic", name: "Call a Mechanic", icon: MechanicIcon, price: "R149", eta: "Varies", description: "Connect with a local mechanic", isMechanic: true },
 ];
 
 const container = {
@@ -102,15 +102,23 @@ export const CustomerHome = () => {
             <motion.div key={service.id} variants={item}>
               <Card
                 variant="interactive"
-                className="h-full"
+                className={`h-full ${service.featured ? 'ring-2 ring-primary' : ''} ${service.isMechanic ? 'bg-muted/50' : ''}`}
                 onClick={() => handleServiceSelect(service.id)}
               >
                 <CardContent className="flex flex-col items-center p-4 text-center">
-                  <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-                    <service.icon className="h-7 w-7 text-primary" />
+                  {service.featured && (
+                    <span className="mb-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                      MOST POPULAR
+                    </span>
+                  )}
+                  <div className={`mb-3 flex h-14 w-14 items-center justify-center rounded-2xl ${service.isMechanic ? 'bg-secondary/20' : 'bg-primary/10'}`}>
+                    <service.icon className={`h-7 w-7 ${service.isMechanic ? 'text-secondary-foreground' : 'text-primary'}`} />
                   </div>
                   <h3 className="mb-1 font-semibold text-foreground">{service.name}</h3>
                   <p className="text-lg font-bold text-primary">{service.price}</p>
+                  {service.isMechanic && (
+                    <p className="mt-1 text-[10px] text-muted-foreground">Connection fee only</p>
+                  )}
                   <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" />
                     <span>{service.eta}</span>

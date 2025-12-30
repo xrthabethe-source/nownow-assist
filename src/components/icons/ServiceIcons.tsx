@@ -140,3 +140,44 @@ export const CarIcon = ({ className, size = 24 }: IconProps) => (
     <circle cx="17" cy="15" r="1.5" fill="currentColor" />
   </svg>
 );
+
+export const MechanicIcon = ({ className, size = 24 }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={cn("", className)}
+  >
+    <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" />
+    <path
+      d="M4 21V19C4 16.7909 6.79086 15 10 15H14C17.2091 15 20 16.7909 20 19V21"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <path
+      d="M16 4L18.5 2M18.5 2L21 4M18.5 2V6"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const DiagnosticsIcon = ({ className, size = 24 }: IconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={cn("", className)}
+  >
+    <rect x="3" y="7" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="2" />
+    <path d="M20 11H22V15H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <path d="M7 13H10L11 11L13 15L14 13H17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);

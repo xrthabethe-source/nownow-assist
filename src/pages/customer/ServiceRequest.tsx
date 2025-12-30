@@ -2,19 +2,53 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, WrenchIcon } from "@/components/icons/ServiceIcons";
-import { ArrowLeft, MapPin, Clock, CreditCard, Shield, ChevronRight, Check, User, Phone, Users, AlertCircle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { TyreIcon, BatteryIcon, FuelIcon, DiagnosticsIcon, MechanicIcon } from "@/components/icons/ServiceIcons";
+import { ArrowLeft, MapPin, Clock, CreditCard, Shield, ChevronRight, Check, User, Phone, Users, AlertCircle, AlertTriangle } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { friendDetailsSchema } from "@/lib/validations";
 import { toast } from "sonner";
 
 const services: Record<string, any> = {
-  tyre: { name: "Change a Tyre", icon: TyreIcon, price: 350, eta: "15-25 min", description: "Professional tyre change service" },
-  battery: { name: "Jump-start Battery", icon: BatteryIcon, price: 250, eta: "10-20 min", description: "Quick battery jump-start" },
-  fuel: { name: "Fuel Delivery", icon: FuelIcon, price: 180, eta: "15-30 min", description: "5-10L fuel delivery" },
-  inflate: { name: "Inflate Tyre", icon: PumpIcon, price: 150, eta: "10-20 min", description: "Tyre inflation service" },
-  other: { name: "Other Help", icon: WrenchIcon, price: 200, eta: "20-40 min", description: "General roadside assistance" },
+  fuel: { 
+    name: "Fuel Rescue", 
+    icon: FuelIcon, 
+    price: 349, 
+    eta: "15-25 min", 
+    description: "We bring fuel to get you moving now",
+    includes: "Up to 5 litres of fuel included"
+  },
+  jumpstart: { 
+    name: "Jump-Start", 
+    icon: BatteryIcon, 
+    price: 199, 
+    eta: "10-20 min", 
+    description: "Quick emergency restart service" 
+  },
+  tyre: { 
+    name: "Tyre Change", 
+    icon: TyreIcon, 
+    price: 249, 
+    eta: "15-25 min", 
+    description: "Safe tyre change using your spare wheel" 
+  },
+  diagnostics: { 
+    name: "Battery Boost + Diagnostics", 
+    icon: DiagnosticsIcon, 
+    price: 299, 
+    eta: "15-25 min", 
+    description: "Battery boost and basic electrical check" 
+  },
+  mechanic: { 
+    name: "Call a Mechanic", 
+    icon: MechanicIcon, 
+    price: 149, 
+    eta: "Varies", 
+    description: "Connect with a local mechanic",
+    isMechanic: true,
+    platformFeeLabel: "Connection fee"
+  },
 };
 
 const steps = ["Service", "Location", "Payment", "Confirm"];
@@ -25,6 +59,7 @@ export const ServiceRequest = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [requestForOther, setRequestForOther] = useState(false);
+  const [mechanicAcknowledged, setMechanicAcknowledged] = useState(false);
   const [friendDetails, setFriendDetails] = useState({
     name: "",
     phone: "",
@@ -32,8 +67,9 @@ export const ServiceRequest = () => {
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const service = services[serviceId || "tyre"];
-  const ServiceIcon = service?.icon || TyreIcon;
+  const service = services[serviceId || "fuel"];
+  const ServiceIcon = service?.icon || FuelIcon;
+  const isMechanicService = service?.isMechanic === true;
 
   const validateFriendDetails = () => {
     if (!requestForOther) return true;
@@ -58,6 +94,12 @@ export const ServiceRequest = () => {
     // Validate friend details if requesting for someone else
     if (!validateFriendDetails()) {
       toast.error("Please fix the errors in friend's details");
+      return;
+    }
+    
+    // For mechanic service, require acknowledgment
+    if (isMechanicService && !mechanicAcknowledged) {
+      toast.error("Please acknowledge the terms to continue");
       return;
     }
     
@@ -327,26 +369,70 @@ export const ServiceRequest = () => {
           </Card>
         </motion.div>
 
-        {/* Safety Notice */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-        >
-          <Card variant="success" className="mb-6">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <Shield className="mt-0.5 h-5 w-5 text-success" />
-                <div>
-                  <p className="font-medium text-foreground">Your safety matters</p>
-                  <p className="text-sm text-muted-foreground">
-                    All responders are verified and tracked in real-time
-                  </p>
+        {/* Mechanic Disclaimer - Only for mechanic service */}
+        {isMechanicService && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <Card variant="warning" className="mb-4 border-l-4 border-l-warning">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="mt-0.5 h-5 w-5 text-warning shrink-0" />
+                  <div className="space-y-2">
+                    <p className="font-medium text-foreground">Important Information</p>
+                    <ul className="space-y-1 text-sm text-muted-foreground">
+                      <li>• Now-Now Assist is a connection service only</li>
+                      <li>• We are not responsible for repairs or workmanship</li>
+                      <li>• Payment to the mechanic is separate from this fee</li>
+                      <li>• Now-Now Assist is not liable for outcomes of repairs</li>
+                    </ul>
+                    <div className="pt-2">
+                      <div className="flex items-start gap-3">
+                        <Checkbox
+                          id="mechanic-terms"
+                          checked={mechanicAcknowledged}
+                          onCheckedChange={(checked) => setMechanicAcknowledged(checked === true)}
+                          className="mt-0.5"
+                        />
+                        <label 
+                          htmlFor="mechanic-terms" 
+                          className="text-sm font-medium cursor-pointer leading-snug"
+                        >
+                          I understand that Now-Now Assist is only connecting me to a mechanic
+                        </label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Safety Notice - Only for non-mechanic services */}
+        {!isMechanicService && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <Card variant="success" className="mb-6">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <Shield className="mt-0.5 h-5 w-5 text-success" />
+                  <div>
+                    <p className="font-medium text-foreground">Your safety matters</p>
+                    <p className="text-sm text-muted-foreground">
+                      All responders are verified and tracked in real-time
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Price Summary */}
         <motion.div
@@ -357,13 +443,16 @@ export const ServiceRequest = () => {
         >
           <div className="space-y-2 rounded-2xl bg-muted p-4">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Service Fee</span>
+              <span className="text-muted-foreground">
+                {isMechanicService ? "Connection Fee" : "Service"}
+              </span>
               <span className="font-medium">R{service?.price}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Platform Fee</span>
-              <span className="font-medium">R0</span>
-            </div>
+            {isMechanicService && (
+              <p className="text-xs text-muted-foreground italic">
+                Repair costs are paid directly to the mechanic
+              </p>
+            )}
             <div className="border-t border-border pt-2">
               <div className="flex justify-between">
                 <span className="font-semibold">Total</span>
@@ -384,7 +473,7 @@ export const ServiceRequest = () => {
             size="xl"
             className="w-full"
             onClick={handleConfirm}
-            disabled={isProcessing}
+            disabled={isProcessing || (isMechanicService && !mechanicAcknowledged)}
           >
             {isProcessing ? (
               <span className="flex items-center gap-2">
@@ -393,8 +482,10 @@ export const ServiceRequest = () => {
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 />
-                Processing...
+                {isMechanicService ? "Finding mechanic..." : "Processing..."}
               </span>
+            ) : isMechanicService ? (
+              "Find Me a Mechanic – R149"
             ) : (
               `Confirm & Pay R${service?.price}`
             )}

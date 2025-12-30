@@ -11,9 +11,8 @@ import { useNavigate } from "react-router-dom";
 
 const services = [
   { id: "fuel", name: "Fuel Rescue", icon: FuelIcon, price: "R349", eta: "15-25 min", description: "We bring fuel to get you moving now", featured: true },
-  { id: "jumpstart", name: "Jump-Start", icon: BatteryIcon, price: "R199", eta: "10-20 min", description: "Quick emergency restart" },
+  { id: "jumpstart", name: "Jump-Start Rescue", icon: BatteryIcon, price: "R199", eta: "10-20 min", description: "Flat battery? We'll jump-start your vehicle so you can get moving again. Basic jump-start only." },
   { id: "tyre", name: "Tyre Change", icon: TyreIcon, price: "R249", eta: "15-25 min", description: "Safe tyre change assistance" },
-  { id: "diagnostics", name: "Battery Boost + Diagnostics", icon: DiagnosticsIcon, price: "R299", eta: "15-25 min", description: "Boost and basic electrical check" },
   { id: "mechanic", name: "Call a Mechanic", icon: MechanicIcon, price: "R149", eta: "Varies", description: "Connect with a local mechanic", isMechanic: true },
 ];
 

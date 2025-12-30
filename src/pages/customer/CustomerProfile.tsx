@@ -5,8 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Car, MapPin, CreditCard, Bell, Shield, LogOut, ChevronRight, Camera, Phone, Mail } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 export const CustomerProfile = () => {
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth");
+  };
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
@@ -141,7 +150,7 @@ export const CustomerProfile = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
         >
-          <Button variant="destructive" className="w-full">
+          <Button variant="destructive" className="w-full" onClick={handleSignOut}>
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out
           </Button>

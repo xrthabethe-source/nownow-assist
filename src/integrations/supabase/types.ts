@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          created_at: string
+          details: Json | null
+          event_category: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          request_id: string | null
+          resource_id: string | null
+          resource_type: string | null
+          severity: string
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+          user_role: Database["public"]["Enums"]["app_role"] | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          event_category: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_role?: Database["public"]["Enums"]["app_role"] | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          event_category?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          request_id?: string | null
+          resource_id?: string | null
+          resource_type?: string | null
+          severity?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_role?: Database["public"]["Enums"]["app_role"] | null
+        }
+        Relationships: []
+      }
+      login_attempts: {
+        Row: {
+          created_at: string
+          email: string
+          failure_reason: string | null
+          id: string
+          ip_address: unknown
+          success: boolean
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          failure_reason?: string | null
+          id?: string
+          ip_address?: unknown
+          success?: boolean
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          failure_reason?: string | null
+          id?: string
+          ip_address?: unknown
+          success?: boolean
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -70,6 +151,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_failed_attempt_count: {
+        Args: { check_email: string; check_ip: unknown }
+        Returns: number
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -80,6 +165,19 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      is_account_locked: { Args: { check_email: string }; Returns: boolean }
+      log_audit_event: {
+        Args: {
+          p_details?: Json
+          p_event_category: string
+          p_event_type: string
+          p_resource_id?: string
+          p_resource_type?: string
+          p_severity?: string
+          p_user_id: string
+        }
+        Returns: string
       }
     }
     Enums: {

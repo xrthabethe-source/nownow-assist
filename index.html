@@ -7,6 +7,24 @@
     <meta name="description" content="Get instant roadside assistance from verified responders. Tyre changes, jump-starts, fuel delivery — help is just a tap away." />
     <meta name="author" content="Now-Now Assist" />
     <meta name="theme-color" content="#FFB300" />
+    
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.gpteng.co;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: https: blob:;
+      connect-src 'self' https://*.supabase.co wss://*.supabase.co https://cdn.gpteng.co;
+      frame-ancestors 'self';
+      form-action 'self';
+      base-uri 'self';
+    " />
+    
+    <!-- Additional Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
 
     <meta property="og:title" content="Now-Now Assist | Roadside Help in Minutes" />
     <meta property="og:description" content="Get instant roadside assistance from verified responders. Tyre changes, jump-starts, fuel delivery — help is just a tap away." />

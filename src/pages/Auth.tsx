@@ -7,13 +7,18 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Mail, Lock, User, AlertCircle, Car, Users } from 'lucide-react';
+import { Loader2, Mail, Lock, User, AlertCircle, Car, Users, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Logo } from '@/components/shared/Logo';
+import { 
+  checkLoginRateLimit, 
+  recordLoginAttempt, 
+  validateStrongPassword 
+} from '@/lib/security';
 
 // Validation schemas
 const emailSchema = z.string().trim().email('Please enter a valid email address');
-const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
 const nameSchema = z.string().trim().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long');
 
 export default function Auth() {
@@ -29,13 +34,24 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [passwordStrength, setPasswordStrength] = useState<{ valid: boolean; errors: string[] }>({ valid: true, errors: [] });
+  const [isLocked, setIsLocked] = useState(false);
+  const [lockoutMessage, setLockoutMessage] = useState<string | null>(null);
+  const [retryCountdown, setRetryCountdown] = useState(0);
+
+  // Countdown timer for retry delay
+  useEffect(() => {
+    if (retryCountdown > 0) {
+      const timer = setTimeout(() => setRetryCountdown(retryCountdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [retryCountdown]);
 
   // Redirect authenticated users
   useEffect(() => {
     if (user && !authLoading) {
       const from = (location.state as any)?.from?.pathname;
       
-      // Redirect based on role or return path
       if (from) {
         navigate(from, { replace: true });
       } else if (role === 'admin') {
@@ -47,6 +63,13 @@ export default function Auth() {
       }
     }
   }, [user, role, authLoading, navigate, location]);
+
+  // Validate password strength on change (only for signup)
+  useEffect(() => {
+    if (!isLogin && password) {
+      setPasswordStrength(validateStrongPassword(password));
+    }
+  }, [password, isLogin]);
 
   const validateFields = () => {
     const errors: Record<string, string> = {};
@@ -62,6 +85,12 @@ export default function Auth() {
     }
     
     if (!isLogin) {
+      // Check strong password requirements for signup
+      const strengthCheck = validateStrongPassword(password);
+      if (!strengthCheck.valid) {
+        errors.password = 'Password does not meet security requirements';
+      }
+      
       const nameResult = nameSchema.safeParse(fullName);
       if (!nameResult.success) {
         errors.fullName = nameResult.error.errors[0].message;
@@ -76,6 +105,12 @@ export default function Auth() {
     e.preventDefault();
     setError(null);
     
+    // Check if there's an active countdown
+    if (retryCountdown > 0) {
+      setError(`Please wait ${retryCountdown} seconds before trying again.`);
+      return;
+    }
+    
     if (!validateFields()) {
       return;
     }
@@ -84,13 +119,43 @@ export default function Auth() {
 
     try {
       if (isLogin) {
+        // Check rate limiting BEFORE attempting login
+        const rateLimit = await checkLoginRateLimit(email);
+        
+        if (!rateLimit.allowed || rateLimit.locked) {
+          setIsLocked(true);
+          setLockoutMessage(rateLimit.message || 'Account temporarily locked due to too many failed attempts.');
+          if (rateLimit.retryAfterSeconds) {
+            setRetryCountdown(rateLimit.retryAfterSeconds);
+          }
+          setLoading(false);
+          return;
+        }
+        
+        // Apply progressive delay if needed
+        if (rateLimit.retryAfterSeconds && rateLimit.retryAfterSeconds > 0) {
+          setRetryCountdown(rateLimit.retryAfterSeconds);
+          setError(`Please wait ${rateLimit.retryAfterSeconds} seconds before trying again.`);
+          setLoading(false);
+          return;
+        }
+        
         const { error } = await signIn(email, password);
+        
         if (error) {
+          // Record failed attempt
+          await recordLoginAttempt(email, false, error.message);
+          
           if (error.message.includes('Invalid login credentials')) {
             setError('Invalid email or password. Please try again.');
           } else {
             setError(error.message);
           }
+        } else {
+          // Record successful login
+          await recordLoginAttempt(email, true);
+          setIsLocked(false);
+          setLockoutMessage(null);
         }
       } else {
         const { error } = await signUp(email, password, fullName, accountType);
@@ -144,6 +209,20 @@ export default function Auth() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Account Lockout Warning */}
+            {isLocked && lockoutMessage && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
+                <ShieldAlert className="h-5 w-5 shrink-0" />
+                <div>
+                  <p className="font-medium">Account Temporarily Locked</p>
+                  <p>{lockoutMessage}</p>
+                  {retryCountdown > 0 && (
+                    <p className="mt-1 font-mono">Retry in: {retryCountdown}s</p>
+                  )}
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <>
@@ -201,6 +280,7 @@ export default function Auth() {
                           setFieldErrors((prev) => ({ ...prev, fullName: '' }));
                         }}
                         className="pl-10"
+                        maxLength={100}
                       />
                     </div>
                     {fieldErrors.fullName && (
@@ -222,8 +302,11 @@ export default function Auth() {
                     onChange={(e) => {
                       setEmail(e.target.value);
                       setFieldErrors((prev) => ({ ...prev, email: '' }));
+                      setIsLocked(false);
+                      setLockoutMessage(null);
                     }}
                     className="pl-10"
+                    autoComplete="email"
                   />
                 </div>
                 {fieldErrors.email && (
@@ -245,10 +328,38 @@ export default function Auth() {
                       setFieldErrors((prev) => ({ ...prev, password: '' }));
                     }}
                     className="pl-10"
+                    autoComplete={isLogin ? 'current-password' : 'new-password'}
                   />
                 </div>
                 {fieldErrors.password && (
                   <p className="text-sm text-destructive">{fieldErrors.password}</p>
+                )}
+                
+                {/* Password strength indicator for signup */}
+                {!isLogin && password && (
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs font-medium text-muted-foreground">Password requirements:</p>
+                    <div className="grid grid-cols-2 gap-1">
+                      {[
+                        { check: password.length >= 8, label: '8+ characters' },
+                        { check: /[A-Z]/.test(password), label: 'Uppercase' },
+                        { check: /[a-z]/.test(password), label: 'Lowercase' },
+                        { check: /[0-9]/.test(password), label: 'Number' },
+                        { check: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password), label: 'Special char' },
+                      ].map(({ check, label }) => (
+                        <div key={label} className="flex items-center gap-1 text-xs">
+                          {check ? (
+                            <CheckCircle2 className="h-3 w-3 text-green-500" />
+                          ) : (
+                            <XCircle className="h-3 w-3 text-muted-foreground" />
+                          )}
+                          <span className={check ? 'text-green-600' : 'text-muted-foreground'}>
+                            {label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -263,13 +374,15 @@ export default function Auth() {
                 type="submit"
                 variant="amber"
                 className="w-full"
-                disabled={loading}
+                disabled={loading || (retryCountdown > 0) || (isLocked && retryCountdown > 0)}
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     {isLogin ? 'Signing in...' : 'Creating account...'}
                   </span>
+                ) : retryCountdown > 0 ? (
+                  `Wait ${retryCountdown}s...`
                 ) : (
                   isLogin ? 'Sign In' : 'Create Account'
                 )}
@@ -283,6 +396,9 @@ export default function Auth() {
                   setIsLogin(!isLogin);
                   setError(null);
                   setFieldErrors({});
+                  setIsLocked(false);
+                  setLockoutMessage(null);
+                  setRetryCountdown(0);
                 }}
                 className="text-sm text-primary hover:underline"
               >
@@ -293,6 +409,11 @@ export default function Auth() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Security notice */}
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          Protected by enterprise-grade security. Your data is encrypted and secure.
+        </p>
       </motion.div>
     </div>
   );

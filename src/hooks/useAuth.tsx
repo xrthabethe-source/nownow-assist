@@ -21,9 +21,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const [roleLoading, setRoleLoading] = useState(false);
 
-  const fetchUserRole = async (userId: string) => {
+  const fetchUserRole = async (userId: string): Promise<AppRole | null> => {
     try {
+      setRoleLoading(true);
       // Fetch all roles for the user and prioritize admin > driver > customer
       const { data, error } = await supabase
         .from('user_roles')
@@ -47,21 +49,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Error fetching user role:', error);
       return null;
+    } finally {
+      setRoleLoading(false);
     }
   };
 
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Defer role fetching with setTimeout to avoid deadlock
         if (session?.user) {
-          setTimeout(() => {
-            fetchUserRole(session.user.id).then(setRole);
-          }, 0);
+          // Fetch role and wait for it before setting loading to false
+          const userRole = await fetchUserRole(session.user.id);
+          setRole(userRole);
         } else {
           setRole(null);
         }
@@ -71,12 +74,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserRole(session.user.id).then(setRole);
+        const userRole = await fetchUserRole(session.user.id);
+        setRole(userRole);
       }
       
       setLoading(false);

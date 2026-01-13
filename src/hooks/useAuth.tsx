@@ -9,6 +9,7 @@ interface AuthContextType {
   session: Session | null;
   role: AppRole | null;
   loading: boolean;
+  roleLoading: boolean;
   signUp: (email: string, password: string, fullName?: string, accountType?: 'customer' | 'driver') => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -25,7 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserRole = async (userId: string): Promise<AppRole | null> => {
     try {
-      setRoleLoading(true);
       // Fetch all roles for the user and prioritize admin > driver > customer
       const { data, error } = await supabase
         .from('user_roles')
@@ -42,47 +42,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Prioritize roles: admin > driver > customer
-      const roles = data.map(d => d.role as AppRole);
+      const roles = data.map((d) => d.role as AppRole);
       if (roles.includes('admin')) return 'admin';
       if (roles.includes('driver')) return 'driver';
       return 'customer';
     } catch (error) {
       console.error('Error fetching user role:', error);
       return null;
-    } finally {
-      setRoleLoading(false);
     }
   };
 
   useEffect(() => {
+    const loadRoleForUser = (userId: string) => {
+      setRoleLoading(true);
+      // Defer role fetching to avoid auth state change deadlocks
+      setTimeout(() => {
+        fetchUserRole(userId)
+          .then(setRole)
+          .finally(() => setRoleLoading(false));
+      }, 0);
+    };
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+
         if (session?.user) {
-          // Fetch role and wait for it before setting loading to false
-          const userRole = await fetchUserRole(session.user.id);
-          setRole(userRole);
+          loadRoleForUser(session.user.id);
         } else {
           setRole(null);
+          setRoleLoading(false);
         }
-        
+
         setLoading(false);
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+
       if (session?.user) {
-        const userRole = await fetchUserRole(session.user.id);
-        setRole(userRole);
+        loadRoleForUser(session.user.id);
+      } else {
+        setRole(null);
+        setRoleLoading(false);
       }
-      
+
       setLoading(false);
     });
 
@@ -121,10 +130,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setSession(null);
     setRole(null);
+    setRoleLoading(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, role, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, role, loading, roleLoading, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

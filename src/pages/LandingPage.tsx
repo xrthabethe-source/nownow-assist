@@ -1,47 +1,149 @@
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/shared/Logo";
-import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, WrenchIcon, CarIcon } from "@/components/icons/ServiceIcons";
-import { ArrowRight, Shield, Clock, Star, MapPin, CheckCircle2, Zap, Users } from "lucide-react";
+import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, WrenchIcon } from "@/components/icons/ServiceIcons";
+import { 
+  ArrowRight, 
+  Shield, 
+  Clock, 
+  Star, 
+  MapPin, 
+  CheckCircle2, 
+  Zap, 
+  Users, 
+  Phone,
+  AlertTriangle,
+  Heart,
+  BadgeCheck,
+  Timer,
+  Wallet,
+  Quote,
+  ChevronRight,
+  Play
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useRef } from "react";
 
-const features = [
+const painPoints = [
+  "Stranded on a dark highway at midnight?",
+  "Flat tyre with no spare or tools?",
+  "Dead battery in an unsafe area?",
+  "Ran out of fuel kilometers from a station?",
+];
+
+const solutions = [
   {
-    icon: Clock,
-    title: "15-Min Response",
-    description: "Fast arrival guaranteed",
+    icon: Timer,
+    title: "15-Minute Response",
+    description: "Our network of 500+ responders ensures help is always nearby. No more waiting hours.",
+    highlight: "Guaranteed",
   },
   {
-    icon: Shield,
-    title: "Verified Responders",
-    description: "Background-checked pros",
-  },
-  {
-    icon: Star,
-    title: "4.9★ Rated",
-    description: "Top-quality service",
+    icon: BadgeCheck,
+    title: "Verified Professionals",
+    description: "Every responder is background-checked, trained, and rated by real customers.",
+    highlight: "100% Vetted",
   },
   {
     icon: MapPin,
-    title: "Live Tracking",
-    description: "Know exactly when help arrives",
+    title: "Real-Time Tracking",
+    description: "Watch your responder approach in real-time. Know exactly when help arrives.",
+    highlight: "Live GPS",
+  },
+  {
+    icon: Wallet,
+    title: "Transparent Pricing",
+    description: "See the price before you book. No hidden fees, no surprises. Pay only for what you need.",
+    highlight: "No Surprises",
   },
 ];
 
 const services = [
-  { icon: TyreIcon, name: "Tyre Change", price: "From R350" },
-  { icon: BatteryIcon, name: "Jump Start", price: "From R250" },
-  { icon: FuelIcon, name: "Fuel Delivery", price: "From R180" },
-  { icon: PumpIcon, name: "Tyre Inflate", price: "From R150" },
-  { icon: WrenchIcon, name: "Other Help", price: "From R200" },
+  { 
+    icon: TyreIcon, 
+    name: "Tyre Change", 
+    price: "From R350",
+    description: "Flat or punctured tyre? We'll swap it with your spare in minutes.",
+    popular: true,
+  },
+  { 
+    icon: BatteryIcon, 
+    name: "Jump Start", 
+    price: "From R250",
+    description: "Dead battery? We'll get you running again, fast.",
+    popular: true,
+  },
+  { 
+    icon: FuelIcon, 
+    name: "Fuel Delivery", 
+    price: "From R180",
+    description: "Ran out of fuel? We'll bring petrol or diesel to you.",
+    popular: false,
+  },
+  { 
+    icon: PumpIcon, 
+    name: "Tyre Inflate", 
+    price: "From R150",
+    description: "Low tyre pressure? We'll pump it up to the perfect PSI.",
+    popular: false,
+  },
+  { 
+    icon: WrenchIcon, 
+    name: "Minor Repairs", 
+    price: "From R200",
+    description: "Small fixes that get you back on the road.",
+    popular: false,
+  },
+];
+
+const testimonials = [
+  {
+    name: "Sarah M.",
+    location: "Johannesburg",
+    rating: 5,
+    text: "Flat tyre at 11pm on the N1. Help arrived in 12 minutes. Absolute lifesaver!",
+    avatar: "SM",
+  },
+  {
+    name: "David K.",
+    location: "Cape Town",
+    rating: 5,
+    text: "Battery died in a mall parking lot. Within 15 mins, I was on my way. Incredible service.",
+    avatar: "DK",
+  },
+  {
+    name: "Thandi N.",
+    location: "Durban",
+    rating: 5,
+    text: "As a woman traveling alone, the live tracking feature made me feel so safe. Highly recommend!",
+    avatar: "TN",
+  },
 ];
 
 const stats = [
-  { value: "50K+", label: "Customers Helped" },
-  { value: "500+", label: "Active Responders" },
-  { value: "15min", label: "Avg Response Time" },
-  { value: "4.9★", label: "Customer Rating" },
+  { value: "50,000+", label: "Drivers Helped", icon: Users },
+  { value: "12 min", label: "Avg. Response", icon: Timer },
+  { value: "4.9★", label: "Customer Rating", icon: Star },
+  { value: "500+", label: "Active Responders", icon: BadgeCheck },
+];
+
+const howItWorks = [
+  {
+    step: "1",
+    title: "Request Help",
+    description: "Open the app, select your service, and share your location. Takes 30 seconds.",
+  },
+  {
+    step: "2",
+    title: "Get Matched",
+    description: "We instantly connect you with the nearest available verified responder.",
+  },
+  {
+    step: "3",
+    title: "Track & Relax",
+    description: "Watch your responder approach in real-time. They'll handle everything.",
+  },
 ];
 
 const container = {
@@ -59,111 +161,149 @@ const item = {
 
 export const LandingPage = () => {
   const navigate = useNavigate();
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      {/* Sticky Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-xl">
-        <div className="container flex items-center justify-between py-4">
+        <div className="container flex items-center justify-between py-3 md:py-4">
           <Logo size="md" />
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={() => navigate("/driver")}>
-              Drive with us
+          <div className="flex items-center gap-2 md:gap-3">
+            <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={() => navigate("/auth")}>
+              Sign In
             </Button>
-            <Button variant="amber" onClick={() => navigate("/customer")}>
+            <Button variant="outline" size="sm" className="hidden md:flex" onClick={() => navigate("/auth")}>
+              Drive & Earn
+            </Button>
+            <Button variant="amber" size="sm" onClick={() => navigate("/auth")}>
               Get Help Now
+              <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-16 md:py-24">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
-        
-        <div className="container relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mx-auto max-w-3xl text-center"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary"
-            >
-              <Zap className="h-4 w-4" />
-              Roadside help in minutes, not hours
-            </motion.div>
-
-            <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-foreground md:text-6xl lg:text-7xl">
-              Stranded?{" "}
-              <span className="text-gradient-amber">We're on our way.</span>
-            </h1>
-
-            <p className="mb-8 text-lg text-muted-foreground md:text-xl">
-              Get instant roadside assistance from verified responders. Tyre changes, 
-              jump-starts, fuel delivery — help is just a tap away.
-            </p>
-
-            <Button
-              variant="amber"
-              size="xl"
-              onClick={() => navigate("/customer")}
-              className="w-full px-12 py-6 text-lg sm:w-auto"
-            >
-              Request Help Now
-              <ArrowRight className="ml-2 h-6 w-6" />
-            </Button>
-
-            <p className="mt-4 text-sm text-muted-foreground">
-              Want to earn as a responder?{" "}
-              <button
-                onClick={() => navigate("/driver")}
-                className="font-medium text-primary underline-offset-4 hover:underline"
+      {/* Hero Section - Urgency & Problem */}
+      <section ref={heroRef} className="relative overflow-hidden">
+        <motion.div style={{ opacity: heroOpacity, scale: heroScale }}>
+          {/* Background Effects */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent" />
+          <div className="absolute top-20 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-50" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary/10 rounded-full blur-3xl opacity-40" />
+          
+          <div className="container relative py-16 md:py-24 lg:py-32">
+            <div className="mx-auto max-w-4xl text-center">
+              {/* Urgency Badge */}
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="mb-6 inline-flex items-center gap-2 rounded-full bg-destructive/10 border border-destructive/20 px-4 py-2"
               >
-                Join our team
-              </button>
-            </p>
-          </motion.div>
-        </div>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
+                </span>
+                <span className="text-sm font-medium text-destructive">Emergency? Help is minutes away</span>
+              </motion.div>
 
-        {/* Floating Icons */}
-        <motion.div
-          className="absolute -right-10 top-20 hidden lg:block"
-          animate={{ y: [0, -15, 0] }}
-          transition={{ duration: 4, repeat: Infinity }}
-        >
-          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary/10 shadow-lg">
-            <TyreIcon className="h-10 w-10 text-primary" />
-          </div>
-        </motion.div>
+              {/* Main Headline */}
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="mb-6 text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl"
+              >
+                Stranded on the road?
+                <br />
+                <span className="text-gradient-amber">We'll be there in 15 minutes.</span>
+              </motion.h1>
 
-        <motion.div
-          className="absolute -left-5 bottom-20 hidden lg:block"
-          animate={{ y: [0, 15, 0] }}
-          transition={{ duration: 5, repeat: Infinity, delay: 0.5 }}
-        >
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-success/10 shadow-lg">
-            <BatteryIcon className="h-8 w-8 text-success" />
+              {/* Subheadline */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground md:text-xl"
+              >
+                Flat tyre? Dead battery? Out of fuel? Get instant help from <strong className="text-foreground">500+ verified responders</strong> across South Africa. 
+                No membership fees. Pay only when you need us.
+              </motion.p>
+
+              {/* CTA Buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex flex-col sm:flex-row items-center justify-center gap-4"
+              >
+                <Button
+                  variant="amber"
+                  size="xl"
+                  onClick={() => navigate("/auth")}
+                  className="w-full sm:w-auto px-8 md:px-12 shadow-amber animate-pulse-amber"
+                >
+                  <Zap className="mr-2 h-5 w-5" />
+                  Request Help Now — It's Free
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => navigate("/auth")}
+                  className="w-full sm:w-auto"
+                >
+                  <Play className="mr-2 h-4 w-4" />
+                  See How It Works
+                </Button>
+              </motion.div>
+
+              {/* Trust Indicators */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground"
+              >
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>No signup fees</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>Pay only when you use</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-success" />
+                  <span>Cancel anytime</span>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </motion.div>
       </section>
 
-      {/* Stats */}
-      <section className="border-y border-border bg-muted/50 py-12">
+      {/* Social Proof Stats */}
+      <section className="border-y border-border bg-card py-8 md:py-12">
         <div className="container">
           <motion.div
             variants={container}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-2 gap-8 md:grid-cols-4"
+            className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8"
           >
             {stats.map((stat) => (
               <motion.div key={stat.label} variants={item} className="text-center">
-                <p className="text-3xl font-extrabold text-primary md:text-4xl">{stat.value}</p>
+                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                  <stat.icon className="h-5 w-5 text-primary" />
+                </div>
+                <p className="text-2xl font-extrabold text-foreground md:text-3xl">{stat.value}</p>
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
               </motion.div>
             ))}
@@ -171,7 +311,7 @@ export const LandingPage = () => {
         </div>
       </section>
 
-      {/* Features */}
+      {/* Pain Points Section */}
       <section className="py-16 md:py-24">
         <div className="container">
           <motion.div
@@ -180,11 +320,67 @@ export const LandingPage = () => {
             viewport={{ once: true }}
             className="mb-12 text-center"
           >
-            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
-              Why choose Now-Now Assist?
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-destructive/10 px-4 py-1.5">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+              <span className="text-sm font-medium text-destructive">Sound familiar?</span>
+            </div>
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl lg:text-5xl">
+              Roadside emergencies are stressful.
+              <br />
+              <span className="text-muted-foreground">We make them easy.</span>
             </h2>
-            <p className="mx-auto max-w-2xl text-muted-foreground">
-              We've reimagined roadside assistance for the modern driver. Fast, reliable, and always there when you need it.
+          </motion.div>
+
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="mx-auto max-w-3xl space-y-4"
+          >
+            {painPoints.map((point, index) => (
+              <motion.div
+                key={index}
+                variants={item}
+                className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 md:p-6"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                </div>
+                <p className="text-lg font-medium text-foreground md:text-xl">{point}</p>
+                <ChevronRight className="ml-auto h-5 w-5 text-muted-foreground" />
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="mt-12 text-center"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full bg-success/10 px-6 py-3">
+              <Heart className="h-5 w-5 text-success" />
+              <span className="text-lg font-semibold text-success">Now-Now Assist has your back.</span>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Solution Grid */}
+      <section className="bg-muted/30 py-16 md:py-24">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12 text-center"
+          >
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+              Why 50,000+ drivers trust us
+            </h2>
+            <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">
+              We've reimagined roadside assistance for the modern world. Fast, transparent, and always reliable.
             </p>
           </motion.div>
 
@@ -193,17 +389,26 @@ export const LandingPage = () => {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
+            className="grid gap-6 md:grid-cols-2"
           >
-            {features.map((feature) => (
-              <motion.div key={feature.title} variants={item}>
-                <Card variant="interactive" className="h-full">
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                      <feature.icon className="h-6 w-6 text-primary" />
+            {solutions.map((solution) => (
+              <motion.div key={solution.title} variants={item}>
+                <Card variant="interactive" className="h-full overflow-hidden group">
+                  <CardContent className="p-6 md:p-8">
+                    <div className="flex items-start gap-4">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition-colors group-hover:bg-primary/20">
+                        <solution.icon className="h-7 w-7 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="mb-2 flex items-center gap-2">
+                          <h3 className="text-xl font-bold text-foreground">{solution.title}</h3>
+                          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                            {solution.highlight}
+                          </span>
+                        </div>
+                        <p className="text-muted-foreground">{solution.description}</p>
+                      </div>
                     </div>
-                    <h3 className="mb-2 font-semibold text-foreground">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground">{feature.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -213,7 +418,7 @@ export const LandingPage = () => {
       </section>
 
       {/* Services */}
-      <section className="bg-muted/30 py-16 md:py-24">
+      <section className="py-16 md:py-24">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -224,8 +429,8 @@ export const LandingPage = () => {
             <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
               Services we offer
             </h2>
-            <p className="mx-auto max-w-2xl text-muted-foreground">
-              From flat tyres to empty tanks, we've got you covered with our full range of roadside services.
+            <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">
+              From flat tyres to empty tanks, we've got every roadside emergency covered.
             </p>
           </motion.div>
 
@@ -234,17 +439,28 @@ export const LandingPage = () => {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
+            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
           >
             {services.map((service) => (
               <motion.div key={service.name} variants={item}>
-                <Card variant="default" className="text-center">
-                  <CardContent className="p-6">
-                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-                      <service.icon className="h-7 w-7 text-primary" />
+                <Card 
+                  variant={service.popular ? "interactive" : "default"} 
+                  className={`h-full relative ${service.popular ? 'ring-2 ring-primary' : ''}`}
+                >
+                  {service.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                        Popular
+                      </span>
                     </div>
-                    <h3 className="mb-1 font-semibold text-foreground">{service.name}</h3>
-                    <p className="text-sm font-medium text-primary">{service.price}</p>
+                  )}
+                  <CardContent className="p-6 text-center">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+                      <service.icon className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="mb-1 text-lg font-bold text-foreground">{service.name}</h3>
+                    <p className="mb-3 text-sm text-muted-foreground">{service.description}</p>
+                    <p className="text-lg font-bold text-primary">{service.price}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -253,7 +469,166 @@ export const LandingPage = () => {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* How It Works */}
+      <section className="bg-muted/30 py-16 md:py-24">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12 text-center"
+          >
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+              Help in 3 simple steps
+            </h2>
+            <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">
+              Getting roadside assistance has never been easier. Here's how it works:
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="mx-auto max-w-4xl"
+          >
+            <div className="relative">
+              {/* Connection Line */}
+              <div className="absolute left-8 top-8 hidden h-[calc(100%-4rem)] w-0.5 bg-border md:left-1/2 md:-translate-x-1/2 lg:block" />
+              
+              <div className="space-y-8">
+                {howItWorks.map((step, index) => (
+                  <motion.div
+                    key={step.step}
+                    variants={item}
+                    className="relative flex items-start gap-6 md:gap-8"
+                  >
+                    <div className="relative z-10 flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-primary-foreground shadow-lg">
+                      {step.step}
+                    </div>
+                    <div className="flex-1 rounded-2xl border border-border bg-card p-6">
+                      <h3 className="mb-2 text-xl font-bold text-foreground">{step.title}</h3>
+                      <p className="text-muted-foreground">{step.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-16 md:py-24">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12 text-center"
+          >
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+              Real stories from real drivers
+            </h2>
+            <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">
+              Join thousands of satisfied customers who've experienced our service.
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid gap-6 md:grid-cols-3"
+          >
+            {testimonials.map((testimonial) => (
+              <motion.div key={testimonial.name} variants={item}>
+                <Card variant="default" className="h-full">
+                  <CardContent className="p-6">
+                    <div className="mb-4 flex items-center gap-1">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="h-5 w-5 fill-primary text-primary" />
+                      ))}
+                    </div>
+                    <Quote className="mb-3 h-8 w-8 text-muted-foreground/30" />
+                    <p className="mb-6 text-foreground">{testimonial.text}</p>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
+                        {testimonial.avatar}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">{testimonial.name}</p>
+                        <p className="text-sm text-muted-foreground">{testimonial.location}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Driver CTA */}
+      <section className="bg-muted/30 py-16 md:py-24">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+          >
+            <Card variant="default" className="border-2 border-primary/20 overflow-hidden">
+              <CardContent className="p-8 md:p-12">
+                <div className="grid gap-8 md:grid-cols-2 md:items-center">
+                  <div>
+                    <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-success/10 px-4 py-1.5">
+                      <Wallet className="h-4 w-4 text-success" />
+                      <span className="text-sm font-medium text-success">Earn Extra Income</span>
+                    </div>
+                    <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+                      Have a vehicle & want to earn?
+                    </h2>
+                    <p className="mb-6 text-muted-foreground md:text-lg">
+                      Join our network of 500+ responders. Flexible hours, competitive pay, and the satisfaction of helping drivers in need. 
+                      Earn up to <strong className="text-foreground">R8,000+/month</strong> part-time.
+                    </p>
+                    <ul className="mb-6 space-y-2">
+                      {[
+                        "Set your own schedule",
+                        "Weekly payouts",
+                        "Free training & certification",
+                        "Dedicated support team",
+                      ].map((benefit) => (
+                        <li key={benefit} className="flex items-center gap-2 text-foreground">
+                          <CheckCircle2 className="h-5 w-5 text-success" />
+                          {benefit}
+                        </li>
+                      ))}
+                    </ul>
+                    <Button variant="outline" size="lg" onClick={() => navigate("/auth")}>
+                      Apply to Drive
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="relative hidden md:block">
+                    <div className="aspect-square rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 p-8">
+                      <div className="flex h-full flex-col items-center justify-center text-center">
+                        <div className="mb-4 text-6xl font-extrabold text-primary">R8K+</div>
+                        <p className="text-lg font-medium text-foreground">Monthly Earnings</p>
+                        <p className="text-sm text-muted-foreground">For active part-time responders</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
       <section className="py-16 md:py-24">
         <div className="container">
           <motion.div
@@ -262,35 +637,52 @@ export const LandingPage = () => {
             viewport={{ once: true }}
           >
             <Card variant="dark" className="overflow-hidden">
-              <CardContent className="relative p-8 md:p-12">
-                <div className="absolute -right-20 -top-20 h-60 w-60 rounded-full bg-primary/20 blur-3xl" />
-                <div className="absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-primary/10 blur-2xl" />
+              <CardContent className="relative p-8 md:p-16">
+                {/* Background Effects */}
+                <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-primary/30 blur-3xl" />
+                <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-primary/20 blur-2xl" />
                 
-                <div className="relative mx-auto max-w-2xl text-center">
-                  <h2 className="mb-4 text-3xl font-bold text-brand-white md:text-4xl">
-                    Ready to experience stress-free roadside help?
-                  </h2>
-                  <p className="mb-8 text-brand-white/70">
-                    Join thousands of drivers who trust Now-Now Assist for fast, reliable roadside assistance.
-                  </p>
-                  <Button
-                    variant="amber"
-                    size="xl"
-                    onClick={() => navigate("/customer")}
-                    className="px-12"
+                <div className="relative mx-auto max-w-3xl text-center">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    whileInView={{ scale: 1 }}
+                    viewport={{ once: true }}
+                    className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/20"
                   >
-                    Get Started Free
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
+                    <Shield className="h-10 w-10 text-primary" />
+                  </motion.div>
                   
-                  <p className="mt-4 text-sm text-brand-white/60">
-                    Interested in becoming a responder?{" "}
-                    <button
-                      onClick={() => navigate("/driver")}
-                      className="font-medium text-primary underline-offset-4 hover:underline"
+                  <h2 className="mb-4 text-3xl font-bold text-brand-white md:text-4xl lg:text-5xl">
+                    Ready for stress-free roadside help?
+                  </h2>
+                  <p className="mb-8 text-lg text-brand-white/70 md:text-xl">
+                    Join 50,000+ drivers who trust Now-Now Assist. 
+                    Sign up takes 30 seconds. No credit card required.
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <Button
+                      variant="amber"
+                      size="xl"
+                      onClick={() => navigate("/auth")}
+                      className="w-full sm:w-auto px-12 shadow-amber"
                     >
-                      Learn more
-                    </button>
+                      <Zap className="mr-2 h-5 w-5" />
+                      Get Started Free
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={() => window.location.href = 'tel:0800000000'}
+                      className="w-full sm:w-auto border-brand-white/20 text-brand-white hover:bg-brand-white/10"
+                    >
+                      <Phone className="mr-2 h-4 w-4" />
+                      Call Us: 0800 000 000
+                    </Button>
+                  </div>
+
+                  <p className="mt-6 text-sm text-brand-white/50">
+                    🔒 Protected by enterprise-grade security. Your data is encrypted and safe.
                   </p>
                 </div>
               </CardContent>
@@ -300,17 +692,47 @@ export const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border bg-card py-8">
+      <footer className="border-t border-border bg-card py-12">
         <div className="container">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <Logo size="sm" />
+          <div className="grid gap-8 md:grid-cols-4">
+            <div className="md:col-span-2">
+              <Logo size="md" className="mb-4" />
+              <p className="mb-4 max-w-sm text-muted-foreground">
+                South Africa's fastest-growing roadside assistance platform. 
+                Help when you need it, where you need it.
+              </p>
+              <div className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-success" />
+                <span className="text-sm text-muted-foreground">Verified & Trusted</span>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="mb-4 font-semibold text-foreground">Quick Links</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><button onClick={() => navigate("/auth")} className="hover:text-primary transition-colors">Get Help</button></li>
+                <li><button onClick={() => navigate("/auth")} className="hover:text-primary transition-colors">Become a Responder</button></li>
+                <li><button className="hover:text-primary transition-colors">About Us</button></li>
+                <li><button className="hover:text-primary transition-colors">Contact</button></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="mb-4 font-semibold text-foreground">Legal</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><button className="hover:text-primary transition-colors">Privacy Policy</button></li>
+                <li><button className="hover:text-primary transition-colors">Terms of Service</button></li>
+                <li><button className="hover:text-primary transition-colors">Cookie Policy</button></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
             <p className="text-sm text-muted-foreground">
               © 2025 Now-Now Assist. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm">Privacy</Button>
-              <Button variant="ghost" size="sm">Terms</Button>
-              <Button variant="ghost" size="sm">Support</Button>
+              <span className="text-sm text-muted-foreground">🇿🇦 Made in South Africa</span>
             </div>
           </div>
         </div>

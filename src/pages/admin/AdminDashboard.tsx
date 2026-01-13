@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Logo } from "@/components/shared/Logo";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
   Users,
   Car,
@@ -11,9 +11,6 @@ import {
   TrendingUp,
   Clock,
   MapPin,
-  Settings,
-  Bell,
-  Search,
   Filter,
   MoreVertical,
   ChevronRight,
@@ -21,9 +18,9 @@ import {
   CheckCircle2,
   XCircle,
   RefreshCw,
+  Bell,
 } from "lucide-react";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import { Link } from "react-router-dom";
 
 const mockStats = {
   activeJobs: 8,
@@ -71,41 +68,8 @@ const mockAlerts = [
 ];
 
 export const AdminDashboard = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-xl">
-        <div className="container flex items-center justify-between py-4">
-          <div className="flex items-center gap-4">
-            <Logo size="sm" />
-            <StatusBadge variant="online" pulse>Live Operations</StatusBadge>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search jobs, drivers..."
-                className="w-64 pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Button variant="ghost" size="icon-sm" className="relative rounded-full">
-              <Bell className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-                3
-              </span>
-            </Button>
-            <Button variant="ghost" size="icon-sm" className="rounded-full">
-              <Settings className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <div className="container py-6">
+    <AdminLayout>
         {/* Stats Grid */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -309,28 +273,35 @@ export const AdminDashboard = () => {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-between">
-                  View All Drivers
-                  <ChevronRight className="h-4 w-4" />
+                <Button variant="outline" className="w-full justify-between" asChild>
+                  <Link to="/admin/drivers">
+                    View All Drivers
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
                 </Button>
-                <Button variant="outline" className="w-full justify-between">
-                  Manage Pricing
-                  <ChevronRight className="h-4 w-4" />
+                <Button variant="outline" className="w-full justify-between" asChild>
+                  <Link to="/admin/pricing">
+                    Manage Pricing
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
                 </Button>
-                <Button variant="outline" className="w-full justify-between">
-                  Payment Reports
-                  <ChevronRight className="h-4 w-4" />
+                <Button variant="outline" className="w-full justify-between" asChild>
+                  <Link to="/admin/payments">
+                    Payment Reports
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
                 </Button>
-                <Button variant="outline" className="w-full justify-between">
-                  Dispute Center
-                  <ChevronRight className="h-4 w-4" />
+                <Button variant="outline" className="w-full justify-between" asChild>
+                  <Link to="/admin/disputes">
+                    Dispute Center
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
                 </Button>
               </CardContent>
             </Card>
           </motion.div>
         </div>
-      </div>
-    </div>
+    </AdminLayout>
   );
 };
 

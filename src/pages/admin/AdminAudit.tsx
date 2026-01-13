@@ -235,7 +235,7 @@ export default function AdminAudit() {
                       </TableCell>
                       <TableCell className="font-medium">{log.event_type}</TableCell>
                       <TableCell>
-                        <StatusBadge variant="secondary">{log.event_category}</StatusBadge>
+                        <StatusBadge variant="default">{log.event_category}</StatusBadge>
                       </TableCell>
                       <TableCell>
                         <div>

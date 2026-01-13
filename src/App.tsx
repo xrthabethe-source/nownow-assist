@@ -19,6 +19,15 @@ import DriverHome from "./pages/driver/DriverHome";
 import DriverEarnings from "./pages/driver/DriverEarnings";
 import ActiveJob from "./pages/driver/ActiveJob";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminDrivers from "./pages/admin/AdminDrivers";
+import AdminServices from "./pages/admin/AdminServices";
+import AdminPricing from "./pages/admin/AdminPricing";
+import AdminPayments from "./pages/admin/AdminPayments";
+import AdminDisputes from "./pages/admin/AdminDisputes";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminAudit from "./pages/admin/AdminAudit";
+import AdminSettings from "./pages/admin/AdminSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -98,6 +107,51 @@ const App = () => (
             <Route path="/admin" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/users" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminUsers />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/drivers" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDrivers />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/services" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminServices />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/pricing" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminPricing />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/payments" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminPayments />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/disputes" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminDisputes />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/reports" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminReports />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/audit" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminAudit />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/settings" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminSettings />
               </ProtectedRoute>
             } />
             

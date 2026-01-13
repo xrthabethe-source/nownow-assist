@@ -80,7 +80,7 @@ export default function AdminPricing() {
     mutationFn: async (newConfig: PricingConfig) => {
       const { error } = await supabase
         .from("app_settings")
-        .update({ value: newConfig as unknown as Record<string, unknown> })
+        .update({ value: JSON.parse(JSON.stringify(newConfig)) })
         .eq("key", "pricing");
 
       if (error) throw error;

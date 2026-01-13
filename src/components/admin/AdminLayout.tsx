@@ -20,10 +20,23 @@ import {
   Bell,
   Search,
   Menu,
-  X,
   Wrench,
   BarChart3,
   Shield,
+  FileText,
+  TrendingUp,
+  Wallet,
+  UserCog,
+  MapPin,
+  Clock,
+  HelpCircle,
+  Database,
+  Lock,
+  Globe,
+  Palette,
+  Mail,
+  Smartphone,
+  ChevronDown,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,27 +49,100 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
-  { icon: Users, label: "Users", path: "/admin/users" },
-  { icon: Car, label: "Drivers", path: "/admin/drivers" },
-  { icon: Wrench, label: "Services", path: "/admin/services" },
-  { icon: DollarSign, label: "Pricing", path: "/admin/pricing" },
-  { icon: CreditCard, label: "Payments", path: "/admin/payments" },
-  { icon: AlertTriangle, label: "Disputes", path: "/admin/disputes" },
-  { icon: BarChart3, label: "Reports", path: "/admin/reports" },
-  { icon: Shield, label: "Audit Logs", path: "/admin/audit" },
-  { icon: Settings, label: "Settings", path: "/admin/settings" },
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
+interface NavItem {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  path: string;
+  badge?: string;
+  badgeVariant?: "default" | "destructive" | "warning" | "success";
+}
+
+const navSections: NavSection[] = [
+  {
+    title: "Overview",
+    items: [
+      { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
+      { icon: TrendingUp, label: "Analytics", path: "/admin/reports", badge: "New", badgeVariant: "success" },
+    ],
+  },
+  {
+    title: "User Management",
+    items: [
+      { icon: Users, label: "All Users", path: "/admin/users" },
+      { icon: Car, label: "Drivers", path: "/admin/drivers" },
+      { icon: UserCog, label: "Roles & Permissions", path: "/admin/users?tab=roles" },
+    ],
+  },
+  {
+    title: "Operations",
+    items: [
+      { icon: MapPin, label: "Live Jobs", path: "/admin?view=jobs" },
+      { icon: Wrench, label: "Services", path: "/admin/services" },
+      { icon: Clock, label: "Job History", path: "/admin/reports?type=jobs" },
+    ],
+  },
+  {
+    title: "Finance",
+    items: [
+      { icon: DollarSign, label: "Pricing", path: "/admin/pricing" },
+      { icon: CreditCard, label: "Payments", path: "/admin/payments" },
+      { icon: Wallet, label: "Payouts", path: "/admin/payments?tab=payouts" },
+      { icon: FileText, label: "Invoices", path: "/admin/payments?tab=invoices" },
+    ],
+  },
+  {
+    title: "Support & Disputes",
+    items: [
+      { icon: AlertTriangle, label: "Disputes", path: "/admin/disputes", badge: "3", badgeVariant: "destructive" },
+      { icon: HelpCircle, label: "Support Tickets", path: "/admin/disputes?tab=support" },
+    ],
+  },
+  {
+    title: "Security & Compliance",
+    items: [
+      { icon: Shield, label: "Audit Logs", path: "/admin/audit" },
+      { icon: Lock, label: "Security Settings", path: "/admin/settings?tab=security" },
+      { icon: Database, label: "Data Management", path: "/admin/settings?tab=data" },
+    ],
+  },
+  {
+    title: "Configuration",
+    items: [
+      { icon: Settings, label: "General Settings", path: "/admin/settings" },
+      { icon: Palette, label: "Branding", path: "/admin/settings?tab=branding" },
+      { icon: Globe, label: "Regions", path: "/admin/settings?tab=regions" },
+      { icon: Mail, label: "Notifications", path: "/admin/settings?tab=notifications" },
+      { icon: Smartphone, label: "Mobile App", path: "/admin/settings?tab=mobile" },
+    ],
+  },
 ];
+
+// Flattened nav items for quick lookup
+const allNavItems = navSections.flatMap((section) => section.items);
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<string[]>(
+    navSections.map((s) => s.title) // All sections expanded by default
+  );
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -66,13 +152,33 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     navigate("/auth");
   };
 
+  const toggleSection = (title: string) => {
+    setExpandedSections((prev) =>
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
+    );
+  };
+
+  const isActiveItem = (item: NavItem) => {
+    const [path, query] = item.path.split("?");
+    if (location.pathname !== path) return false;
+    if (!query) return location.pathname === path && !location.search;
+    return location.search.includes(query);
+  };
+
+  const isExactPath = (path: string) => {
+    const [basePath] = path.split("?");
+    return location.pathname === basePath;
+  };
+
   const NavContent = ({ mobile = false }: { mobile?: boolean }) => (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className={cn(
-        "flex items-center gap-3 border-b border-sidebar-border p-4",
-        collapsed && !mobile && "justify-center"
-      )}>
+      <div
+        className={cn(
+          "flex items-center gap-3 border-b border-sidebar-border p-4",
+          collapsed && !mobile && "justify-center"
+        )}
+      >
         <Logo size="sm" />
         <AnimatePresence>
           {(!collapsed || mobile) && (
@@ -82,64 +188,200 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               exit={{ opacity: 0, width: 0 }}
               className="overflow-hidden"
             >
-              <span className="text-sm font-semibold text-sidebar-foreground">Admin</span>
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-sidebar-foreground">
+                  Now-Now
+                </span>
+                <span className="text-xs text-muted-foreground">Admin Portal</span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Nav Items */}
-      <nav className="flex-1 space-y-1 p-3">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={() => mobile && setMobileOpen(false)}
-              className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-md"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent",
-                collapsed && !mobile && "justify-center px-2"
-              )}
-            >
-              <item.icon className={cn("h-5 w-5 shrink-0", isActive && "text-primary-foreground")} />
-              <AnimatePresence>
-                {(!collapsed || mobile) && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: "auto" }}
-                    exit={{ opacity: 0, width: 0 }}
-                    className="overflow-hidden whitespace-nowrap"
-                  >
-                    {item.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </Link>
-          );
-        })}
-      </nav>
+      {/* Nav Sections */}
+      <ScrollArea className="flex-1">
+        <nav className="space-y-1 p-3">
+          {navSections.map((section, sectionIndex) => {
+            const isExpanded = expandedSections.includes(section.title);
+            const hasActiveItem = section.items.some((item) => isExactPath(item.path));
 
-      {/* Collapse Button (desktop only) */}
-      {!mobile && (
-        <div className="border-t border-sidebar-border p-3">
+            return (
+              <div key={section.title}>
+                {sectionIndex > 0 && !collapsed && (
+                  <Separator className="my-3 bg-sidebar-border/50" />
+                )}
+
+                {collapsed && !mobile ? (
+                  // Collapsed: show only icons
+                  <div className="space-y-1">
+                    {section.items.map((item) => {
+                      const isActive = isExactPath(item.path);
+                      return (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          onClick={() => mobile && setMobileOpen(false)}
+                          title={item.label}
+                          className={cn(
+                            "flex items-center justify-center rounded-xl p-2.5 transition-all",
+                            isActive
+                              ? "bg-primary text-primary-foreground shadow-md"
+                              : "text-sidebar-foreground hover:bg-sidebar-accent"
+                          )}
+                        >
+                          <item.icon className="h-5 w-5 shrink-0" />
+                          {item.badge && (
+                            <span
+                              className={cn(
+                                "absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold",
+                                item.badgeVariant === "destructive" &&
+                                  "bg-destructive text-destructive-foreground",
+                                item.badgeVariant === "warning" &&
+                                  "bg-warning text-warning-foreground",
+                                item.badgeVariant === "success" &&
+                                  "bg-success text-success-foreground",
+                                (!item.badgeVariant || item.badgeVariant === "default") &&
+                                  "bg-primary text-primary-foreground"
+                              )}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  // Expanded: show collapsible sections
+                  <Collapsible
+                    open={isExpanded}
+                    onOpenChange={() => toggleSection(section.title)}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <button
+                        className={cn(
+                          "flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:bg-sidebar-accent",
+                          hasActiveItem && "text-primary"
+                        )}
+                      >
+                        {section.title}
+                        <ChevronDown
+                          className={cn(
+                            "h-4 w-4 transition-transform",
+                            isExpanded && "rotate-180"
+                          )}
+                        />
+                      </button>
+                    </CollapsibleTrigger>
+
+                    <CollapsibleContent className="space-y-1 pt-1">
+                      {section.items.map((item) => {
+                        const isActive = isExactPath(item.path);
+                        return (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            onClick={() => mobile && setMobileOpen(false)}
+                            className={cn(
+                              "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+                              isActive
+                                ? "bg-primary text-primary-foreground shadow-md"
+                                : "text-sidebar-foreground hover:bg-sidebar-accent"
+                            )}
+                          >
+                            <item.icon
+                              className={cn(
+                                "h-5 w-5 shrink-0",
+                                isActive && "text-primary-foreground"
+                              )}
+                            />
+                            <span className="flex-1">{item.label}</span>
+                            {item.badge && (
+                              <span
+                                className={cn(
+                                  "flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold",
+                                  item.badgeVariant === "destructive" &&
+                                    "bg-destructive text-destructive-foreground",
+                                  item.badgeVariant === "warning" &&
+                                    "bg-warning text-warning-foreground",
+                                  item.badgeVariant === "success" &&
+                                    "bg-success text-success-foreground",
+                                  (!item.badgeVariant || item.badgeVariant === "default") &&
+                                    "bg-muted text-muted-foreground",
+                                  isActive && "bg-primary-foreground/20 text-primary-foreground"
+                                )}
+                              >
+                                {item.badge}
+                              </span>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
+              </div>
+            );
+          })}
+        </nav>
+      </ScrollArea>
+
+      {/* Footer */}
+      <div className="border-t border-sidebar-border p-3">
+        {/* User Info (mobile or expanded) */}
+        {(!collapsed || mobile) && (
+          <div className="mb-3 flex items-center gap-3 rounded-xl bg-sidebar-accent/50 p-3">
+            <Avatar className="h-9 w-9">
+              <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                {user?.email?.charAt(0).toUpperCase() || "A"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 overflow-hidden">
+              <p className="truncate text-sm font-medium text-sidebar-foreground">
+                Admin
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                {user?.email}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Sign Out */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleSignOut}
+          className={cn(
+            "w-full text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive",
+            collapsed && !mobile ? "justify-center" : "justify-start"
+          )}
+        >
+          <LogOut className="h-4 w-4" />
+          {(!collapsed || mobile) && <span className="ml-2">Sign Out</span>}
+        </Button>
+
+        {/* Collapse Button (desktop only) */}
+        {!mobile && (
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setCollapsed(!collapsed)}
             className={cn(
-              "w-full justify-center text-sidebar-foreground",
-              !collapsed && "justify-start"
+              "mt-2 w-full text-sidebar-foreground",
+              collapsed ? "justify-center" : "justify-start"
             )}
           >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {collapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
             {!collapsed && <span className="ml-2">Collapse</span>}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 
@@ -148,7 +390,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       {/* Desktop Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ width: collapsed ? 72 : 256 }}
+        animate={{ width: collapsed ? 72 : 280 }}
         className="hidden border-r border-sidebar-border bg-sidebar-background lg:block"
       >
         <NavContent />
@@ -168,7 +410,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-64 p-0">
+                <SheetContent side="left" className="w-80 p-0">
                   <NavContent mobile />
                 </SheetContent>
               </Sheet>
@@ -210,11 +452,29 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   <DropdownMenuLabel>
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">Admin</span>
-                      <span className="text-xs text-muted-foreground">{user?.email}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {user?.email}
+                      </span>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/settings">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/audit">
+                      <Shield className="mr-2 h-4 w-4" />
+                      Audit Logs
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    className="text-destructive"
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign Out
                   </DropdownMenuItem>
@@ -225,9 +485,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-6">
-          {children}
-        </main>
+        <main className="flex-1 p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );

@@ -523,18 +523,31 @@ export type Database = {
         Returns: boolean
       }
       is_account_locked: { Args: { check_email: string }; Returns: boolean }
-      log_audit_event: {
-        Args: {
-          p_details?: Json
-          p_event_category: string
-          p_event_type: string
-          p_resource_id?: string
-          p_resource_type?: string
-          p_severity?: string
-          p_user_id: string
-        }
-        Returns: string
-      }
+      log_audit_event:
+        | {
+            Args: {
+              p_details?: Json
+              p_event_category: string
+              p_event_type: string
+              p_resource_id?: string
+              p_resource_type?: string
+              p_severity?: string
+              p_user_id: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_details?: Json
+              p_event_category: string
+              p_event_type: string
+              p_resource_id?: string
+              p_resource_type?: string
+              p_severity?: string
+              p_user_id: string
+            }
+            Returns: string
+          }
     }
     Enums: {
       app_role: "admin" | "driver" | "customer"

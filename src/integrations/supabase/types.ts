@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           created_at: string
@@ -65,6 +95,221 @@ export type Database = {
         }
         Relationships: []
       }
+      disputes: {
+        Row: {
+          assigned_admin_id: string | null
+          category: string
+          created_at: string
+          description: string
+          id: string
+          job_id: string | null
+          refund_amount: number | null
+          refund_issued: boolean | null
+          reporter_id: string | null
+          reporter_type: string | null
+          resolution: string | null
+          resolved_at: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_admin_id?: string | null
+          category: string
+          created_at?: string
+          description: string
+          id?: string
+          job_id?: string | null
+          refund_amount?: number | null
+          refund_issued?: boolean | null
+          reporter_id?: string | null
+          reporter_type?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_admin_id?: string | null
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          job_id?: string | null
+          refund_amount?: number | null
+          refund_issued?: boolean | null
+          reporter_id?: string | null
+          reporter_type?: string | null
+          resolution?: string | null
+          resolved_at?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drivers: {
+        Row: {
+          created_at: string
+          current_location_lat: number | null
+          current_location_lng: number | null
+          id: string
+          is_online: boolean | null
+          is_verified: boolean | null
+          license_number: string | null
+          payout_percentage: number | null
+          rating: number | null
+          status: string | null
+          total_jobs: number | null
+          updated_at: string
+          user_id: string
+          vehicle_make: string | null
+          vehicle_model: string | null
+          vehicle_plate: string | null
+          vehicle_type: string | null
+          vehicle_year: number | null
+        }
+        Insert: {
+          created_at?: string
+          current_location_lat?: number | null
+          current_location_lng?: number | null
+          id?: string
+          is_online?: boolean | null
+          is_verified?: boolean | null
+          license_number?: string | null
+          payout_percentage?: number | null
+          rating?: number | null
+          status?: string | null
+          total_jobs?: number | null
+          updated_at?: string
+          user_id: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_type?: string | null
+          vehicle_year?: number | null
+        }
+        Update: {
+          created_at?: string
+          current_location_lat?: number | null
+          current_location_lng?: number | null
+          id?: string
+          is_online?: boolean | null
+          is_verified?: boolean | null
+          license_number?: string | null
+          payout_percentage?: number | null
+          rating?: number | null
+          status?: string | null
+          total_jobs?: number | null
+          updated_at?: string
+          user_id?: string
+          vehicle_make?: string | null
+          vehicle_model?: string | null
+          vehicle_plate?: string | null
+          vehicle_type?: string | null
+          vehicle_year?: number | null
+        }
+        Relationships: []
+      }
+      jobs: {
+        Row: {
+          accepted_at: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          completed_at: string | null
+          created_at: string
+          customer_id: string | null
+          dispatched_at: string | null
+          driver_id: string | null
+          estimated_price: number | null
+          eta_minutes: number | null
+          final_price: number | null
+          id: string
+          job_number: string
+          notes: string | null
+          pickup_address: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          rating: number | null
+          review: string | null
+          service_id: string | null
+          started_at: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          dispatched_at?: string | null
+          driver_id?: string | null
+          estimated_price?: number | null
+          eta_minutes?: number | null
+          final_price?: number | null
+          id?: string
+          job_number: string
+          notes?: string | null
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          rating?: number | null
+          review?: string | null
+          service_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          customer_id?: string | null
+          dispatched_at?: string | null
+          driver_id?: string | null
+          estimated_price?: number | null
+          eta_minutes?: number | null
+          final_price?: number | null
+          id?: string
+          job_number?: string
+          notes?: string | null
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          rating?: number | null
+          review?: string | null
+          service_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       login_attempts: {
         Row: {
           created_at: string
@@ -95,6 +340,75 @@ export type Database = {
         }
         Relationships: []
       }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          customer_id: string | null
+          driver_id: string | null
+          driver_payout: number | null
+          failure_reason: string | null
+          id: string
+          job_id: string | null
+          payment_method: string | null
+          platform_fee: number | null
+          refund_amount: number | null
+          refunded_at: string | null
+          status: string | null
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          customer_id?: string | null
+          driver_id?: string | null
+          driver_payout?: number | null
+          failure_reason?: string | null
+          id?: string
+          job_id?: string | null
+          payment_method?: string | null
+          platform_fee?: number | null
+          refund_amount?: number | null
+          refunded_at?: string | null
+          status?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          customer_id?: string | null
+          driver_id?: string | null
+          driver_payout?: number | null
+          failure_reason?: string | null
+          id?: string
+          job_id?: string | null
+          payment_method?: string | null
+          platform_fee?: number | null
+          refund_amount?: number | null
+          refunded_at?: string | null
+          status?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -121,6 +435,48 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          base_price: number
+          created_at: string
+          description: string | null
+          eta_minutes: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          price_per_km: number | null
+          surge_multiplier: number | null
+          updated_at: string
+        }
+        Insert: {
+          base_price?: number
+          created_at?: string
+          description?: string | null
+          eta_minutes?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price_per_km?: number | null
+          surge_multiplier?: number | null
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number
+          created_at?: string
+          description?: string | null
+          eta_minutes?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price_per_km?: number | null
+          surge_multiplier?: number | null
           updated_at?: string
         }
         Relationships: []

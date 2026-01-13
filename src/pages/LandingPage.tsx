@@ -63,35 +63,30 @@ const services = [
   { 
     icon: TyreIcon, 
     name: "Tyre Change", 
-    price: "From R350",
     description: "Flat or punctured tyre? We'll swap it with your spare in minutes.",
     popular: true,
   },
   { 
     icon: BatteryIcon, 
     name: "Jump Start", 
-    price: "From R250",
     description: "Dead battery? We'll get you running again, fast.",
     popular: true,
   },
   { 
     icon: FuelIcon, 
     name: "Fuel Delivery", 
-    price: "From R180",
     description: "Ran out of fuel? We'll bring petrol or diesel to you.",
     popular: false,
   },
   { 
     icon: PumpIcon, 
     name: "Tyre Inflate", 
-    price: "From R150",
     description: "Low tyre pressure? We'll pump it up to the perfect PSI.",
     popular: false,
   },
   { 
     icon: WrenchIcon, 
     name: "Minor Repairs", 
-    price: "From R200",
     description: "Small fixes that get you back on the road.",
     popular: false,
   },
@@ -458,9 +453,8 @@ export const LandingPage = () => {
                     <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
                       <service.icon className="h-8 w-8 text-primary" />
                     </div>
-                    <h3 className="mb-1 text-lg font-bold text-foreground">{service.name}</h3>
-                    <p className="mb-3 text-sm text-muted-foreground">{service.description}</p>
-                    <p className="text-lg font-bold text-primary">{service.price}</p>
+                    <h3 className="mb-2 text-lg font-bold text-foreground">{service.name}</h3>
+                    <p className="text-sm text-muted-foreground">{service.description}</p>
                   </CardContent>
                 </Card>
               </motion.div>

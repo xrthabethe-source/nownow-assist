@@ -149,6 +149,9 @@ export default function AdminUsers() {
   const [newRole, setNewRole] = useState<AppRole>("customer");
   const [isRefreshing, setIsRefreshing] = useState(false);
   
+  // Local state for added users (demo mode)
+  const [addedUsers, setAddedUsers] = useState<UserWithRole[]>([]);
+  
   // New user form state
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserName, setNewUserName] = useState("");
@@ -157,7 +160,7 @@ export default function AdminUsers() {
   
   const queryClient = useQueryClient();
 
-  const { data: users, isLoading, refetch } = useQuery({
+  const { data: fetchedUsers, isLoading, refetch } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
       // First get all profiles
@@ -189,6 +192,9 @@ export default function AdminUsers() {
       })) as UserWithRole[];
     },
   });
+
+  // Combine fetched users with locally added users
+  const users = [...addedUsers, ...(fetchedUsers || [])];
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -250,9 +256,19 @@ export default function AdminUsers() {
       return;
     }
 
-    // For demo purposes, show success message
-    // In production, this would send an invite or create the user
-    toast.success(`User invitation sent to ${newUserEmail} with ${newUserRole} role`);
+    // Create new user and add to local state
+    const newUser: UserWithRole = {
+      id: `usr-${Date.now()}`,
+      email: newUserEmail,
+      full_name: newUserName,
+      avatar_url: null,
+      phone: newUserPhone || null,
+      created_at: new Date().toISOString(),
+      role: newUserRole,
+    };
+
+    setAddedUsers((prev) => [newUser, ...prev]);
+    toast.success(`User "${newUserName}" added successfully as ${newUserRole}`);
     setAddUserDialogOpen(false);
     resetAddUserForm();
   };

@@ -9,6 +9,7 @@ export interface AdminNotification {
   title: string;
   message: string;
   severity: 'info' | 'warning' | 'error' | 'success';
+  status: 'pending' | 'in_progress' | 'resolved' | 'dismissed';
   is_read: boolean;
   metadata: Record<string, unknown>;
   created_at: string;
@@ -70,6 +71,17 @@ export function useAdminNotifications() {
     }
   };
 
+  const updateStatus = async (notificationId: string, status: AdminNotification['status']) => {
+    const { error } = await supabase
+      .from('admin_notifications')
+      .update({ status, is_read: true })
+      .eq('id', notificationId);
+
+    if (!error) {
+      queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
+    }
+  };
+
   const markAllAsRead = async () => {
     const { error } = await supabase
       .from('admin_notifications')
@@ -105,6 +117,7 @@ export function useAdminNotifications() {
     refetch,
     markAsRead,
     markAllAsRead,
+    updateStatus,
     createSystemAlert,
   };
 }

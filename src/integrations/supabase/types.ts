@@ -22,6 +22,7 @@ export type Database = {
           message: string
           metadata: Json | null
           severity: string
+          status: string | null
           title: string
           type: string
         }
@@ -32,6 +33,7 @@ export type Database = {
           message: string
           metadata?: Json | null
           severity?: string
+          status?: string | null
           title: string
           type: string
         }
@@ -42,6 +44,7 @@ export type Database = {
           message?: string
           metadata?: Json | null
           severity?: string
+          status?: string | null
           title?: string
           type?: string
         }
@@ -192,12 +195,19 @@ export type Database = {
           created_at: string
           current_location_lat: number | null
           current_location_lng: number | null
+          documents_submitted_at: string | null
           id: string
+          id_document_url: string | null
           is_online: boolean | null
           is_verified: boolean | null
+          license_document_url: string | null
           license_number: string | null
           payout_percentage: number | null
+          profile_photo_url: string | null
           rating: number | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: string | null
           total_jobs: number | null
           updated_at: string
@@ -205,6 +215,7 @@ export type Database = {
           vehicle_make: string | null
           vehicle_model: string | null
           vehicle_plate: string | null
+          vehicle_registration_url: string | null
           vehicle_type: string | null
           vehicle_year: number | null
         }
@@ -212,12 +223,19 @@ export type Database = {
           created_at?: string
           current_location_lat?: number | null
           current_location_lng?: number | null
+          documents_submitted_at?: string | null
           id?: string
+          id_document_url?: string | null
           is_online?: boolean | null
           is_verified?: boolean | null
+          license_document_url?: string | null
           license_number?: string | null
           payout_percentage?: number | null
+          profile_photo_url?: string | null
           rating?: number | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string | null
           total_jobs?: number | null
           updated_at?: string
@@ -225,6 +243,7 @@ export type Database = {
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_plate?: string | null
+          vehicle_registration_url?: string | null
           vehicle_type?: string | null
           vehicle_year?: number | null
         }
@@ -232,12 +251,19 @@ export type Database = {
           created_at?: string
           current_location_lat?: number | null
           current_location_lng?: number | null
+          documents_submitted_at?: string | null
           id?: string
+          id_document_url?: string | null
           is_online?: boolean | null
           is_verified?: boolean | null
+          license_document_url?: string | null
           license_number?: string | null
           payout_percentage?: number | null
+          profile_photo_url?: string | null
           rating?: number | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string | null
           total_jobs?: number | null
           updated_at?: string
@@ -245,6 +271,7 @@ export type Database = {
           vehicle_make?: string | null
           vehicle_model?: string | null
           vehicle_plate?: string | null
+          vehicle_registration_url?: string | null
           vehicle_type?: string | null
           vehicle_year?: number | null
         }

@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, CircleMarker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -126,20 +126,69 @@ function MapControls({ onLocateDrivers }: { onLocateDrivers: () => void }) {
   );
 }
 
-// Component to fly to selected driver
-function FlyToDriver({ driver }: { driver: OnlineDriver | null }) {
+// Component to fly to selected driver and fit route
+function FlyToDriver({ driver, customerLocation }: { driver: OnlineDriver | null; customerLocation: [number, number] | null }) {
   const map = useMap();
   
   useEffect(() => {
     if (driver && driver.current_location_lat && driver.current_location_lng) {
-      map.flyTo([driver.current_location_lat, driver.current_location_lng], 15, {
-        duration: 1.5,
-      });
+      if (customerLocation && driver.currentJob) {
+        // Fit both driver and customer in view
+        const bounds = L.latLngBounds([
+          [driver.current_location_lat, driver.current_location_lng],
+          customerLocation,
+        ]);
+        map.fitBounds(bounds, { padding: [80, 80], maxZoom: 15 });
+      } else {
+        map.flyTo([driver.current_location_lat, driver.current_location_lng], 15, {
+          duration: 1.5,
+        });
+      }
     }
-  }, [driver, map]);
+  }, [driver, customerLocation, map]);
   
   return null;
 }
+
+// Customer destination icon
+const createCustomerIcon = () => {
+  return L.divIcon({
+    className: "custom-customer-marker",
+    html: `
+      <div style="
+        position: relative;
+        width: 36px;
+        height: 44px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+      ">
+        <div style="
+          width: 32px;
+          height: 32px;
+          background: #ef4444;
+          border: 3px solid white;
+          border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        ">
+          <div style="transform: rotate(45deg);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    `,
+    iconSize: [36, 44],
+    iconAnchor: [18, 44],
+    popupAnchor: [0, -44],
+  });
+};
 
 interface OnlineDriver {
   id: string;
@@ -164,6 +213,8 @@ interface OnlineDriver {
     status: string | null;
     pickup_address: string | null;
     eta_minutes: number | null;
+    pickup_lat?: number;
+    pickup_lng?: number;
     customer?: {
       full_name: string | null;
     };
@@ -206,6 +257,8 @@ const demoDrivers: OnlineDriver[] = [
       status: "in_progress",
       pickup_address: "123 Main St, Sandton",
       eta_minutes: 8,
+      pickup_lat: -26.1052,
+      pickup_lng: 28.0527,
       customer: { full_name: "John Mokoena" },
     },
   },
@@ -243,6 +296,8 @@ const demoDrivers: OnlineDriver[] = [
       status: "dispatched",
       pickup_address: "45 Oak Ave, Rosebank",
       eta_minutes: 12,
+      pickup_lat: -26.1467,
+      pickup_lng: 28.0410,
       customer: { full_name: "Sarah Nkosi" },
     },
   },
@@ -295,6 +350,8 @@ const demoDrivers: OnlineDriver[] = [
       status: "in_progress",
       pickup_address: "78 William Nicol, Fourways",
       eta_minutes: 15,
+      pickup_lat: -26.0234,
+      pickup_lng: 28.0123,
       customer: { full_name: "Mike Richardson" },
     },
   },
@@ -507,8 +564,68 @@ export default function AdminLiveMap() {
                   />
                   
                   <MapControls onLocateDrivers={handleLocateDrivers} />
-                  <FlyToDriver driver={selectedDriver} />
+                  <FlyToDriver 
+                    driver={selectedDriver} 
+                    customerLocation={
+                      selectedDriver?.currentJob?.pickup_lat && selectedDriver?.currentJob?.pickup_lng
+                        ? [selectedDriver.currentJob.pickup_lat, selectedDriver.currentJob.pickup_lng]
+                        : null
+                    }
+                  />
                   
+                  {/* Route line for selected driver with active job */}
+                  {selectedDriver && selectedDriver.currentJob?.pickup_lat && selectedDriver.currentJob?.pickup_lng && (
+                    <>
+                      {/* Animated route line */}
+                      <Polyline
+                        positions={[
+                          getDriverPosition(selectedDriver),
+                          [selectedDriver.currentJob.pickup_lat, selectedDriver.currentJob.pickup_lng],
+                        ]}
+                        pathOptions={{
+                          color: "#8b5cf6",
+                          weight: 4,
+                          opacity: 0.8,
+                          dashArray: "10, 10",
+                          lineCap: "round",
+                        }}
+                      />
+                      {/* Solid background line */}
+                      <Polyline
+                        positions={[
+                          getDriverPosition(selectedDriver),
+                          [selectedDriver.currentJob.pickup_lat, selectedDriver.currentJob.pickup_lng],
+                        ]}
+                        pathOptions={{
+                          color: "#8b5cf6",
+                          weight: 6,
+                          opacity: 0.3,
+                        }}
+                      />
+                      {/* Customer destination marker */}
+                      <Marker
+                        position={[selectedDriver.currentJob.pickup_lat, selectedDriver.currentJob.pickup_lng]}
+                        icon={createCustomerIcon()}
+                      >
+                        <Popup>
+                          <div className="p-2 min-w-[160px]">
+                            <div className="font-semibold text-red-600">📍 Customer Location</div>
+                            <div className="text-sm font-medium mt-1">
+                              {selectedDriver.currentJob.customer?.full_name}
+                            </div>
+                            <div className="text-sm text-gray-600 mt-1">
+                              {selectedDriver.currentJob.pickup_address}
+                            </div>
+                            <div className="text-sm font-semibold text-primary mt-2">
+                              ETA: {selectedDriver.currentJob.eta_minutes} min
+                            </div>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    </>
+                  )}
+                  
+                  {/* Driver markers */}
                   {drivers?.map((driver) => {
                     const position = getDriverPosition(driver);
                     const isOnJob = !!driver.currentJob;
@@ -551,7 +668,7 @@ export default function AdminLiveMap() {
 
                 {/* Legend overlay */}
                 <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 backdrop-blur-sm rounded-lg p-3 text-xs shadow-lg">
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-success" />
                       <span>Available</span>
@@ -563,6 +680,14 @@ export default function AdminLiveMap() {
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-primary" />
                       <span>Selected</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full bg-red-500" />
+                      <span>Customer</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-0.5 bg-primary" style={{ borderTop: '2px dashed #8b5cf6' }} />
+                      <span>Route</span>
                     </div>
                   </div>
                 </div>

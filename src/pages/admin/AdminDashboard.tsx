@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +32,7 @@ const mockStats = {
   slaCompliance: 94,
 };
 
-const mockActiveJobs = [
+const initialActiveJobs = [
   {
     id: "JOB-001",
     customer: "John M.",
@@ -68,6 +69,18 @@ const mockAlerts = [
 ];
 
 export const AdminDashboard = () => {
+  const [activeJobs, setActiveJobs] = useState(initialActiveJobs);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefreshJobs = useCallback(() => {
+    setIsRefreshing(true);
+    // Simulate refresh - in production this would fetch from the database
+    setTimeout(() => {
+      setActiveJobs([...initialActiveJobs]);
+      setIsRefreshing(false);
+    }, 500);
+  }, []);
+
   return (
     <AdminLayout>
         {/* Stats Grid */}
@@ -171,14 +184,19 @@ export const AdminDashboard = () => {
                       Filter
                     </Link>
                   </Button>
-                  <Button variant="ghost" size="icon-sm" onClick={() => window.location.reload()}>
-                    <RefreshCw className="h-4 w-4" />
+                  <Button 
+                    variant="ghost" 
+                    size="icon-sm" 
+                    onClick={handleRefreshJobs}
+                    disabled={isRefreshing}
+                  >
+                    <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {mockActiveJobs.map((job) => (
+                  {activeJobs.map((job) => (
                     <Link
                       key={job.id}
                       to="/admin/active-jobs"

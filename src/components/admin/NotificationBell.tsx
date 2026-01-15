@@ -15,8 +15,8 @@ import { formatDistanceToNow } from 'date-fns';
 
 const getNotificationIcon = (type: AdminNotification['type'], severity: AdminNotification['severity']) => {
   switch (type) {
-    case 'job_request':
-      return <Briefcase className="h-4 w-4 text-primary" />;
+    case 'driver_application':
+      return <Briefcase className="h-4 w-4 text-warning" />;
     case 'payment':
       return <CreditCard className={cn(
         "h-4 w-4",
@@ -24,6 +24,8 @@ const getNotificationIcon = (type: AdminNotification['type'], severity: AdminNot
         severity === 'error' && "text-destructive",
         severity === 'warning' && "text-warning"
       )} />;
+    case 'dispute':
+      return <AlertTriangle className="h-4 w-4 text-destructive" />;
     case 'system_alert':
       return <AlertTriangle className={cn(
         "h-4 w-4",

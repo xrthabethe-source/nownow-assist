@@ -22,8 +22,8 @@ import { formatDistanceToNow, format } from "date-fns";
 
 const getNotificationIcon = (type: AdminNotification['type'], severity: AdminNotification['severity']) => {
   switch (type) {
-    case 'job_request':
-      return <Briefcase className="h-5 w-5 text-primary" />;
+    case 'driver_application':
+      return <Briefcase className="h-5 w-5 text-warning" />;
     case 'payment':
       return <CreditCard className={cn(
         "h-5 w-5",
@@ -31,6 +31,8 @@ const getNotificationIcon = (type: AdminNotification['type'], severity: AdminNot
         severity === 'error' && "text-destructive",
         severity === 'warning' && "text-warning"
       )} />;
+    case 'dispute':
+      return <AlertTriangle className="h-5 w-5 text-destructive" />;
     case 'system_alert':
       return <AlertTriangle className={cn(
         "h-5 w-5",
@@ -58,10 +60,12 @@ const getSeverityBadge = (severity: AdminNotification['severity']) => {
 
 const getTypeBadge = (type: AdminNotification['type']) => {
   switch (type) {
-    case 'job_request':
-      return <Badge variant="outline">Job Request</Badge>;
+    case 'driver_application':
+      return <Badge variant="outline">Driver Application</Badge>;
     case 'payment':
       return <Badge variant="outline">Payment</Badge>;
+    case 'dispute':
+      return <Badge variant="outline">Dispute</Badge>;
     case 'system_alert':
       return <Badge variant="outline">System Alert</Badge>;
     default:
@@ -81,8 +85,9 @@ export default function AdminNotifications() {
     
     if (activeTab === "all") return matchesSearch;
     if (activeTab === "unread") return matchesSearch && !notification.is_read;
-    if (activeTab === "jobs") return matchesSearch && notification.type === "job_request";
+    if (activeTab === "drivers") return matchesSearch && notification.type === "driver_application";
     if (activeTab === "payments") return matchesSearch && notification.type === "payment";
+    if (activeTab === "disputes") return matchesSearch && notification.type === "dispute";
     if (activeTab === "alerts") return matchesSearch && notification.type === "system_alert";
     return matchesSearch;
   });
@@ -134,27 +139,27 @@ export default function AdminNotifications() {
           </Card>
           <Card>
             <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/10">
-                <Briefcase className="h-6 w-6 text-success" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-warning/10">
+                <Briefcase className="h-6 w-6 text-warning" />
               </div>
               <div>
                 <p className="text-2xl font-bold">
-                  {notifications.filter(n => n.type === 'job_request').length}
+                  {notifications.filter(n => n.type === 'driver_application').length}
                 </p>
-                <p className="text-sm text-muted-foreground">Job Requests</p>
+                <p className="text-sm text-muted-foreground">Driver Applications</p>
               </div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-warning/10">
-                <AlertTriangle className="h-6 w-6 text-warning" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-destructive/10">
+                <AlertTriangle className="h-6 w-6 text-destructive" />
               </div>
               <div>
                 <p className="text-2xl font-bold">
-                  {notifications.filter(n => n.type === 'system_alert').length}
+                  {notifications.filter(n => n.type === 'dispute').length}
                 </p>
-                <p className="text-sm text-muted-foreground">System Alerts</p>
+                <p className="text-sm text-muted-foreground">Disputes</p>
               </div>
             </CardContent>
           </Card>
@@ -198,10 +203,16 @@ export default function AdminNotifications() {
                     )}
                   </TabsTrigger>
                   <TabsTrigger 
-                    value="jobs"
+                    value="drivers"
                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
                   >
-                    Jobs
+                    Drivers
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="disputes"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                  >
+                    Disputes
                   </TabsTrigger>
                   <TabsTrigger 
                     value="payments"

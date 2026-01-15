@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export interface AdminNotification {
   id: string;
-  type: 'job_request' | 'payment' | 'system_alert';
+  type: 'driver_application' | 'payment' | 'system_alert' | 'dispute';
   title: string;
   message: string;
   severity: 'info' | 'warning' | 'error' | 'success';

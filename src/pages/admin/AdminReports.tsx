@@ -40,6 +40,74 @@ import {
 
 const COLORS = ["hsl(43, 100%, 50%)", "hsl(142, 76%, 36%)", "hsl(0, 84%, 60%)", "hsl(38, 92%, 50%)"];
 
+// Demo data generators
+const generateDemoRevenueData = (days: number) => {
+  const data = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const date = subDays(new Date(), i);
+    const baseRevenue = 15000 + Math.random() * 20000;
+    const dayOfWeek = date.getDay();
+    // Weekends have higher revenue
+    const multiplier = dayOfWeek === 0 || dayOfWeek === 6 ? 1.3 : 1;
+    data.push({
+      date: format(date, "MMM d"),
+      revenue: Math.round(baseRevenue * multiplier),
+    });
+  }
+  return data;
+};
+
+const generateDemoJobsData = (days: number) => {
+  const data = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const date = subDays(new Date(), i);
+    const baseJobs = 40 + Math.floor(Math.random() * 30);
+    const dayOfWeek = date.getDay();
+    const multiplier = dayOfWeek === 0 || dayOfWeek === 6 ? 1.4 : 1;
+    data.push({
+      date: format(date, "MMM d"),
+      jobs: Math.round(baseJobs * multiplier),
+    });
+  }
+  return data;
+};
+
+const demoJobStats = (days: number) => {
+  const totalJobs = days * 50 + Math.floor(Math.random() * 100);
+  return {
+    total: totalJobs,
+    byStatus: {
+      completed: Math.floor(totalJobs * 0.72),
+      cancelled: Math.floor(totalJobs * 0.08),
+      in_progress: Math.floor(totalJobs * 0.12),
+      pending: Math.floor(totalJobs * 0.08),
+    },
+    dailyData: generateDemoJobsData(days),
+  };
+};
+
+const demoRevenueStats = (days: number) => {
+  const dailyData = generateDemoRevenueData(days);
+  const totalRevenue = dailyData.reduce((sum, d) => sum + d.revenue, 0);
+  return {
+    totalRevenue,
+    totalPayouts: Math.round(totalRevenue * 0.8),
+    totalFees: Math.round(totalRevenue * 0.2),
+    dailyData,
+  };
+};
+
+const demoUserStats = {
+  totalUsers: 1247,
+  totalDrivers: 86,
+  onlineDrivers: 24,
+  roleBreakdown: {
+    customers: 1156,
+    drivers: 86,
+    admins: 5,
+  },
+};
+
 export default function AdminReports() {
   const [dateRange, setDateRange] = useState("7");
 
@@ -53,6 +121,11 @@ export default function AdminReports() {
         .gte("created_at", startDate.toISOString());
 
       if (error) throw error;
+
+      // If no real data, return demo data
+      if (!data || data.length === 0) {
+        return demoJobStats(parseInt(dateRange));
+      }
 
       const byStatus = {
         completed: data.filter((j) => j.status === "completed").length,
@@ -89,6 +162,11 @@ export default function AdminReports() {
 
       if (error) throw error;
 
+      // If no real data, return demo data
+      if (!data || data.length === 0) {
+        return demoRevenueStats(parseInt(dateRange));
+      }
+
       const totalRevenue = data.reduce((sum, p) => sum + Number(p.amount), 0);
       const totalPayouts = data.reduce((sum, p) => sum + Number(p.driver_payout || 0), 0);
       const totalFees = data.reduce((sum, p) => sum + Number(p.platform_fee || 0), 0);
@@ -115,6 +193,11 @@ export default function AdminReports() {
       const { data: profiles } = await supabase.from("profiles").select("id");
       const { data: drivers } = await supabase.from("drivers").select("id, is_online");
       const { data: roles } = await supabase.from("user_roles").select("role");
+
+      // If no real data, return demo data
+      if (!profiles || profiles.length === 0) {
+        return demoUserStats;
+      }
 
       return {
         totalUsers: profiles?.length || 0,

@@ -34,6 +34,131 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
+// Demo data for realistic preview
+const demoPayments = [
+  {
+    id: "pay-001",
+    created_at: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+    transaction_id: "TXN-2026-001245",
+    amount: 450,
+    driver_payout: 360,
+    platform_fee: 90,
+    status: "completed",
+    payment_method: "card",
+    failure_reason: null,
+    jobs: { job_number: "JOB-089", services: { name: "Tyre Change" } },
+  },
+  {
+    id: "pay-002",
+    created_at: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
+    transaction_id: "TXN-2026-001244",
+    amount: 280,
+    driver_payout: 0,
+    platform_fee: 0,
+    status: "failed",
+    payment_method: "card",
+    failure_reason: "Card declined - insufficient funds",
+    jobs: { job_number: "JOB-088", services: { name: "Jump Start" } },
+  },
+  {
+    id: "pay-003",
+    created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+    transaction_id: "TXN-2026-001243",
+    amount: 650,
+    driver_payout: 520,
+    platform_fee: 130,
+    status: "completed",
+    payment_method: "eft",
+    failure_reason: null,
+    jobs: { job_number: "JOB-087", services: { name: "Towing" } },
+  },
+  {
+    id: "pay-004",
+    created_at: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+    transaction_id: "TXN-2026-001242",
+    amount: 180,
+    driver_payout: 144,
+    platform_fee: 36,
+    status: "pending",
+    payment_method: "card",
+    failure_reason: null,
+    jobs: { job_number: "JOB-086", services: { name: "Fuel Delivery" } },
+  },
+  {
+    id: "pay-005",
+    created_at: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+    transaction_id: "TXN-2026-001241",
+    amount: 320,
+    driver_payout: 256,
+    platform_fee: 64,
+    status: "refunded",
+    payment_method: "card",
+    failure_reason: null,
+    refund_amount: 320,
+    jobs: { job_number: "JOB-085", services: { name: "Battery Replacement" } },
+  },
+  {
+    id: "pay-006",
+    created_at: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
+    transaction_id: "TXN-2026-001240",
+    amount: 550,
+    driver_payout: 0,
+    platform_fee: 0,
+    status: "failed",
+    payment_method: "eft",
+    failure_reason: "Payment timeout - bank connection failed",
+    jobs: { job_number: "JOB-084", services: { name: "Lockout Assist" } },
+  },
+  {
+    id: "pay-007",
+    created_at: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+    transaction_id: "TXN-2026-001239",
+    amount: 890,
+    driver_payout: 712,
+    platform_fee: 178,
+    status: "completed",
+    payment_method: "card",
+    failure_reason: null,
+    jobs: { job_number: "JOB-083", services: { name: "Towing" } },
+  },
+  {
+    id: "pay-008",
+    created_at: new Date(Date.now() - 1000 * 60 * 150).toISOString(),
+    transaction_id: "TXN-2026-001238",
+    amount: 220,
+    driver_payout: 176,
+    platform_fee: 44,
+    status: "processing",
+    payment_method: "card",
+    failure_reason: null,
+    jobs: { job_number: "JOB-082", services: { name: "Jump Start" } },
+  },
+  {
+    id: "pay-009",
+    created_at: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
+    transaction_id: "TXN-2026-001237",
+    amount: 380,
+    driver_payout: 0,
+    platform_fee: 0,
+    status: "failed",
+    payment_method: "card",
+    failure_reason: "Card expired",
+    jobs: { job_number: "JOB-081", services: { name: "Tyre Change" } },
+  },
+  {
+    id: "pay-010",
+    created_at: new Date(Date.now() - 1000 * 60 * 210).toISOString(),
+    transaction_id: "TXN-2026-001236",
+    amount: 750,
+    driver_payout: 600,
+    platform_fee: 150,
+    status: "completed",
+    payment_method: "eft",
+    failure_reason: null,
+    jobs: { job_number: "JOB-080", services: { name: "Accident Assist" } },
+  },
+];
+
 export default function AdminPayments() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -57,7 +182,10 @@ export default function AdminPayments() {
     },
   });
 
-  const filteredPayments = payments?.filter((payment) => {
+  // Use demo data if no real payments exist
+  const displayPayments = payments && payments.length > 0 ? payments : demoPayments;
+
+  const filteredPayments = displayPayments?.filter((payment) => {
     const matchesSearch =
       payment.transaction_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       payment.jobs?.job_number?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -66,10 +194,10 @@ export default function AdminPayments() {
   });
 
   const stats = {
-    totalRevenue: payments?.reduce((sum, p) => sum + (p.status === "completed" ? Number(p.amount) : 0), 0) || 0,
-    totalDriverPayouts: payments?.reduce((sum, p) => sum + (p.status === "completed" ? Number(p.driver_payout || 0) : 0), 0) || 0,
-    platformFees: payments?.reduce((sum, p) => sum + (p.status === "completed" ? Number(p.platform_fee || 0) : 0), 0) || 0,
-    failedPayments: payments?.filter((p) => p.status === "failed").length || 0,
+    totalRevenue: displayPayments?.reduce((sum, p) => sum + (p.status === "completed" ? Number(p.amount) : 0), 0) || 0,
+    totalDriverPayouts: displayPayments?.reduce((sum, p) => sum + (p.status === "completed" ? Number(p.driver_payout || 0) : 0), 0) || 0,
+    platformFees: displayPayments?.reduce((sum, p) => sum + (p.status === "completed" ? Number(p.platform_fee || 0) : 0), 0) || 0,
+    failedPayments: displayPayments?.filter((p) => p.status === "failed").length || 0,
   };
 
   const getStatusVariant = (status: string | null): "success" | "warning" | "destructive" | "default" => {
@@ -228,6 +356,7 @@ export default function AdminPayments() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Date</TableHead>
+                    <TableHead>Transaction ID</TableHead>
                     <TableHead>Job</TableHead>
                     <TableHead>Service</TableHead>
                     <TableHead>Amount</TableHead>
@@ -239,9 +368,15 @@ export default function AdminPayments() {
                 </TableHeader>
                 <TableBody>
                   {filteredPayments.map((payment) => (
-                    <TableRow key={payment.id}>
+                    <TableRow 
+                      key={payment.id}
+                      className={payment.status === "failed" ? "bg-destructive/5" : ""}
+                    >
                       <TableCell>
                         {format(new Date(payment.created_at), "MMM d, HH:mm")}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs text-muted-foreground">
+                        {payment.transaction_id || "-"}
                       </TableCell>
                       <TableCell className="font-mono text-sm">
                         {payment.jobs?.job_number || "-"}
@@ -250,7 +385,7 @@ export default function AdminPayments() {
                       <TableCell className="font-medium">
                         R{Number(payment.amount).toFixed(2)}
                       </TableCell>
-                      <TableCell className="text-success">
+                      <TableCell className={payment.status === "completed" ? "text-success" : "text-muted-foreground"}>
                         R{Number(payment.driver_payout || 0).toFixed(2)}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
@@ -258,9 +393,21 @@ export default function AdminPayments() {
                       </TableCell>
                       <TableCell className="capitalize">{payment.payment_method}</TableCell>
                       <TableCell>
-                        <StatusBadge variant={getStatusVariant(payment.status)}>
-                          {payment.status}
-                        </StatusBadge>
+                        <div className="flex flex-col gap-1">
+                          <StatusBadge variant={getStatusVariant(payment.status)}>
+                            {payment.status}
+                          </StatusBadge>
+                          {payment.status === "failed" && payment.failure_reason && (
+                            <span className="text-xs text-destructive">
+                              {payment.failure_reason}
+                            </span>
+                          )}
+                          {payment.status === "refunded" && (
+                            <span className="text-xs text-muted-foreground">
+                              Refunded: R{Number(payment.refund_amount || payment.amount).toFixed(2)}
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

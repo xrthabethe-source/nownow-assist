@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -49,6 +52,10 @@ import {
   Ban,
   MessageSquare,
   Send,
+  FileText,
+  Image,
+  AlertCircle,
+  Eye,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
@@ -61,6 +68,7 @@ interface Driver {
   vehicle_plate: string | null;
   vehicle_make: string | null;
   vehicle_model: string | null;
+  vehicle_year: number | null;
   is_verified: boolean | null;
   is_online: boolean | null;
   rating: number | null;
@@ -68,6 +76,12 @@ interface Driver {
   payout_percentage: number | null;
   status: string | null;
   created_at: string;
+  license_document_url: string | null;
+  vehicle_registration_url: string | null;
+  profile_photo_url: string | null;
+  id_document_url: string | null;
+  documents_submitted_at: string | null;
+  rejection_reason: string | null;
   profiles?: {
     full_name: string | null;
     email: string | null;
@@ -85,6 +99,7 @@ const demoDrivers: Driver[] = [
     vehicle_plate: "CA 123-456",
     vehicle_make: "Toyota",
     vehicle_model: "Hilux",
+    vehicle_year: 2022,
     is_verified: true,
     is_online: true,
     rating: 4.8,
@@ -92,6 +107,12 @@ const demoDrivers: Driver[] = [
     payout_percentage: 0.80,
     status: "approved",
     created_at: "2025-06-15T08:00:00Z",
+    license_document_url: null,
+    vehicle_registration_url: null,
+    profile_photo_url: null,
+    id_document_url: null,
+    documents_submitted_at: "2025-06-14T08:00:00Z",
+    rejection_reason: null,
     profiles: { full_name: "Samuel Khumalo", email: "samuel.k@email.com", phone: "+27 82 123 4567" },
   },
   {
@@ -102,6 +123,7 @@ const demoDrivers: Driver[] = [
     vehicle_plate: "GP 789-012",
     vehicle_make: "Volkswagen",
     vehicle_model: "Caddy",
+    vehicle_year: 2021,
     is_verified: true,
     is_online: true,
     rating: 4.9,
@@ -109,6 +131,12 @@ const demoDrivers: Driver[] = [
     payout_percentage: 0.85,
     status: "approved",
     created_at: "2025-03-22T10:30:00Z",
+    license_document_url: null,
+    vehicle_registration_url: null,
+    profile_photo_url: null,
+    id_document_url: null,
+    documents_submitted_at: "2025-03-21T10:30:00Z",
+    rejection_reason: null,
     profiles: { full_name: "David Okonkwo", email: "david.o@email.com", phone: "+27 83 456 7890" },
   },
   {
@@ -119,6 +147,7 @@ const demoDrivers: Driver[] = [
     vehicle_plate: "FS 345-678",
     vehicle_make: "Ford",
     vehicle_model: "Ranger",
+    vehicle_year: 2023,
     is_verified: false,
     is_online: false,
     rating: 5.0,
@@ -126,6 +155,12 @@ const demoDrivers: Driver[] = [
     payout_percentage: 0.80,
     status: "pending",
     created_at: "2026-01-10T14:20:00Z",
+    license_document_url: "https://example.com/license.pdf",
+    vehicle_registration_url: "https://example.com/registration.pdf",
+    profile_photo_url: "https://example.com/photo.jpg",
+    id_document_url: "https://example.com/id.pdf",
+    documents_submitted_at: "2026-01-10T14:25:00Z",
+    rejection_reason: null,
     profiles: { full_name: "Thabo Mokoena", email: "thabo.m@email.com", phone: "+27 84 789 0123" },
   },
   {
@@ -136,6 +171,7 @@ const demoDrivers: Driver[] = [
     vehicle_plate: "WC 901-234",
     vehicle_make: "Nissan",
     vehicle_model: "NP200",
+    vehicle_year: 2020,
     is_verified: true,
     is_online: false,
     rating: 3.8,
@@ -143,6 +179,12 @@ const demoDrivers: Driver[] = [
     payout_percentage: 0.75,
     status: "suspended",
     created_at: "2024-11-05T09:15:00Z",
+    license_document_url: null,
+    vehicle_registration_url: null,
+    profile_photo_url: null,
+    id_document_url: null,
+    documents_submitted_at: "2024-11-04T09:15:00Z",
+    rejection_reason: null,
     profiles: { full_name: "Peter van der Berg", email: "peter.vdb@email.com", phone: "+27 85 012 3456" },
   },
   {
@@ -153,6 +195,7 @@ const demoDrivers: Driver[] = [
     vehicle_plate: "KZN 567-890",
     vehicle_make: "Isuzu",
     vehicle_model: "D-Max",
+    vehicle_year: 2022,
     is_verified: true,
     is_online: true,
     rating: 4.6,
@@ -160,6 +203,12 @@ const demoDrivers: Driver[] = [
     payout_percentage: 0.80,
     status: "approved",
     created_at: "2025-08-18T11:45:00Z",
+    license_document_url: null,
+    vehicle_registration_url: null,
+    profile_photo_url: null,
+    id_document_url: null,
+    documents_submitted_at: "2025-08-17T11:45:00Z",
+    rejection_reason: null,
     profiles: { full_name: "Sipho Ndlovu", email: "sipho.n@email.com", phone: "+27 86 345 6789" },
   },
   {
@@ -170,6 +219,7 @@ const demoDrivers: Driver[] = [
     vehicle_plate: "EC 234-567",
     vehicle_make: "Mercedes",
     vehicle_model: "Vito",
+    vehicle_year: 2023,
     is_verified: false,
     is_online: false,
     rating: 5.0,
@@ -177,6 +227,12 @@ const demoDrivers: Driver[] = [
     payout_percentage: 0.80,
     status: "pending",
     created_at: "2026-01-12T16:00:00Z",
+    license_document_url: "https://example.com/license2.pdf",
+    vehicle_registration_url: null,
+    profile_photo_url: "https://example.com/photo2.jpg",
+    id_document_url: null,
+    documents_submitted_at: "2026-01-12T16:05:00Z",
+    rejection_reason: null,
     profiles: { full_name: "Blessing Nkosi", email: "blessing.n@email.com", phone: "+27 87 678 9012" },
   },
   {
@@ -187,6 +243,7 @@ const demoDrivers: Driver[] = [
     vehicle_plate: "MP 890-123",
     vehicle_make: "Mahindra",
     vehicle_model: "Pik Up",
+    vehicle_year: 2021,
     is_verified: true,
     is_online: true,
     rating: 4.5,
@@ -194,6 +251,12 @@ const demoDrivers: Driver[] = [
     payout_percentage: 0.80,
     status: "approved",
     created_at: "2025-05-02T08:30:00Z",
+    license_document_url: null,
+    vehicle_registration_url: null,
+    profile_photo_url: null,
+    id_document_url: null,
+    documents_submitted_at: "2025-05-01T08:30:00Z",
+    rejection_reason: null,
     profiles: { full_name: "Lucky Mabena", email: "lucky.m@email.com", phone: "+27 88 901 2345" },
   },
   {
@@ -204,6 +267,7 @@ const demoDrivers: Driver[] = [
     vehicle_plate: "LP 456-789",
     vehicle_make: "GWM",
     vehicle_model: "P-Series",
+    vehicle_year: 2024,
     is_verified: false,
     is_online: false,
     rating: 5.0,
@@ -211,20 +275,48 @@ const demoDrivers: Driver[] = [
     payout_percentage: 0.80,
     status: "rejected",
     created_at: "2026-01-08T12:00:00Z",
+    license_document_url: null,
+    vehicle_registration_url: null,
+    profile_photo_url: null,
+    id_document_url: null,
+    documents_submitted_at: null,
+    rejection_reason: "Missing required documents",
     profiles: { full_name: "John Doe", email: "john.d@email.com", phone: "+27 89 234 5678" },
   },
 ];
 
 export default function AdminDrivers() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [payoutDialogOpen, setPayoutDialogOpen] = useState(false);
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
   const [messageSubject, setMessageSubject] = useState<"complaint" | "payout" | "general">("general");
   const [messageContent, setMessageContent] = useState("");
   const [newPayout, setNewPayout] = useState(80);
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "all");
   const { user } = useAuth();
   const queryClient = useQueryClient();
+
+  // Sync tab with URL
+  useEffect(() => {
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    if (value === "all") {
+      searchParams.delete("tab");
+    } else {
+      searchParams.set("tab", value);
+    }
+    setSearchParams(searchParams);
+  };
 
   const { data: drivers, isLoading, refetch } = useQuery({
     queryKey: ["admin-drivers"],
@@ -291,20 +383,83 @@ export default function AdminDrivers() {
 
   const filteredDrivers = drivers?.filter((driver) => {
     const searchLower = searchQuery.toLowerCase();
-    return (
+    const matchesSearch = 
       driver.profiles?.full_name?.toLowerCase().includes(searchLower) ||
       driver.profiles?.email?.toLowerCase().includes(searchLower) ||
       driver.vehicle_plate?.toLowerCase().includes(searchLower) ||
-      driver.license_number?.toLowerCase().includes(searchLower)
-    );
+      driver.license_number?.toLowerCase().includes(searchLower);
+    
+    if (activeTab === "pending") {
+      return matchesSearch && driver.status === "pending";
+    }
+    return matchesSearch;
   });
+
+  const pendingDrivers = drivers?.filter((d) => d.status === "pending") || [];
 
   const stats = {
     total: drivers?.length || 0,
     online: drivers?.filter((d) => d.is_online).length || 0,
     approved: drivers?.filter((d) => d.status === "approved").length || 0,
-    pending: drivers?.filter((d) => d.status === "pending").length || 0,
+    pending: pendingDrivers.length,
   };
+
+  const handleReviewDriver = (driver: Driver) => {
+    setSelectedDriver(driver);
+    setRejectionReason("");
+    setReviewDialogOpen(true);
+  };
+
+  const rejectDriverMutation = useMutation({
+    mutationFn: async ({ driverId, reason }: { driverId: string; reason: string }) => {
+      const { error } = await supabase
+        .from("drivers")
+        .update({ 
+          status: "rejected", 
+          is_verified: false,
+          rejection_reason: reason,
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: user?.id
+        })
+        .eq("id", driverId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Driver application rejected");
+      queryClient.invalidateQueries({ queryKey: ["admin-drivers"] });
+      setReviewDialogOpen(false);
+      setSelectedDriver(null);
+    },
+    onError: (error) => {
+      toast.error("Failed to reject: " + error.message);
+    },
+  });
+
+  const approveDriverMutation = useMutation({
+    mutationFn: async (driverId: string) => {
+      const { error } = await supabase
+        .from("drivers")
+        .update({ 
+          status: "approved", 
+          is_verified: true,
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: user?.id
+        })
+        .eq("id", driverId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Driver approved successfully!");
+      queryClient.invalidateQueries({ queryKey: ["admin-drivers"] });
+      setReviewDialogOpen(false);
+      setSelectedDriver(null);
+    },
+    onError: (error) => {
+      toast.error("Failed to approve: " + error.message);
+    },
+  });
 
   const handleAdjustPayout = (driver: Driver) => {
     setSelectedDriver(driver);
@@ -461,21 +616,35 @@ export default function AdminDrivers() {
           </motion.div>
         </div>
 
-        {/* Drivers Table */}
-        <Card>
-          <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle>All Drivers</CardTitle>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search drivers..."
-                className="w-64 pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </CardHeader>
-          <CardContent>
+        {/* Tabs for All Drivers and Pending Applications */}
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
+          <TabsList>
+            <TabsTrigger value="all">All Drivers</TabsTrigger>
+            <TabsTrigger value="pending" className="relative">
+              Pending Applications
+              {stats.pending > 0 && (
+                <Badge variant="destructive" className="ml-2 h-5 px-1.5">
+                  {stats.pending}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="all" className="mt-4">
+            <Card>
+              <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
+                <CardTitle>All Drivers</CardTitle>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Search drivers..."
+                    className="w-64 pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </CardHeader>
+              <CardContent>
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -625,8 +794,125 @@ export default function AdminDrivers() {
                 </TableBody>
               </Table>
             )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="pending" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Pending Driver Applications</CardTitle>
+                <CardDescription>
+                  Review and approve new driver registrations. Check uploaded documents before approving.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {pendingDrivers.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <CheckCircle className="mb-4 h-12 w-12 text-success/50" />
+                    <h3 className="text-lg font-medium">No Pending Applications</h3>
+                    <p className="text-sm text-muted-foreground">
+                      All driver applications have been reviewed
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {pendingDrivers.map((driver) => (
+                      <Card key={driver.id} className="border-warning/50">
+                        <CardContent className="p-4">
+                          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                            {/* Driver Info */}
+                            <div className="flex items-start gap-4">
+                              <Avatar className="h-12 w-12">
+                                <AvatarFallback className="bg-warning/10 text-warning">
+                                  {driver.profiles?.full_name?.charAt(0).toUpperCase() || "D"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="space-y-1">
+                                <h4 className="font-semibold">{driver.profiles?.full_name || "Unknown"}</h4>
+                                <p className="text-sm text-muted-foreground">{driver.profiles?.email}</p>
+                                <p className="text-sm text-muted-foreground">{driver.profiles?.phone}</p>
+                                <div className="flex items-center gap-2 pt-1">
+                                  <Badge variant="outline">{driver.vehicle_type}</Badge>
+                                  <span className="text-sm">
+                                    {driver.vehicle_make} {driver.vehicle_model} {driver.vehicle_year}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  Applied: {format(new Date(driver.created_at), "MMM d, yyyy 'at' h:mm a")}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Documents Status */}
+                            <div className="space-y-2">
+                              <p className="text-sm font-medium">Required Documents</p>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="flex items-center gap-2 text-sm">
+                                  {driver.license_document_url ? (
+                                    <CheckCircle className="h-4 w-4 text-success" />
+                                  ) : (
+                                    <AlertCircle className="h-4 w-4 text-destructive" />
+                                  )}
+                                  <span>Driver's License</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm">
+                                  {driver.id_document_url ? (
+                                    <CheckCircle className="h-4 w-4 text-success" />
+                                  ) : (
+                                    <AlertCircle className="h-4 w-4 text-destructive" />
+                                  )}
+                                  <span>ID Document</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm">
+                                  {driver.vehicle_registration_url ? (
+                                    <CheckCircle className="h-4 w-4 text-success" />
+                                  ) : (
+                                    <AlertCircle className="h-4 w-4 text-destructive" />
+                                  )}
+                                  <span>Vehicle Reg</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm">
+                                  {driver.profile_photo_url ? (
+                                    <CheckCircle className="h-4 w-4 text-success" />
+                                  ) : (
+                                    <AlertCircle className="h-4 w-4 text-destructive" />
+                                  )}
+                                  <span>Profile Photo</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleReviewDriver(driver)}
+                              >
+                                <Eye className="mr-2 h-4 w-4" />
+                                Review
+                              </Button>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => approveDriverMutation.mutate(driver.id)}
+                                disabled={approveDriverMutation.isPending}
+                              >
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Approve
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Payout Dialog */}
@@ -760,6 +1046,99 @@ export default function AdminDrivers() {
             >
               <Send className="mr-2 h-4 w-4" />
               {sendMessageMutation.isPending ? "Sending..." : "Send Message"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Review Driver Dialog */}
+      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Review Driver Application</DialogTitle>
+            <DialogDescription>
+              Review {selectedDriver?.profiles?.full_name}'s application and documents
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label className="text-muted-foreground">Full Name</Label>
+                <p className="font-medium">{selectedDriver?.profiles?.full_name}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Email</Label>
+                <p className="font-medium">{selectedDriver?.profiles?.email}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Phone</Label>
+                <p className="font-medium">{selectedDriver?.profiles?.phone || "Not provided"}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">License Number</Label>
+                <p className="font-medium">{selectedDriver?.license_number || "Not provided"}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Vehicle</Label>
+                <p className="font-medium">
+                  {selectedDriver?.vehicle_make} {selectedDriver?.vehicle_model} ({selectedDriver?.vehicle_year})
+                </p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Vehicle Plate</Label>
+                <p className="font-medium">{selectedDriver?.vehicle_plate}</p>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Documents Status</Label>
+              <div className="grid grid-cols-2 gap-2 rounded-lg border p-3">
+                <div className="flex items-center gap-2">
+                  {selectedDriver?.license_document_url ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
+                  <span className="text-sm">Driver's License</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {selectedDriver?.id_document_url ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
+                  <span className="text-sm">ID Document</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {selectedDriver?.vehicle_registration_url ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
+                  <span className="text-sm">Vehicle Registration</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {selectedDriver?.profile_photo_url ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
+                  <span className="text-sm">Profile Photo</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Rejection Reason (if rejecting)</Label>
+              <Textarea
+                placeholder="Enter reason for rejection..."
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setReviewDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => selectedDriver && rejectDriverMutation.mutate({ driverId: selectedDriver.id, reason: rejectionReason })}
+              disabled={rejectDriverMutation.isPending}
+            >
+              <XCircle className="mr-2 h-4 w-4" />
+              Reject
+            </Button>
+            <Button
+              onClick={() => selectedDriver && approveDriverMutation.mutate(selectedDriver.id)}
+              disabled={approveDriverMutation.isPending}
+            >
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Approve
             </Button>
           </DialogFooter>
         </DialogContent>

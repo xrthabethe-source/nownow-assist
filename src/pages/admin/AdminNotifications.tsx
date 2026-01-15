@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Bell, 
   Briefcase, 
@@ -13,8 +21,11 @@ import {
   AlertTriangle, 
   CheckCheck, 
   Search,
-  Filter,
-  Trash2
+  ExternalLink,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAdminNotifications, AdminNotification } from "@/hooks/useAdminNotifications";
@@ -42,6 +53,21 @@ const getNotificationIcon = (type: AdminNotification['type'], severity: AdminNot
       )} />;
     default:
       return <Bell className="h-5 w-5" />;
+  }
+};
+
+const getStatusBadge = (status: AdminNotification['status']) => {
+  switch (status) {
+    case 'pending':
+      return <Badge variant="outline" className="border-warning text-warning"><Clock className="mr-1 h-3 w-3" />Pending</Badge>;
+    case 'in_progress':
+      return <Badge variant="outline" className="border-primary text-primary"><Loader2 className="mr-1 h-3 w-3 animate-spin" />In Progress</Badge>;
+    case 'resolved':
+      return <Badge variant="outline" className="border-success text-success"><CheckCircle className="mr-1 h-3 w-3" />Resolved</Badge>;
+    case 'dismissed':
+      return <Badge variant="secondary"><XCircle className="mr-1 h-3 w-3" />Dismissed</Badge>;
+    default:
+      return <Badge variant="outline">Unknown</Badge>;
   }
 };
 
@@ -74,7 +100,8 @@ const getTypeBadge = (type: AdminNotification['type']) => {
 };
 
 export default function AdminNotifications() {
-  const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead } = useAdminNotifications();
+  const navigate = useNavigate();
+  const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead, updateStatus } = useAdminNotifications();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
 
@@ -252,13 +279,14 @@ export default function AdminNotifications() {
                           key={notification.id}
                           className={cn(
                             "flex items-start gap-4 p-4 transition-colors hover:bg-muted/50",
-                            !notification.is_read && "bg-primary/5"
+                            !notification.is_read && "bg-primary/5",
+                            notification.status === 'resolved' && "opacity-60"
                           )}
                         >
                           <div className="mt-1 shrink-0">
                             {getNotificationIcon(notification.type, notification.severity)}
                           </div>
-                          <div className="flex-1 space-y-1">
+                          <div className="flex-1 space-y-2">
                             <div className="flex items-start justify-between gap-2">
                               <div className="space-y-1">
                                 <p className={cn(
@@ -277,27 +305,62 @@ export default function AdminNotifications() {
                                 )}
                               </div>
                             </div>
-                            <div className="flex flex-wrap items-center gap-2 pt-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               {getTypeBadge(notification.type)}
-                              {getSeverityBadge(notification.severity)}
+                              {getStatusBadge(notification.status)}
                               <span className="text-xs text-muted-foreground">
-                                {format(new Date(notification.created_at), "MMM d, yyyy 'at' h:mm a")}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                ({formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })})
+                                {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                               </span>
                             </div>
+                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                              {/* Status controls */}
+                              <Select
+                                value={notification.status}
+                                onValueChange={(value) => updateStatus(notification.id, value as AdminNotification['status'])}
+                              >
+                                <SelectTrigger className="h-7 w-32 text-xs">
+                                  <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">Pending</SelectItem>
+                                  <SelectItem value="in_progress">In Progress</SelectItem>
+                                  <SelectItem value="resolved">Resolved</SelectItem>
+                                  <SelectItem value="dismissed">Dismissed</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              
+                              {/* Action button for driver applications */}
+                              {notification.type === 'driver_application' && notification.status !== 'resolved' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                  onClick={() => {
+                                    updateStatus(notification.id, 'in_progress');
+                                    navigate('/admin/drivers?tab=pending');
+                                  }}
+                                >
+                                  <ExternalLink className="mr-1 h-3 w-3" />
+                                  Review Application
+                                </Button>
+                              )}
+                              
+                              {notification.type === 'dispute' && notification.status !== 'resolved' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                  onClick={() => {
+                                    updateStatus(notification.id, 'in_progress');
+                                    navigate('/admin/disputes');
+                                  }}
+                                >
+                                  <ExternalLink className="mr-1 h-3 w-3" />
+                                  View Dispute
+                                </Button>
+                              )}
+                            </div>
                           </div>
-                          {!notification.is_read && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => markAsRead(notification.id)}
-                              className="shrink-0"
-                            >
-                              Mark Read
-                            </Button>
-                          )}
                         </div>
                       ))}
                     </div>

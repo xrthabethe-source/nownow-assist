@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { DriverDocumentReviewDialog } from "@/components/admin/DriverDocumentReviewDialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,6 +81,14 @@ interface Driver {
   vehicle_registration_url: string | null;
   profile_photo_url: string | null;
   id_document_url: string | null;
+  license_document_status?: string | null;
+  license_document_note?: string | null;
+  vehicle_registration_status?: string | null;
+  vehicle_registration_note?: string | null;
+  profile_photo_status?: string | null;
+  profile_photo_note?: string | null;
+  id_document_status?: string | null;
+  id_document_note?: string | null;
   documents_submitted_at: string | null;
   rejection_reason: string | null;
   profiles?: {
@@ -1052,97 +1061,11 @@ export default function AdminDrivers() {
       </Dialog>
 
       {/* Review Driver Dialog */}
-      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Review Driver Application</DialogTitle>
-            <DialogDescription>
-              Review {selectedDriver?.profiles?.full_name}'s application and documents
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label className="text-muted-foreground">Full Name</Label>
-                <p className="font-medium">{selectedDriver?.profiles?.full_name}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Email</Label>
-                <p className="font-medium">{selectedDriver?.profiles?.email}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Phone</Label>
-                <p className="font-medium">{selectedDriver?.profiles?.phone || "Not provided"}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">License Number</Label>
-                <p className="font-medium">{selectedDriver?.license_number || "Not provided"}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Vehicle</Label>
-                <p className="font-medium">
-                  {selectedDriver?.vehicle_make} {selectedDriver?.vehicle_model} ({selectedDriver?.vehicle_year})
-                </p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Vehicle Plate</Label>
-                <p className="font-medium">{selectedDriver?.vehicle_plate}</p>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Documents Status</Label>
-              <div className="grid grid-cols-2 gap-2 rounded-lg border p-3">
-                <div className="flex items-center gap-2">
-                  {selectedDriver?.license_document_url ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
-                  <span className="text-sm">Driver's License</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {selectedDriver?.id_document_url ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
-                  <span className="text-sm">ID Document</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {selectedDriver?.vehicle_registration_url ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
-                  <span className="text-sm">Vehicle Registration</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {selectedDriver?.profile_photo_url ? <CheckCircle className="h-4 w-4 text-success" /> : <XCircle className="h-4 w-4 text-destructive" />}
-                  <span className="text-sm">Profile Photo</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Rejection Reason (if rejecting)</Label>
-              <Textarea
-                placeholder="Enter reason for rejection..."
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setReviewDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => selectedDriver && rejectDriverMutation.mutate({ driverId: selectedDriver.id, reason: rejectionReason })}
-              disabled={rejectDriverMutation.isPending}
-            >
-              <XCircle className="mr-2 h-4 w-4" />
-              Reject
-            </Button>
-            <Button
-              onClick={() => selectedDriver && approveDriverMutation.mutate(selectedDriver.id)}
-              disabled={approveDriverMutation.isPending}
-            >
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Approve
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DriverDocumentReviewDialog
+        open={reviewDialogOpen}
+        onOpenChange={setReviewDialogOpen}
+        driver={selectedDriver}
+      />
     </AdminLayout>
   );
 }

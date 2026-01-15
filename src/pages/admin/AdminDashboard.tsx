@@ -5,12 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Users,
   Car,
@@ -191,18 +190,28 @@ export const AdminDashboard = () => {
                   Active Jobs
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[140px] h-8">
-                      <Filter className="mr-2 h-4 w-4" />
-                      <SelectValue placeholder="Filter" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="dispatched">Dispatched</SelectItem>
-                      <SelectItem value="in_progress">In Progress</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <Filter className="mr-2 h-4 w-4" />
+                        Filter
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+                        All Status
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setStatusFilter("pending")}>
+                        Pending
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setStatusFilter("dispatched")}>
+                        Dispatched
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setStatusFilter("in_progress")}>
+                        In Progress
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button 
                     variant="ghost" 
                     size="icon-sm" 

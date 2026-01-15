@@ -459,6 +459,9 @@ export default function AdminLiveMap() {
   const [routeData, setRouteData] = useState<RouteData | null>(null);
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
   const [showDirections, setShowDirections] = useState(true);
+  const [routeProgress, setRouteProgress] = useState(0); // 0 to 1 progress along route
+  const [animatedDriverPos, setAnimatedDriverPos] = useState<[number, number] | null>(null);
+  const animationRef = useRef<number | null>(null);
   const mapRef = useRef<L.Map | null>(null);
 
   const { data: drivers, refetch } = useQuery({
@@ -644,41 +647,96 @@ export default function AdminLiveMap() {
     // The fallback already provides a good visual representation
   }, [selectedDriver?.id, selectedDriver?.currentJob?.pickup_lat, selectedDriver?.currentJob?.pickup_lng, simulatedPositions]);
 
-  // Simulate driver movement along route
+  // Animate driver along route when route data is available
+  useEffect(() => {
+    // Reset animation when route changes or driver deselected
+    if (!routeData || !selectedDriver || routeData.coordinates.length < 2) {
+      setRouteProgress(0);
+      setAnimatedDriverPos(null);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+      return;
+    }
+
+    // Reset progress when switching drivers
+    setRouteProgress(0);
+    setAnimatedDriverPos(routeData.coordinates[0] as [number, number]);
+    
+    let startTime: number | null = null;
+    const animationDuration = 20000; // 20 seconds to complete the route
+    
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / animationDuration, 1);
+      
+      setRouteProgress(progress);
+      
+      // Calculate position along the route based on progress
+      if (routeData.coordinates.length >= 2) {
+        const totalSegments = routeData.coordinates.length - 1;
+        const exactIndex = progress * totalSegments;
+        const segmentIndex = Math.floor(exactIndex);
+        const segmentProgress = exactIndex - segmentIndex;
+        
+        if (segmentIndex < totalSegments) {
+          const startPoint = routeData.coordinates[segmentIndex];
+          const endPoint = routeData.coordinates[segmentIndex + 1];
+          
+          const lat = startPoint[0] + (endPoint[0] - startPoint[0]) * segmentProgress;
+          const lng = startPoint[1] + (endPoint[1] - startPoint[1]) * segmentProgress;
+          
+          setAnimatedDriverPos([lat, lng]);
+          
+          // Update simulated positions so the driver marker moves
+          setSimulatedPositions(prev => ({
+            ...prev,
+            [selectedDriver.id]: { lat, lng }
+          }));
+        }
+      }
+      
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        // Loop the animation
+        startTime = null;
+        animationRef.current = requestAnimationFrame(animate);
+      }
+    };
+    
+    animationRef.current = requestAnimationFrame(animate);
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+    };
+  }, [routeData, selectedDriver?.id]);
+
+  // Simulate random movement for non-selected drivers
   useEffect(() => {
     const interval = setInterval(() => {
       setSimulatedPositions(prev => {
-        const newPositions: Record<string, { lat: number; lng: number }> = {};
+        const newPositions: Record<string, { lat: number; lng: number }> = { ...prev };
         drivers?.forEach(driver => {
+          // Skip the selected driver - they're animated along the route
+          if (selectedDriver?.id === driver.id) return;
+          
           const baseLat = driver.current_location_lat || -26.1076;
           const baseLng = driver.current_location_lng || 28.0567;
           const prevPos = prev[driver.id];
           
-          // If this driver has a route and is selected, move along the route
-          if (driver.currentJob && routeData && selectedDriver?.id === driver.id && routeData.coordinates.length > 0) {
-            if (prevPos) {
-              // Find current position on route and move towards destination
-              const routeProgress = Math.random() * 0.02; // Small progress each tick
-              const currentIndex = Math.floor(Math.random() * Math.min(3, routeData.coordinates.length));
-              const targetPoint = routeData.coordinates[Math.min(currentIndex + 1, routeData.coordinates.length - 1)];
-              
-              newPositions[driver.id] = {
-                lat: prevPos.lat + (targetPoint[0] - prevPos.lat) * routeProgress,
-                lng: prevPos.lng + (targetPoint[1] - prevPos.lng) * routeProgress,
-              };
-            } else {
-              newPositions[driver.id] = { lat: baseLat, lng: baseLng };
-            }
+          if (prevPos) {
+            newPositions[driver.id] = {
+              lat: prevPos.lat + (Math.random() - 0.5) * 0.0008,
+              lng: prevPos.lng + (Math.random() - 0.5) * 0.0008,
+            };
           } else {
-            // Regular random movement for non-routed drivers
-            if (prevPos) {
-              newPositions[driver.id] = {
-                lat: prevPos.lat + (Math.random() - 0.5) * 0.001,
-                lng: prevPos.lng + (Math.random() - 0.5) * 0.001,
-              };
-            } else {
-              newPositions[driver.id] = { lat: baseLat, lng: baseLng };
-            }
+            newPositions[driver.id] = { lat: baseLat, lng: baseLng };
           }
         });
         return newPositions;
@@ -686,7 +744,7 @@ export default function AdminLiveMap() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [drivers, routeData, selectedDriver]);
+  }, [drivers, selectedDriver?.id]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -847,40 +905,95 @@ export default function AdminLiveMap() {
                         </div>
                       )}
                       
-                      {/* Actual road route or fallback straight line */}
+                      {/* Actual road route with progress visualization */}
                       {routeData ? (
                         <>
-                          {/* Shadow/glow effect */}
-                          <Polyline
-                            positions={routeData.coordinates}
-                            pathOptions={{
-                              color: "#8b5cf6",
-                              weight: 10,
-                              opacity: 0.2,
-                            }}
-                          />
-                          {/* Main route line */}
-                          <Polyline
-                            positions={routeData.coordinates}
-                            pathOptions={{
-                              color: "#8b5cf6",
-                              weight: 5,
-                              opacity: 0.9,
-                              lineCap: "round",
-                              lineJoin: "round",
-                            }}
-                          />
-                          {/* Animated dashed overlay */}
-                          <Polyline
-                            positions={routeData.coordinates}
-                            pathOptions={{
-                              color: "#ffffff",
-                              weight: 2,
-                              opacity: 0.6,
-                              dashArray: "8, 12",
-                              lineCap: "round",
-                            }}
-                          />
+                          {/* Calculate traveled and remaining portions */}
+                          {(() => {
+                            const totalSegments = routeData.coordinates.length - 1;
+                            const exactIndex = routeProgress * totalSegments;
+                            const segmentIndex = Math.floor(exactIndex);
+                            const segmentProgress = exactIndex - segmentIndex;
+                            
+                            // Traveled portion (from start to current position)
+                            const traveledCoords = routeData.coordinates.slice(0, segmentIndex + 1);
+                            if (segmentIndex < totalSegments && animatedDriverPos) {
+                              traveledCoords.push(animatedDriverPos);
+                            }
+                            
+                            // Remaining portion (from current position to end)
+                            const remainingCoords = animatedDriverPos 
+                              ? [animatedDriverPos, ...routeData.coordinates.slice(segmentIndex + 1)]
+                              : routeData.coordinates.slice(segmentIndex);
+                            
+                            return (
+                              <>
+                                {/* Shadow/glow effect for full route */}
+                                <Polyline
+                                  positions={routeData.coordinates}
+                                  pathOptions={{
+                                    color: "#8b5cf6",
+                                    weight: 12,
+                                    opacity: 0.1,
+                                  }}
+                                />
+                                
+                                {/* Remaining route (grayed out) */}
+                                {remainingCoords.length >= 2 && (
+                                  <Polyline
+                                    positions={remainingCoords}
+                                    pathOptions={{
+                                      color: "#9ca3af",
+                                      weight: 5,
+                                      opacity: 0.6,
+                                      lineCap: "round",
+                                      lineJoin: "round",
+                                      dashArray: "6, 8",
+                                    }}
+                                  />
+                                )}
+                                
+                                {/* Traveled route (vibrant solid) */}
+                                {traveledCoords.length >= 2 && (
+                                  <>
+                                    <Polyline
+                                      positions={traveledCoords}
+                                      pathOptions={{
+                                        color: "#22c55e",
+                                        weight: 6,
+                                        opacity: 1,
+                                        lineCap: "round",
+                                        lineJoin: "round",
+                                      }}
+                                    />
+                                    {/* Glow effect on traveled */}
+                                    <Polyline
+                                      positions={traveledCoords}
+                                      pathOptions={{
+                                        color: "#22c55e",
+                                        weight: 12,
+                                        opacity: 0.3,
+                                      }}
+                                    />
+                                  </>
+                                )}
+                                
+                                {/* Driver position pulse indicator */}
+                                {animatedDriverPos && (
+                                  <CircleMarker
+                                    center={animatedDriverPos}
+                                    radius={8}
+                                    pathOptions={{
+                                      color: "#8b5cf6",
+                                      fillColor: "#8b5cf6",
+                                      fillOpacity: 0.3,
+                                      weight: 2,
+                                    }}
+                                  />
+                                )}
+                              </>
+                            );
+                          })()}
                         </>
                       ) : (
                         <>
@@ -1004,8 +1117,12 @@ export default function AdminLiveMap() {
                       <span>Customer</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-0.5 bg-primary" style={{ borderTop: '2px dashed #8b5cf6' }} />
-                      <span>Route</span>
+                      <div className="w-6 h-1 rounded-full bg-success" />
+                      <span>Traveled</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-0.5 bg-gray-400" style={{ borderTop: '2px dashed #9ca3af' }} />
+                      <span>Remaining</span>
                     </div>
                   </div>
                 </div>
@@ -1103,6 +1220,40 @@ export default function AdminLiveMap() {
                           {/* Route information */}
                           {routeData ? (
                             <div className="mt-3 space-y-3">
+                              {/* Route Progress Bar */}
+                              <div className="p-3 bg-gradient-to-r from-success/10 to-primary/10 rounded-lg border border-primary/20">
+                                <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                                  <span className="flex items-center gap-1">
+                                    <Car className="h-3 w-3" />
+                                    Route Progress
+                                  </span>
+                                  <span className="font-semibold text-primary">{Math.round(routeProgress * 100)}%</span>
+                                </div>
+                                <div className="relative h-3 bg-muted rounded-full overflow-hidden">
+                                  <motion.div
+                                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-success to-primary rounded-full"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${routeProgress * 100}%` }}
+                                    transition={{ duration: 0.3, ease: "linear" }}
+                                  />
+                                  <div 
+                                    className="absolute inset-y-0 bg-white/30 animate-pulse"
+                                    style={{ 
+                                      left: `${Math.max(0, routeProgress * 100 - 5)}%`, 
+                                      width: '5%',
+                                      borderRadius: '9999px'
+                                    }}
+                                  />
+                                </div>
+                                <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                                  <span>Start</span>
+                                  <span className="text-success font-medium">
+                                    {((routeData.distance / 1000) * routeProgress).toFixed(1)} km traveled
+                                  </span>
+                                  <span>Destination</span>
+                                </div>
+                              </div>
+                              
                               {/* Route Summary */}
                               <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
@@ -1111,12 +1262,16 @@ export default function AdminLiveMap() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                   <div className="text-center p-2 bg-background rounded">
-                                    <p className="text-lg font-bold text-primary">{(routeData.distance / 1000).toFixed(1)}</p>
-                                    <p className="text-xs text-muted-foreground">km away</p>
+                                    <p className="text-lg font-bold text-primary">
+                                      {((routeData.distance / 1000) * (1 - routeProgress)).toFixed(1)}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">km remaining</p>
                                   </div>
                                   <div className="text-center p-2 bg-background rounded">
-                                    <p className="text-lg font-bold text-primary">{Math.ceil(routeData.duration / 60)}</p>
-                                    <p className="text-xs text-muted-foreground">min drive</p>
+                                    <p className="text-lg font-bold text-primary">
+                                      {Math.ceil((routeData.duration / 60) * (1 - routeProgress))}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">min ETA</p>
                                   </div>
                                 </div>
                               </div>

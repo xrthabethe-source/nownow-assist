@@ -357,10 +357,19 @@ const demoDrivers: OnlineDriver[] = [
   },
 ];
 
+// Type for route data
+interface RouteData {
+  coordinates: [number, number][];
+  distance: number; // in meters
+  duration: number; // in seconds
+}
+
 export default function AdminLiveMap() {
   const [selectedDriver, setSelectedDriver] = useState<OnlineDriver | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [simulatedPositions, setSimulatedPositions] = useState<Record<string, { lat: number; lng: number }>>({});
+  const [routeData, setRouteData] = useState<RouteData | null>(null);
+  const [isLoadingRoute, setIsLoadingRoute] = useState(false);
   const mapRef = useRef<L.Map | null>(null);
 
   const { data: drivers, refetch } = useQuery({
@@ -401,7 +410,52 @@ export default function AdminLiveMap() {
     refetchInterval: 10000,
   });
 
-  // Simulate driver movement
+  // Fetch route when driver with job is selected
+  useEffect(() => {
+    const fetchRoute = async () => {
+      if (!selectedDriver || !selectedDriver.currentJob?.pickup_lat || !selectedDriver.currentJob?.pickup_lng) {
+        setRouteData(null);
+        return;
+      }
+
+      const driverPos = simulatedPositions[selectedDriver.id] || {
+        lat: selectedDriver.current_location_lat,
+        lng: selectedDriver.current_location_lng,
+      };
+
+      if (!driverPos.lat || !driverPos.lng) return;
+
+      setIsLoadingRoute(true);
+      
+      try {
+        // Use OSRM demo server for routing (free, no API key needed)
+        const response = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${driverPos.lng},${driverPos.lat};${selectedDriver.currentJob.pickup_lng},${selectedDriver.currentJob.pickup_lat}?overview=full&geometries=geojson`
+        );
+        
+        const data = await response.json();
+        
+        if (data.code === "Ok" && data.routes?.[0]) {
+          const route = data.routes[0];
+          setRouteData({
+            coordinates: route.geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]), // Convert [lng, lat] to [lat, lng]
+            distance: route.distance,
+            duration: route.duration,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch route:", error);
+        // Fallback to straight line if routing fails
+        setRouteData(null);
+      } finally {
+        setIsLoadingRoute(false);
+      }
+    };
+
+    fetchRoute();
+  }, [selectedDriver, simulatedPositions]);
+
+  // Simulate driver movement along route
   useEffect(() => {
     const interval = setInterval(() => {
       setSimulatedPositions(prev => {
@@ -411,13 +465,31 @@ export default function AdminLiveMap() {
           const baseLng = driver.current_location_lng || 28.0567;
           const prevPos = prev[driver.id];
           
-          if (prevPos) {
-            newPositions[driver.id] = {
-              lat: prevPos.lat + (Math.random() - 0.5) * 0.001,
-              lng: prevPos.lng + (Math.random() - 0.5) * 0.001,
-            };
+          // If this driver has a route and is selected, move along the route
+          if (driver.currentJob && routeData && selectedDriver?.id === driver.id && routeData.coordinates.length > 0) {
+            if (prevPos) {
+              // Find current position on route and move towards destination
+              const routeProgress = Math.random() * 0.02; // Small progress each tick
+              const currentIndex = Math.floor(Math.random() * Math.min(3, routeData.coordinates.length));
+              const targetPoint = routeData.coordinates[Math.min(currentIndex + 1, routeData.coordinates.length - 1)];
+              
+              newPositions[driver.id] = {
+                lat: prevPos.lat + (targetPoint[0] - prevPos.lat) * routeProgress,
+                lng: prevPos.lng + (targetPoint[1] - prevPos.lng) * routeProgress,
+              };
+            } else {
+              newPositions[driver.id] = { lat: baseLat, lng: baseLng };
+            }
           } else {
-            newPositions[driver.id] = { lat: baseLat, lng: baseLng };
+            // Regular random movement for non-routed drivers
+            if (prevPos) {
+              newPositions[driver.id] = {
+                lat: prevPos.lat + (Math.random() - 0.5) * 0.001,
+                lng: prevPos.lng + (Math.random() - 0.5) * 0.001,
+              };
+            } else {
+              newPositions[driver.id] = { lat: baseLat, lng: baseLng };
+            }
           }
         });
         return newPositions;
@@ -425,7 +497,7 @@ export default function AdminLiveMap() {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [drivers]);
+  }, [drivers, routeData, selectedDriver]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -576,39 +648,88 @@ export default function AdminLiveMap() {
                   {/* Route line for selected driver with active job */}
                   {selectedDriver && selectedDriver.currentJob?.pickup_lat && selectedDriver.currentJob?.pickup_lng && (
                     <>
-                      {/* Animated route line */}
-                      <Polyline
-                        positions={[
-                          getDriverPosition(selectedDriver),
-                          [selectedDriver.currentJob.pickup_lat, selectedDriver.currentJob.pickup_lng],
-                        ]}
-                        pathOptions={{
-                          color: "#8b5cf6",
-                          weight: 4,
-                          opacity: 0.8,
-                          dashArray: "10, 10",
-                          lineCap: "round",
-                        }}
-                      />
-                      {/* Solid background line */}
-                      <Polyline
-                        positions={[
-                          getDriverPosition(selectedDriver),
-                          [selectedDriver.currentJob.pickup_lat, selectedDriver.currentJob.pickup_lng],
-                        ]}
-                        pathOptions={{
-                          color: "#8b5cf6",
-                          weight: 6,
-                          opacity: 0.3,
-                        }}
-                      />
+                      {/* Loading indicator for route */}
+                      {isLoadingRoute && (
+                        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1000] bg-white/95 rounded-lg px-4 py-2 shadow-lg">
+                          <div className="flex items-center gap-2 text-sm">
+                            <RefreshCw className="h-4 w-4 animate-spin text-primary" />
+                            <span>Loading route...</span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Actual road route or fallback straight line */}
+                      {routeData ? (
+                        <>
+                          {/* Shadow/glow effect */}
+                          <Polyline
+                            positions={routeData.coordinates}
+                            pathOptions={{
+                              color: "#8b5cf6",
+                              weight: 10,
+                              opacity: 0.2,
+                            }}
+                          />
+                          {/* Main route line */}
+                          <Polyline
+                            positions={routeData.coordinates}
+                            pathOptions={{
+                              color: "#8b5cf6",
+                              weight: 5,
+                              opacity: 0.9,
+                              lineCap: "round",
+                              lineJoin: "round",
+                            }}
+                          />
+                          {/* Animated dashed overlay */}
+                          <Polyline
+                            positions={routeData.coordinates}
+                            pathOptions={{
+                              color: "#ffffff",
+                              weight: 2,
+                              opacity: 0.6,
+                              dashArray: "8, 12",
+                              lineCap: "round",
+                            }}
+                          />
+                        </>
+                      ) : (
+                        <>
+                          {/* Fallback straight line if route not available */}
+                          <Polyline
+                            positions={[
+                              getDriverPosition(selectedDriver),
+                              [selectedDriver.currentJob.pickup_lat, selectedDriver.currentJob.pickup_lng],
+                            ]}
+                            pathOptions={{
+                              color: "#8b5cf6",
+                              weight: 4,
+                              opacity: 0.8,
+                              dashArray: "10, 10",
+                              lineCap: "round",
+                            }}
+                          />
+                          <Polyline
+                            positions={[
+                              getDriverPosition(selectedDriver),
+                              [selectedDriver.currentJob.pickup_lat, selectedDriver.currentJob.pickup_lng],
+                            ]}
+                            pathOptions={{
+                              color: "#8b5cf6",
+                              weight: 6,
+                              opacity: 0.3,
+                            }}
+                          />
+                        </>
+                      )}
+                      
                       {/* Customer destination marker */}
                       <Marker
                         position={[selectedDriver.currentJob.pickup_lat, selectedDriver.currentJob.pickup_lng]}
                         icon={createCustomerIcon()}
                       >
                         <Popup>
-                          <div className="p-2 min-w-[160px]">
+                          <div className="p-2 min-w-[180px]">
                             <div className="font-semibold text-red-600">📍 Customer Location</div>
                             <div className="text-sm font-medium mt-1">
                               {selectedDriver.currentJob.customer?.full_name}
@@ -616,6 +737,14 @@ export default function AdminLiveMap() {
                             <div className="text-sm text-gray-600 mt-1">
                               {selectedDriver.currentJob.pickup_address}
                             </div>
+                            {routeData && (
+                              <div className="mt-2 pt-2 border-t border-gray-200">
+                                <div className="text-xs text-gray-500">Route Info:</div>
+                                <div className="text-sm font-medium text-primary">
+                                  {(routeData.distance / 1000).toFixed(1)} km • ~{Math.ceil(routeData.duration / 60)} min
+                                </div>
+                              </div>
+                            )}
                             <div className="text-sm font-semibold text-primary mt-2">
                               ETA: {selectedDriver.currentJob.eta_minutes} min
                             </div>
@@ -781,7 +910,33 @@ export default function AdminLiveMap() {
                             <MapPin className="h-4 w-4 text-muted-foreground" />
                             <span>{selectedDriver.currentJob.pickup_address}</span>
                           </div>
-                          <div className="flex items-center gap-2 font-semibold text-primary">
+                          
+                          {/* Route information */}
+                          {routeData ? (
+                            <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                                <Navigation className="h-3 w-3" />
+                                <span>Route Details</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="text-center p-2 bg-background rounded">
+                                  <p className="text-lg font-bold text-primary">{(routeData.distance / 1000).toFixed(1)}</p>
+                                  <p className="text-xs text-muted-foreground">km away</p>
+                                </div>
+                                <div className="text-center p-2 bg-background rounded">
+                                  <p className="text-lg font-bold text-primary">{Math.ceil(routeData.duration / 60)}</p>
+                                  <p className="text-xs text-muted-foreground">min drive</p>
+                                </div>
+                              </div>
+                            </div>
+                          ) : isLoadingRoute ? (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+                              <RefreshCw className="h-4 w-4 animate-spin" />
+                              <span>Calculating route...</span>
+                            </div>
+                          ) : null}
+                          
+                          <div className="flex items-center gap-2 font-semibold text-primary pt-2">
                             <Clock className="h-4 w-4" />
                             <span>ETA: {selectedDriver.currentJob.eta_minutes} min</span>
                           </div>

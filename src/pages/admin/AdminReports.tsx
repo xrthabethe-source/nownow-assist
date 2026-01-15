@@ -10,6 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import {
@@ -21,8 +27,12 @@ import {
   Activity,
   Download,
   RefreshCw,
+  FileText,
+  FileSpreadsheet,
+  ChevronDown,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { jsPDF } from "jspdf";
 import {
   AreaChart,
   Area,
@@ -229,7 +239,7 @@ export default function AdminReports() {
       ]
     : [];
 
-  const handleExport = () => {
+  const handleExportCSV = () => {
     // Build CSV content
     let csvContent = "Analytics & Reports Export\n";
     csvContent += `Date Range: Last ${dateRange} days\n`;
@@ -289,6 +299,143 @@ export default function AdminReports() {
     document.body.removeChild(link);
   };
 
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+
+    // Title
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("Analytics & Reports", pageWidth / 2, yPos, { align: "center" });
+    yPos += 10;
+
+    // Subtitle
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Date Range: Last ${dateRange} days`, pageWidth / 2, yPos, { align: "center" });
+    yPos += 6;
+    doc.text(`Generated: ${format(new Date(), "PPpp")}`, pageWidth / 2, yPos, { align: "center" });
+    yPos += 15;
+
+    // Key Metrics Section
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Key Metrics", 20, yPos);
+    yPos += 8;
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    const metrics = [
+      { label: "Total Jobs", value: jobStats?.total || 0 },
+      { label: "Total Revenue", value: `R${revenueStats?.totalRevenue?.toFixed(0) || 0}` },
+      { label: "Total Users", value: userStats?.totalUsers || 0 },
+      { label: "Drivers Online", value: userStats?.onlineDrivers || 0 },
+    ];
+
+    metrics.forEach((metric) => {
+      doc.text(`${metric.label}:`, 25, yPos);
+      doc.setFont("helvetica", "bold");
+      doc.text(String(metric.value), 80, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 7;
+    });
+    yPos += 8;
+
+    // Job Status Breakdown
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Job Status Breakdown", 20, yPos);
+    yPos += 8;
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    statusPieData.forEach((item) => {
+      doc.text(`${item.name}:`, 25, yPos);
+      doc.setFont("helvetica", "bold");
+      doc.text(String(item.value), 80, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 7;
+    });
+    yPos += 8;
+
+    // User Breakdown
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("User Breakdown", 20, yPos);
+    yPos += 8;
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    userPieData.forEach((item) => {
+      doc.text(`${item.name}:`, 25, yPos);
+      doc.setFont("helvetica", "bold");
+      doc.text(String(item.value), 80, yPos);
+      doc.setFont("helvetica", "normal");
+      yPos += 7;
+    });
+    yPos += 8;
+
+    // Daily Revenue Table
+    if (revenueStats?.dailyData && revenueStats.dailyData.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Daily Revenue", 20, yPos);
+      yPos += 8;
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("Date", 25, yPos);
+      doc.text("Revenue (R)", 80, yPos);
+      yPos += 6;
+
+      doc.setFont("helvetica", "normal");
+      revenueStats.dailyData.slice(0, 10).forEach((item) => {
+        if (yPos > 270) {
+          doc.addPage();
+          yPos = 20;
+        }
+        doc.text(item.date, 25, yPos);
+        doc.text(String(item.revenue), 80, yPos);
+        yPos += 5;
+      });
+      yPos += 8;
+    }
+
+    // Daily Jobs Table
+    if (jobStats?.dailyData && jobStats.dailyData.length > 0) {
+      if (yPos > 240) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Daily Jobs", 20, yPos);
+      yPos += 8;
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("Date", 25, yPos);
+      doc.text("Jobs", 80, yPos);
+      yPos += 6;
+
+      doc.setFont("helvetica", "normal");
+      jobStats.dailyData.slice(0, 10).forEach((item) => {
+        if (yPos > 270) {
+          doc.addPage();
+          yPos = 20;
+        }
+        doc.text(item.date, 25, yPos);
+        doc.text(String(item.jobs), 80, yPos);
+        yPos += 5;
+      });
+    }
+
+    // Save the PDF
+    doc.save(`analytics-report-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -310,10 +457,25 @@ export default function AdminReports() {
                 <SelectItem value="90">Last 90 days</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" onClick={handleExport}>
-              <Download className="mr-2 h-4 w-4" />
-              Export
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleExportCSV}>
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  Export as CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportPDF}>
+                  <FileText className="mr-2 h-4 w-4" />
+                  Export as PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 

@@ -21,6 +21,7 @@ import {
   Filter,
   MoreVertical,
   ChevronRight,
+  ChevronDown,
   Activity,
   CheckCircle2,
   XCircle,
@@ -195,6 +196,7 @@ export const AdminDashboard = () => {
                       <Button variant="ghost" size="sm">
                         <Filter className="mr-2 h-4 w-4" />
                         Filter
+                        <ChevronDown className="ml-1 h-3 w-3" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">

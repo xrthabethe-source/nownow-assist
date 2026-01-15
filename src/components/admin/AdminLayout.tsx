@@ -415,10 +415,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-80 p-0">
-                  <div>
-                    <NavContent mobile />
-                  </div>
+                <SheetContent side="left" className="w-80 p-0 flex flex-col h-full">
+                  <NavContent mobile />
                 </SheetContent>
               </Sheet>
 

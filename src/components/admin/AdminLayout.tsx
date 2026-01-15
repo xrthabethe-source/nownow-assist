@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,6 @@ import {
   Mail,
   Smartphone,
   ChevronDown,
-  X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -49,7 +48,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import {
   Collapsible,
   CollapsibleContent,
@@ -57,7 +56,6 @@ import {
 } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -177,8 +175,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     return location.pathname === basePath;
   };
 
-  const NavContent = ({ mobile = false }: { mobile?: boolean }) => (
-    <div className="flex h-full flex-col">
+  const NavContent = forwardRef<HTMLDivElement, { mobile?: boolean }>(({ mobile = false }, ref) => (
+    <div ref={ref} className="flex h-full flex-col">
       {/* Logo */}
       <div
         className={cn(
@@ -390,7 +388,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         )}
       </div>
     </div>
-  );
+  ));
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -418,10 +416,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-80 p-0" aria-describedby={undefined}>
-                  <VisuallyHidden.Root>
-                    <SheetTitle>Navigation Menu</SheetTitle>
-                  </VisuallyHidden.Root>
-                  <NavContent mobile />
+                  <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                  <div>
+                    <NavContent mobile />
+                  </div>
                 </SheetContent>
               </Sheet>
 

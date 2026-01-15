@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -222,6 +223,7 @@ export default function AdminDrivers() {
   const [messageSubject, setMessageSubject] = useState<"complaint" | "payout" | "general">("general");
   const [messageContent, setMessageContent] = useState("");
   const [newPayout, setNewPayout] = useState(80);
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: drivers, isLoading, refetch } = useQuery({
@@ -317,12 +319,47 @@ export default function AdminDrivers() {
     setMessageDialogOpen(true);
   };
 
+  const sendMessageMutation = useMutation({
+    mutationFn: async ({ recipientId, subject, content, category }: { 
+      recipientId: string; 
+      subject: string; 
+      content: string; 
+      category: string;
+    }) => {
+      if (!user?.id) throw new Error("You must be logged in to send messages");
+      
+      const { error } = await supabase
+        .from("messages")
+        .insert({
+          sender_id: user.id,
+          recipient_id: recipientId,
+          subject,
+          content,
+          category,
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success(`Message sent to ${selectedDriver?.profiles?.full_name}`);
+      setMessageDialogOpen(false);
+      setSelectedDriver(null);
+      setMessageContent("");
+    },
+    onError: (error) => {
+      toast.error("Failed to send message: " + error.message);
+    },
+  });
+
   const handleSendMessage = () => {
-    // In a real app, this would send the message via SMS/email/push notification
-    toast.success(`Message sent to ${selectedDriver?.profiles?.full_name}`);
-    setMessageDialogOpen(false);
-    setSelectedDriver(null);
-    setMessageContent("");
+    if (!selectedDriver?.user_id || !messageContent.trim()) return;
+    
+    sendMessageMutation.mutate({
+      recipientId: selectedDriver.user_id,
+      subject: getSubjectTitle(messageSubject),
+      content: messageContent,
+      category: messageSubject,
+    });
   };
 
   const getSubjectTitle = (subject: "complaint" | "payout" | "general") => {
@@ -710,7 +747,7 @@ export default function AdminDrivers() {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              This message will be sent via SMS and push notification to the driver.
+              This message will appear in the driver's in-app notifications.
             </p>
           </div>
           <DialogFooter>
@@ -719,10 +756,10 @@ export default function AdminDrivers() {
             </Button>
             <Button
               onClick={handleSendMessage}
-              disabled={!messageContent.trim()}
+              disabled={!messageContent.trim() || sendMessageMutation.isPending}
             >
               <Send className="mr-2 h-4 w-4" />
-              Send Message
+              {sendMessageMutation.isPending ? "Sending..." : "Send Message"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -252,7 +252,10 @@ export default function AdminActiveJobs() {
             <Button variant="outline" asChild>
               <Link to="/admin">← Back to Dashboard</Link>
             </Button>
-            <Button onClick={() => refetch()}>
+            <Button onClick={() => {
+              refetch();
+              toast.success("Jobs refreshed");
+            }}>
               <RefreshCw className="mr-2 h-4 w-4" />
               Refresh
             </Button>

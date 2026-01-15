@@ -649,6 +649,9 @@ export default function AdminLiveMap() {
 
   // Animate driver along route when route data is available
   useEffect(() => {
+    // Track if component is mounted
+    let isMounted = true;
+    
     // Reset animation when route changes or driver deselected
     if (!routeData || !selectedDriver || routeData.coordinates.length < 2) {
       setRouteProgress(0);
@@ -668,6 +671,9 @@ export default function AdminLiveMap() {
     const animationDuration = 20000; // 20 seconds to complete the route
     
     const animate = (currentTime: number) => {
+      // Stop animation if component unmounted
+      if (!isMounted) return;
+      
       if (!startTime) startTime = currentTime;
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / animationDuration, 1);
@@ -698,10 +704,10 @@ export default function AdminLiveMap() {
         }
       }
       
-      if (progress < 1) {
+      if (progress < 1 && isMounted) {
         animationRef.current = requestAnimationFrame(animate);
-      } else {
-        // Loop the animation
+      } else if (isMounted) {
+        // Loop the animation only if still mounted
         startTime = null;
         animationRef.current = requestAnimationFrame(animate);
       }
@@ -710,6 +716,7 @@ export default function AdminLiveMap() {
     animationRef.current = requestAnimationFrame(animate);
     
     return () => {
+      isMounted = false;
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
         animationRef.current = null;

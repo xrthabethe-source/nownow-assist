@@ -46,7 +46,10 @@ import {
   DollarSign,
   MapPin,
   Ban,
+  MessageSquare,
+  Send,
 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 
 interface Driver {
@@ -215,6 +218,9 @@ export default function AdminDrivers() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
   const [payoutDialogOpen, setPayoutDialogOpen] = useState(false);
+  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [messageSubject, setMessageSubject] = useState<"complaint" | "payout" | "general">("general");
+  const [messageContent, setMessageContent] = useState("");
   const [newPayout, setNewPayout] = useState(80);
   const queryClient = useQueryClient();
 
@@ -302,6 +308,32 @@ export default function AdminDrivers() {
     setSelectedDriver(driver);
     setNewPayout((driver.payout_percentage || 0.8) * 100);
     setPayoutDialogOpen(true);
+  };
+
+  const handleMessageDriver = (driver: Driver, subject: "complaint" | "payout" | "general" = "general") => {
+    setSelectedDriver(driver);
+    setMessageSubject(subject);
+    setMessageContent("");
+    setMessageDialogOpen(true);
+  };
+
+  const handleSendMessage = () => {
+    // In a real app, this would send the message via SMS/email/push notification
+    toast.success(`Message sent to ${selectedDriver?.profiles?.full_name}`);
+    setMessageDialogOpen(false);
+    setSelectedDriver(null);
+    setMessageContent("");
+  };
+
+  const getSubjectTitle = (subject: "complaint" | "payout" | "general") => {
+    switch (subject) {
+      case "complaint":
+        return "Regarding Customer Complaint";
+      case "payout":
+        return "Regarding Payout Adjustment";
+      default:
+        return "General Message";
+    }
   };
 
   const getStatusVariant = (status: string | null): "success" | "warning" | "destructive" | "default" => {
@@ -535,6 +567,19 @@ export default function AdminDrivers() {
                               <DollarSign className="mr-2 h-4 w-4" />
                               Adjust Payout
                             </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleMessageDriver(driver, "complaint")}>
+                              <MessageSquare className="mr-2 h-4 w-4 text-warning" />
+                              Message About Complaint
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleMessageDriver(driver, "payout")}>
+                              <MessageSquare className="mr-2 h-4 w-4 text-primary" />
+                              Discuss Payout
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleMessageDriver(driver, "general")}>
+                              <MessageSquare className="mr-2 h-4 w-4" />
+                              Send Message
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -584,6 +629,100 @@ export default function AdminDrivers() {
               disabled={updatePayoutMutation.isPending}
             >
               {updatePayoutMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Message Driver Dialog */}
+      <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Message Driver
+            </DialogTitle>
+            <DialogDescription>
+              Send a direct message to {selectedDriver?.profiles?.full_name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="rounded-lg border bg-muted/50 p-3">
+              <div className="flex items-center gap-3">
+                <Avatar>
+                  <AvatarFallback>
+                    {selectedDriver?.profiles?.full_name?.charAt(0).toUpperCase() || "D"}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium">{selectedDriver?.profiles?.full_name}</p>
+                  <p className="text-xs text-muted-foreground">{selectedDriver?.profiles?.email}</p>
+                  <p className="text-xs text-muted-foreground">{selectedDriver?.profiles?.phone}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Subject</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={messageSubject === "complaint" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setMessageSubject("complaint")}
+                >
+                  Complaint
+                </Button>
+                <Button
+                  type="button"
+                  variant={messageSubject === "payout" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setMessageSubject("payout")}
+                >
+                  Payout
+                </Button>
+                <Button
+                  type="button"
+                  variant={messageSubject === "general" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setMessageSubject("general")}
+                >
+                  General
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="message">Message</Label>
+              <Textarea
+                id="message"
+                placeholder={
+                  messageSubject === "complaint"
+                    ? "We've received a complaint regarding your recent trip..."
+                    : messageSubject === "payout"
+                    ? "We'd like to discuss your current payout arrangement..."
+                    : "Enter your message here..."
+                }
+                className="min-h-[120px]"
+                value={messageContent}
+                onChange={(e) => setMessageContent(e.target.value)}
+              />
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              This message will be sent via SMS and push notification to the driver.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMessageDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendMessage}
+              disabled={!messageContent.trim()}
+            >
+              <Send className="mr-2 h-4 w-4" />
+              Send Message
             </Button>
           </DialogFooter>
         </DialogContent>

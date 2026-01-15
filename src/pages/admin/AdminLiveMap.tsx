@@ -484,11 +484,22 @@ export default function AdminLiveMap() {
       const driverIds = driversData.map(d => d.id);
       const { data: activeJobs } = await supabase
         .from("jobs")
-        .select("id, job_number, status, driver_id, pickup_address, eta_minutes, customer_id")
+        .select("id, job_number, status, driver_id, pickup_address, eta_minutes, customer_id, pickup_lat, pickup_lng")
         .in("driver_id", driverIds)
         .in("status", ["dispatched", "in_progress", "accepted"]);
 
-      const jobsMap = new Map(activeJobs?.map(j => [j.driver_id, j]));
+      // Get customer names for active jobs
+      const customerIds = activeJobs?.map(j => j.customer_id).filter(Boolean) || [];
+      const { data: customerProfiles } = customerIds.length > 0 
+        ? await supabase.from("profiles").select("id, full_name").in("id", customerIds)
+        : { data: [] };
+      
+      const customerMap = new Map(customerProfiles?.map(c => [c.id, c] as const) || []);
+
+      const jobsMap = new Map(activeJobs?.map(j => [j.driver_id, {
+        ...j,
+        customer: customerMap.get(j.customer_id) || null,
+      }]));
 
       return driversData.map(d => ({
         ...d,
@@ -498,6 +509,42 @@ export default function AdminLiveMap() {
     },
     refetchInterval: 10000,
   });
+
+  // Real-time subscription for driver location updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('driver-locations')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'drivers',
+        },
+        (payload) => {
+          const updatedDriver = payload.new as any;
+          
+          // Update simulated positions with real GPS data
+          if (updatedDriver.current_location_lat && updatedDriver.current_location_lng) {
+            setSimulatedPositions(prev => ({
+              ...prev,
+              [updatedDriver.id]: {
+                lat: updatedDriver.current_location_lat,
+                lng: updatedDriver.current_location_lng,
+              },
+            }));
+          }
+          
+          // Refetch to get updated driver data
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
 
   // Generate fallback route with mock steps when API fails
   const generateFallbackRoute = (

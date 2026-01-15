@@ -5,10 +5,14 @@ import { Logo } from "@/components/shared/Logo";
 import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, WrenchIcon } from "@/components/icons/ServiceIcons";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { MapPin, Clock, Zap, Star, TrendingUp, Bell, Settings, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { MapPin, Clock, Zap, Star, TrendingUp, Bell, Settings, ChevronRight, Navigation, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { useNavigate } from "react-router-dom";
+import { useDriverLocation } from "@/hooks/useDriverLocation";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const mockStats = {
   todayEarnings: "R1,250",
@@ -33,6 +37,48 @@ export const DriverHome = () => {
   const [isOnline, setIsOnline] = useState(true);
   const [showJobAlert, setShowJobAlert] = useState(true);
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Fetch driver record for current user
+  const { data: driverRecord } = useQuery({
+    queryKey: ["driver-record", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("drivers")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  // GPS Location tracking
+  const {
+    location,
+    isTracking,
+    error: locationError,
+    toggleTracking,
+  } = useDriverLocation({
+    driverId: driverRecord?.id || null,
+    enabled: isOnline && !!driverRecord?.id,
+    updateInterval: 5000,
+  });
+
+  // Update online status in database
+  useEffect(() => {
+    if (!driverRecord?.id) return;
+    
+    const updateOnlineStatus = async () => {
+      await supabase
+        .from("drivers")
+        .update({ is_online: isOnline })
+        .eq("id", driverRecord.id);
+    };
+    
+    updateOnlineStatus();
+  }, [isOnline, driverRecord?.id]);
 
   const handleAcceptJob = () => {
     navigate("/driver/job/active");
@@ -87,6 +133,47 @@ export const DriverHome = () => {
                   className="data-[state=checked]:bg-primary"
                 />
               </div>
+              
+              {/* GPS Status Indicator */}
+              {isOnline && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="mt-3 pt-3 border-t border-border"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`relative flex items-center justify-center`}>
+                        <Navigation className={`h-4 w-4 ${isTracking ? "text-success" : "text-muted-foreground"}`} />
+                        {isTracking && (
+                          <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-success animate-pulse" />
+                        )}
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        {isTracking ? "GPS Active" : "GPS Off"}
+                      </span>
+                    </div>
+                    {location && isTracking && (
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                      </span>
+                    )}
+                    {locationError && (
+                      <span className="text-xs text-destructive">
+                        {locationError}
+                      </span>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={toggleTracking}
+                      className="h-7 text-xs"
+                    >
+                      {isTracking ? "Stop" : "Start"} GPS
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

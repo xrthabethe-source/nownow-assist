@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -37,6 +37,7 @@ import {
   Mail,
   Smartphone,
   ChevronDown,
+  X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -48,7 +49,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import {
   Collapsible,
   CollapsibleContent,
@@ -56,6 +57,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -146,6 +148,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+
+  // Close mobile sidebar when route changes
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -410,7 +417,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-80 p-0">
+                <SheetContent side="left" className="w-80 p-0" aria-describedby={undefined}>
+                  <VisuallyHidden.Root>
+                    <SheetTitle>Navigation Menu</SheetTitle>
+                  </VisuallyHidden.Root>
                   <NavContent mobile />
                 </SheetContent>
               </Sheet>

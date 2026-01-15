@@ -1,9 +1,16 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Users,
   Car,
@@ -71,6 +78,7 @@ const mockAlerts = [
 export const AdminDashboard = () => {
   const [activeJobs, setActiveJobs] = useState(initialActiveJobs);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const handleRefreshJobs = useCallback(() => {
     setIsRefreshing(true);
@@ -80,6 +88,11 @@ export const AdminDashboard = () => {
       setIsRefreshing(false);
     }, 500);
   }, []);
+
+  const filteredJobs = useMemo(() => {
+    if (statusFilter === "all") return activeJobs;
+    return activeJobs.filter((job) => job.status === statusFilter);
+  }, [activeJobs, statusFilter]);
 
   return (
     <AdminLayout>
@@ -178,12 +191,18 @@ export const AdminDashboard = () => {
                   Active Jobs
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/admin/active-jobs">
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-[140px] h-8">
                       <Filter className="mr-2 h-4 w-4" />
-                      Filter
-                    </Link>
-                  </Button>
+                      <SelectValue placeholder="Filter" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="dispatched">Dispatched</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Button 
                     variant="ghost" 
                     size="icon-sm" 
@@ -196,7 +215,7 @@ export const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {activeJobs.map((job) => (
+                  {filteredJobs.map((job) => (
                     <Link
                       key={job.id}
                       to="/admin/active-jobs"

@@ -49,6 +49,7 @@ import {
   Shield,
   RefreshCw,
   UserPlus,
+  KeyRound,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -300,6 +301,39 @@ export default function AdminUsers() {
     }
   };
 
+  const handleResetPassword = async (user: UserWithRole) => {
+    if (!user.email) {
+      toast.error("User has no email address");
+      return;
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        toast.error("You must be logged in");
+        return;
+      }
+
+      const response = await supabase.functions.invoke("reset-user-password", {
+        body: { email: user.email },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      toast.success(`Password reset initiated for ${user.email}`);
+    } catch (error: any) {
+      console.error("Error resetting password:", error);
+      toast.error(error.message || "Failed to reset password");
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -468,6 +502,13 @@ export default function AdminUsers() {
                             <DropdownMenuItem onClick={() => handleChangeRole(user)}>
                               <Shield className="mr-2 h-4 w-4" />
                               Change Role
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleResetPassword(user)}
+                              disabled={!user.email}
+                            >
+                              <KeyRound className="mr-2 h-4 w-4" />
+                              Reset Password
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

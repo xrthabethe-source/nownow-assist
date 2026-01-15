@@ -21,6 +21,17 @@ import {
   ZoomIn,
   ZoomOut,
   Locate,
+  ArrowUp,
+  ArrowLeft,
+  ArrowRight,
+  CornerUpLeft,
+  CornerUpRight,
+  RotateCcw,
+  ArrowUpRight,
+  ArrowUpLeft,
+  Route,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -357,12 +368,89 @@ const demoDrivers: OnlineDriver[] = [
   },
 ];
 
+// Type for route step
+interface RouteStep {
+  instruction: string;
+  distance: number; // in meters
+  duration: number; // in seconds
+  maneuver: {
+    type: string;
+    modifier?: string;
+    location: [number, number];
+  };
+  name: string;
+}
+
 // Type for route data
 interface RouteData {
   coordinates: [number, number][];
   distance: number; // in meters
   duration: number; // in seconds
+  steps: RouteStep[];
 }
+
+// Helper function to get direction icon based on maneuver
+const getDirectionIcon = (type: string, modifier?: string) => {
+  const iconClass = "h-4 w-4";
+  
+  if (type === "turn") {
+    if (modifier === "left") return <ArrowLeft className={iconClass} />;
+    if (modifier === "right") return <ArrowRight className={iconClass} />;
+    if (modifier === "slight left") return <ArrowUpLeft className={iconClass} />;
+    if (modifier === "slight right") return <ArrowUpRight className={iconClass} />;
+    if (modifier === "sharp left") return <CornerUpLeft className={iconClass} />;
+    if (modifier === "sharp right") return <CornerUpRight className={iconClass} />;
+    if (modifier === "uturn") return <RotateCcw className={iconClass} />;
+  }
+  
+  if (type === "new name" || type === "continue") return <ArrowUp className={iconClass} />;
+  if (type === "merge") return <ArrowUpRight className={iconClass} />;
+  if (type === "fork") return modifier === "left" ? <ArrowUpLeft className={iconClass} /> : <ArrowUpRight className={iconClass} />;
+  if (type === "roundabout" || type === "rotary") return <RotateCcw className={iconClass} />;
+  if (type === "depart" || type === "arrive") return <MapPin className={iconClass} />;
+  
+  return <ArrowUp className={iconClass} />;
+};
+
+// Format instruction for display
+const formatInstruction = (step: RouteStep): string => {
+  const { type, modifier } = step.maneuver;
+  const roadName = step.name || "the road";
+  
+  if (type === "depart") return `Start on ${roadName}`;
+  if (type === "arrive") return "Arrive at destination";
+  
+  if (type === "turn") {
+    const direction = modifier || "ahead";
+    return `Turn ${direction} onto ${roadName}`;
+  }
+  
+  if (type === "new name" || type === "continue") {
+    return `Continue onto ${roadName}`;
+  }
+  
+  if (type === "merge") {
+    return `Merge onto ${roadName}`;
+  }
+  
+  if (type === "fork") {
+    return `Take the ${modifier || "right"} fork onto ${roadName}`;
+  }
+  
+  if (type === "roundabout" || type === "rotary") {
+    return `Enter roundabout and exit onto ${roadName}`;
+  }
+  
+  return step.instruction || `Continue on ${roadName}`;
+};
+
+// Format distance for display
+const formatDistance = (meters: number): string => {
+  if (meters < 1000) {
+    return `${Math.round(meters)} m`;
+  }
+  return `${(meters / 1000).toFixed(1)} km`;
+};
 
 export default function AdminLiveMap() {
   const [selectedDriver, setSelectedDriver] = useState<OnlineDriver | null>(null);
@@ -370,6 +458,7 @@ export default function AdminLiveMap() {
   const [simulatedPositions, setSimulatedPositions] = useState<Record<string, { lat: number; lng: number }>>({});
   const [routeData, setRouteData] = useState<RouteData | null>(null);
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
+  const [showDirections, setShowDirections] = useState(true);
   const mapRef = useRef<L.Map | null>(null);
 
   const { data: drivers, refetch } = useQuery({
@@ -428,19 +517,35 @@ export default function AdminLiveMap() {
       setIsLoadingRoute(true);
       
       try {
-        // Use OSRM demo server for routing (free, no API key needed)
+        // Use OSRM demo server for routing with steps (free, no API key needed)
         const response = await fetch(
-          `https://router.project-osrm.org/route/v1/driving/${driverPos.lng},${driverPos.lat};${selectedDriver.currentJob.pickup_lng},${selectedDriver.currentJob.pickup_lat}?overview=full&geometries=geojson`
+          `https://router.project-osrm.org/route/v1/driving/${driverPos.lng},${driverPos.lat};${selectedDriver.currentJob.pickup_lng},${selectedDriver.currentJob.pickup_lat}?overview=full&geometries=geojson&steps=true`
         );
         
         const data = await response.json();
         
         if (data.code === "Ok" && data.routes?.[0]) {
           const route = data.routes[0];
+          const legs = route.legs?.[0];
+          
+          // Parse steps from OSRM response
+          const steps: RouteStep[] = legs?.steps?.map((step: any) => ({
+            instruction: step.name || "",
+            distance: step.distance,
+            duration: step.duration,
+            maneuver: {
+              type: step.maneuver?.type || "continue",
+              modifier: step.maneuver?.modifier,
+              location: step.maneuver?.location || [0, 0],
+            },
+            name: step.name || "",
+          })) || [];
+          
           setRouteData({
             coordinates: route.geometry.coordinates.map((coord: [number, number]) => [coord[1], coord[0]]), // Convert [lng, lat] to [lat, lng]
             distance: route.distance,
             duration: route.duration,
+            steps,
           });
         }
       } catch (error) {
@@ -913,21 +1018,94 @@ export default function AdminLiveMap() {
                           
                           {/* Route information */}
                           {routeData ? (
-                            <div className="mt-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                                <Navigation className="h-3 w-3" />
-                                <span>Route Details</span>
-                              </div>
-                              <div className="grid grid-cols-2 gap-2">
-                                <div className="text-center p-2 bg-background rounded">
-                                  <p className="text-lg font-bold text-primary">{(routeData.distance / 1000).toFixed(1)}</p>
-                                  <p className="text-xs text-muted-foreground">km away</p>
+                            <div className="mt-3 space-y-3">
+                              {/* Route Summary */}
+                              <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+                                  <Navigation className="h-3 w-3" />
+                                  <span>Route Details</span>
                                 </div>
-                                <div className="text-center p-2 bg-background rounded">
-                                  <p className="text-lg font-bold text-primary">{Math.ceil(routeData.duration / 60)}</p>
-                                  <p className="text-xs text-muted-foreground">min drive</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="text-center p-2 bg-background rounded">
+                                    <p className="text-lg font-bold text-primary">{(routeData.distance / 1000).toFixed(1)}</p>
+                                    <p className="text-xs text-muted-foreground">km away</p>
+                                  </div>
+                                  <div className="text-center p-2 bg-background rounded">
+                                    <p className="text-lg font-bold text-primary">{Math.ceil(routeData.duration / 60)}</p>
+                                    <p className="text-xs text-muted-foreground">min drive</p>
+                                  </div>
                                 </div>
                               </div>
+                              
+                              {/* Turn-by-Turn Directions */}
+                              {routeData.steps && routeData.steps.length > 0 && (
+                                <div className="rounded-lg border border-primary/20 overflow-hidden">
+                                  <button
+                                    onClick={() => setShowDirections(!showDirections)}
+                                    className="w-full flex items-center justify-between p-3 bg-primary/5 hover:bg-primary/10 transition-colors"
+                                  >
+                                    <div className="flex items-center gap-2 text-sm font-medium">
+                                      <Route className="h-4 w-4 text-primary" />
+                                      <span>Turn-by-Turn Directions</span>
+                                      <span className="text-xs text-muted-foreground">({routeData.steps.length} steps)</span>
+                                    </div>
+                                    {showDirections ? (
+                                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                                    ) : (
+                                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                  </button>
+                                  
+                                  <AnimatePresence>
+                                    {showDirections && (
+                                      <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="overflow-hidden"
+                                      >
+                                        <ScrollArea className="max-h-[200px]">
+                                          <div className="divide-y divide-border">
+                                            {routeData.steps.map((step, index) => (
+                                              <motion.div
+                                                key={index}
+                                                initial={{ opacity: 0, x: -10 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: index * 0.05 }}
+                                                className={`flex items-start gap-3 p-3 ${
+                                                  index === 0 ? "bg-success/5" : 
+                                                  index === routeData.steps.length - 1 ? "bg-destructive/5" : 
+                                                  "bg-background"
+                                                }`}
+                                              >
+                                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                                                  index === 0 ? "bg-success text-success-foreground" : 
+                                                  index === routeData.steps.length - 1 ? "bg-destructive text-destructive-foreground" : 
+                                                  "bg-primary/10 text-primary"
+                                                }`}>
+                                                  {getDirectionIcon(step.maneuver.type, step.maneuver.modifier)}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                  <p className="text-sm font-medium">{formatInstruction(step)}</p>
+                                                  {step.distance > 0 && (
+                                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                                      {formatDistance(step.distance)}
+                                                    </p>
+                                                  )}
+                                                </div>
+                                                <div className="flex-shrink-0 text-xs text-muted-foreground">
+                                                  {index + 1}
+                                                </div>
+                                              </motion.div>
+                                            ))}
+                                          </div>
+                                        </ScrollArea>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              )}
                             </div>
                           ) : isLoadingRoute ? (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">

@@ -1,4 +1,4 @@
-import { useState, useEffect, forwardRef } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -175,8 +175,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     return location.pathname === basePath;
   };
 
-  const NavContent = forwardRef<HTMLDivElement, { mobile?: boolean }>(({ mobile = false }, ref) => (
-    <div ref={ref} className="flex h-full flex-col">
+  const NavContent = ({ mobile = false }: { mobile?: boolean }) => (
+    <div className="flex h-full flex-col">
       {/* Logo */}
       <div
         className={cn(
@@ -388,7 +388,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         )}
       </div>
     </div>
-  ));
+  );
 
   return (
     <div className="flex min-h-screen bg-background">

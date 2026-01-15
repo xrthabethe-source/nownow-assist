@@ -171,10 +171,8 @@ export const AdminDashboard = () => {
                       Filter
                     </Link>
                   </Button>
-                  <Button variant="ghost" size="icon-sm" asChild>
-                    <Link to="/admin/active-jobs">
-                      <RefreshCw className="h-4 w-4" />
-                    </Link>
+                  <Button variant="ghost" size="icon-sm" onClick={() => window.location.reload()}>
+                    <RefreshCw className="h-4 w-4" />
                   </Button>
                 </div>
               </CardHeader>

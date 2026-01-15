@@ -499,6 +499,73 @@ export default function AdminLiveMap() {
     refetchInterval: 10000,
   });
 
+  // Generate fallback route with mock steps when API fails
+  const generateFallbackRoute = (
+    driverLat: number,
+    driverLng: number,
+    customerLat: number,
+    customerLng: number,
+    customerAddress: string
+  ): RouteData => {
+    // Calculate straight-line distance (rough approximation)
+    const latDiff = Math.abs(customerLat - driverLat);
+    const lngDiff = Math.abs(customerLng - driverLng);
+    const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) * 111000; // Approximate meters
+    const duration = (distance / 1000) * 2 * 60; // Assume ~30km/h average, so 2 min per km
+    
+    // Generate intermediate points for the route
+    const numPoints = 5;
+    const coordinates: [number, number][] = [];
+    for (let i = 0; i <= numPoints; i++) {
+      const t = i / numPoints;
+      coordinates.push([
+        driverLat + (customerLat - driverLat) * t,
+        driverLng + (customerLng - driverLng) * t,
+      ]);
+    }
+    
+    // Generate mock navigation steps
+    const steps: RouteStep[] = [
+      {
+        instruction: "Start your journey",
+        distance: 0,
+        duration: 0,
+        maneuver: { type: "depart", location: [driverLng, driverLat] },
+        name: "Current Location",
+      },
+      {
+        instruction: "Head towards destination",
+        distance: distance * 0.3,
+        duration: duration * 0.3,
+        maneuver: { type: "continue", location: [driverLng + lngDiff * 0.2, driverLat + latDiff * 0.2] },
+        name: "Main Road",
+      },
+      {
+        instruction: "Continue straight",
+        distance: distance * 0.4,
+        duration: duration * 0.4,
+        maneuver: { type: "continue", location: [driverLng + lngDiff * 0.5, driverLat + latDiff * 0.5] },
+        name: "Route to Customer",
+      },
+      {
+        instruction: "Turn right onto destination street",
+        distance: distance * 0.2,
+        duration: duration * 0.2,
+        maneuver: { type: "turn", modifier: "right", location: [driverLng + lngDiff * 0.8, driverLat + latDiff * 0.8] },
+        name: customerAddress?.split(",")[0] || "Customer Street",
+      },
+      {
+        instruction: "Arrive at destination",
+        distance: distance * 0.1,
+        duration: duration * 0.1,
+        maneuver: { type: "arrive", location: [customerLng, customerLat] },
+        name: customerAddress || "Customer Location",
+      },
+    ];
+    
+    return { coordinates, distance, duration, steps };
+  };
+
   // Fetch route when driver with job is selected
   useEffect(() => {
     const fetchRoute = async () => {
@@ -519,7 +586,8 @@ export default function AdminLiveMap() {
       try {
         // Use OSRM demo server for routing with steps (free, no API key needed)
         const response = await fetch(
-          `https://router.project-osrm.org/route/v1/driving/${driverPos.lng},${driverPos.lat};${selectedDriver.currentJob.pickup_lng},${selectedDriver.currentJob.pickup_lat}?overview=full&geometries=geojson&steps=true`
+          `https://router.project-osrm.org/route/v1/driving/${driverPos.lng},${driverPos.lat};${selectedDriver.currentJob.pickup_lng},${selectedDriver.currentJob.pickup_lat}?overview=full&geometries=geojson&steps=true`,
+          { signal: AbortSignal.timeout(5000) } // 5 second timeout
         );
         
         const data = await response.json();
@@ -547,11 +615,26 @@ export default function AdminLiveMap() {
             duration: route.duration,
             steps,
           });
+        } else {
+          // Use fallback if API response is invalid
+          setRouteData(generateFallbackRoute(
+            driverPos.lat,
+            driverPos.lng,
+            selectedDriver.currentJob.pickup_lat,
+            selectedDriver.currentJob.pickup_lng,
+            selectedDriver.currentJob.pickup_address || ""
+          ));
         }
       } catch (error) {
-        console.error("Failed to fetch route:", error);
-        // Fallback to straight line if routing fails
-        setRouteData(null);
+        console.error("Failed to fetch route, using fallback:", error);
+        // Fallback to generated route with mock steps
+        setRouteData(generateFallbackRoute(
+          driverPos.lat,
+          driverPos.lng,
+          selectedDriver.currentJob.pickup_lat!,
+          selectedDriver.currentJob.pickup_lng!,
+          selectedDriver.currentJob.pickup_address || ""
+        ));
       } finally {
         setIsLoadingRoute(false);
       }

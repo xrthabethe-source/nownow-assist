@@ -152,6 +152,10 @@ export default function AdminCompletedJobs() {
                 <SelectItem value="90">Last 90 days</SelectItem>
               </SelectContent>
             </Select>
+            <Button variant="outline" onClick={() => refetch()}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh
+            </Button>
             <Button variant="outline">
               <Download className="mr-2 h-4 w-4" />
               Export

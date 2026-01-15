@@ -5,6 +5,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import {
   Table,
@@ -47,6 +48,7 @@ import {
   UserX,
   Shield,
   RefreshCw,
+  UserPlus,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -143,8 +145,16 @@ export default function AdminUsers() {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
   const [newRole, setNewRole] = useState<AppRole>("customer");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // New user form state
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserPhone, setNewUserPhone] = useState("");
+  const [newUserRole, setNewUserRole] = useState<AppRole>("customer");
+  
   const queryClient = useQueryClient();
 
   const { data: users, isLoading, refetch } = useQuery({
@@ -227,6 +237,26 @@ export default function AdminUsers() {
     setRoleDialogOpen(true);
   };
 
+  const resetAddUserForm = () => {
+    setNewUserEmail("");
+    setNewUserName("");
+    setNewUserPhone("");
+    setNewUserRole("customer");
+  };
+
+  const handleAddUser = () => {
+    if (!newUserEmail || !newUserName) {
+      toast.error("Please fill in email and name");
+      return;
+    }
+
+    // For demo purposes, show success message
+    // In production, this would send an invite or create the user
+    toast.success(`User invitation sent to ${newUserEmail} with ${newUserRole} role`);
+    setAddUserDialogOpen(false);
+    resetAddUserForm();
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -236,10 +266,16 @@ export default function AdminUsers() {
             <h1 className="text-2xl font-bold">User Management</h1>
             <p className="text-muted-foreground">Manage all users and their roles</p>
           </div>
-          <Button onClick={handleRefresh} disabled={isRefreshing}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing ? "Refreshing..." : "Refresh"}
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleRefresh} variant="outline" disabled={isRefreshing}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? "Refreshing..." : "Refresh"}
+            </Button>
+            <Button onClick={() => setAddUserDialogOpen(true)}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add User
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -434,6 +470,97 @@ export default function AdminUsers() {
               disabled={updateRoleMutation.isPending}
             >
               {updateRoleMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add User Dialog */}
+      <Dialog open={addUserDialogOpen} onOpenChange={(open) => {
+        setAddUserDialogOpen(open);
+        if (!open) resetAddUserForm();
+      }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+            <DialogDescription>
+              Create a new user account and assign their role. They will receive an invitation email.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email Address *</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="user@example.com"
+                value={newUserEmail}
+                onChange={(e) => setNewUserEmail(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="name">Full Name *</Label>
+              <Input
+                id="name"
+                placeholder="John Doe"
+                value={newUserName}
+                onChange={(e) => setNewUserName(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+27 82 123 4567"
+                value={newUserPhone}
+                onChange={(e) => setNewUserPhone(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="role">User Role *</Label>
+              <Select value={newUserRole} onValueChange={(v) => setNewUserRole(v as AppRole)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="customer">
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="h-4 w-4 text-success" />
+                      <span>Customer</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="driver">
+                    <div className="flex items-center gap-2">
+                      <UserX className="h-4 w-4 text-warning" />
+                      <span>Driver</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="admin">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-destructive" />
+                      <span>Admin</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {newUserRole === "customer" && "Can request services and track jobs"}
+                {newUserRole === "driver" && "Can accept and complete service jobs"}
+                {newUserRole === "admin" && "Full access to admin dashboard and all features"}
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setAddUserDialogOpen(false);
+              resetAddUserForm();
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddUser}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add User
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -62,12 +62,89 @@ interface UserWithRole {
   role: AppRole;
 }
 
+// Demo users data
+const demoUsers: UserWithRole[] = [
+  {
+    id: "usr-001",
+    email: "john.mokoena@email.com",
+    full_name: "John Mokoena",
+    avatar_url: null,
+    phone: "+27 82 123 4567",
+    created_at: "2025-06-15T08:00:00Z",
+    role: "customer",
+  },
+  {
+    id: "usr-002",
+    email: "sarah.nkosi@email.com",
+    full_name: "Sarah Nkosi",
+    avatar_url: null,
+    phone: "+27 83 234 5678",
+    created_at: "2025-08-22T10:30:00Z",
+    role: "customer",
+  },
+  {
+    id: "usr-003",
+    email: "samuel.khumalo@email.com",
+    full_name: "Samuel Khumalo",
+    avatar_url: null,
+    phone: "+27 84 345 6789",
+    created_at: "2025-03-10T14:20:00Z",
+    role: "driver",
+  },
+  {
+    id: "usr-004",
+    email: "david.okonkwo@email.com",
+    full_name: "David Okonkwo",
+    avatar_url: null,
+    phone: "+27 85 456 7890",
+    created_at: "2025-05-02T09:15:00Z",
+    role: "driver",
+  },
+  {
+    id: "usr-005",
+    email: "admin@nownow.co.za",
+    full_name: "Admin User",
+    avatar_url: null,
+    phone: "+27 86 567 8901",
+    created_at: "2024-01-01T00:00:00Z",
+    role: "admin",
+  },
+  {
+    id: "usr-006",
+    email: "thabo.molefe@email.com",
+    full_name: "Thabo Molefe",
+    avatar_url: null,
+    phone: "+27 87 678 9012",
+    created_at: "2025-11-18T11:45:00Z",
+    role: "customer",
+  },
+  {
+    id: "usr-007",
+    email: "blessing.ndlovu@email.com",
+    full_name: "Blessing Ndlovu",
+    avatar_url: null,
+    phone: "+27 88 789 0123",
+    created_at: "2025-09-25T16:00:00Z",
+    role: "driver",
+  },
+  {
+    id: "usr-008",
+    email: "peter.vdb@email.com",
+    full_name: "Peter van der Berg",
+    avatar_url: null,
+    phone: "+27 89 890 1234",
+    created_at: "2025-07-12T08:30:00Z",
+    role: "customer",
+  },
+];
+
 export default function AdminUsers() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [newRole, setNewRole] = useState<AppRole>("customer");
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: users, isLoading, refetch } = useQuery({
@@ -80,6 +157,11 @@ export default function AdminUsers() {
         .order("created_at", { ascending: false });
 
       if (profilesError) throw profilesError;
+
+      // If no real data, return demo users
+      if (!profiles || profiles.length === 0) {
+        return demoUsers;
+      }
 
       // Then get all roles
       const { data: roles, error: rolesError } = await supabase
@@ -97,6 +179,12 @@ export default function AdminUsers() {
       })) as UserWithRole[];
     },
   });
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+  };
 
   const updateRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: AppRole }) => {
@@ -148,9 +236,9 @@ export default function AdminUsers() {
             <h1 className="text-2xl font-bold">User Management</h1>
             <p className="text-muted-foreground">Manage all users and their roles</p>
           </div>
-          <Button onClick={() => refetch()}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+          <Button onClick={handleRefresh} disabled={isRefreshing}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
         </div>
 

@@ -48,7 +48,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Collapsible,
   CollapsibleContent,
@@ -415,8 +415,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-80 p-0" aria-describedby={undefined}>
-                  <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                <SheetContent side="left" className="w-80 p-0">
                   <div>
                     <NavContent mobile />
                   </div>

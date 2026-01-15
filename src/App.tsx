@@ -28,6 +28,11 @@ import AdminDisputes from "./pages/admin/AdminDisputes";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminAudit from "./pages/admin/AdminAudit";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminActiveJobs from "./pages/admin/AdminActiveJobs";
+import AdminCompletedJobs from "./pages/admin/AdminCompletedJobs";
+import AdminOnlineDrivers from "./pages/admin/AdminOnlineDrivers";
+import AdminRevenue from "./pages/admin/AdminRevenue";
+import AdminSLA from "./pages/admin/AdminSLA";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -152,6 +157,31 @@ const App = () => (
             <Route path="/admin/settings" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminSettings />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/active-jobs" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminActiveJobs />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/completed-jobs" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminCompletedJobs />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/online-drivers" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminOnlineDrivers />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/revenue" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminRevenue />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/sla" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminSLA />
               </ProtectedRoute>
             } />
             

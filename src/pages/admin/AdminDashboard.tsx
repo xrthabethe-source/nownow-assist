@@ -76,66 +76,78 @@ export const AdminDashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6"
         >
-          <Card variant="default">
-            <CardContent className="p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <Activity className="h-5 w-5 text-primary" />
-                <StatusBadge variant="active" pulse>Live</StatusBadge>
-              </div>
-              <p className="text-2xl font-bold">{mockStats.activeJobs}</p>
-              <p className="text-sm text-muted-foreground">Active Jobs</p>
-            </CardContent>
-          </Card>
+          <Link to="/admin/active-jobs">
+            <Card variant="default" className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50">
+              <CardContent className="p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <Activity className="h-5 w-5 text-primary" />
+                  <StatusBadge variant="active" pulse>Live</StatusBadge>
+                </div>
+                <p className="text-2xl font-bold">{mockStats.activeJobs}</p>
+                <p className="text-sm text-muted-foreground">Active Jobs</p>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card variant="default">
-            <CardContent className="p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <Car className="h-5 w-5 text-success" />
-              </div>
-              <p className="text-2xl font-bold">{mockStats.driversOnline}</p>
-              <p className="text-sm text-muted-foreground">Drivers Online</p>
-            </CardContent>
-          </Card>
+          <Link to="/admin/online-drivers">
+            <Card variant="default" className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50">
+              <CardContent className="p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <Car className="h-5 w-5 text-success" />
+                </div>
+                <p className="text-2xl font-bold">{mockStats.driversOnline}</p>
+                <p className="text-sm text-muted-foreground">Drivers Online</p>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card variant="default">
-            <CardContent className="p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <CheckCircle2 className="h-5 w-5 text-success" />
-              </div>
-              <p className="text-2xl font-bold">{mockStats.completedToday}</p>
-              <p className="text-sm text-muted-foreground">Completed Today</p>
-            </CardContent>
-          </Card>
+          <Link to="/admin/completed-jobs">
+            <Card variant="default" className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50">
+              <CardContent className="p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <CheckCircle2 className="h-5 w-5 text-success" />
+                </div>
+                <p className="text-2xl font-bold">{mockStats.completedToday}</p>
+                <p className="text-sm text-muted-foreground">Completed Today</p>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card variant="default">
-            <CardContent className="p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <DollarSign className="h-5 w-5 text-primary" />
-              </div>
-              <p className="text-2xl font-bold">{mockStats.revenue}</p>
-              <p className="text-sm text-muted-foreground">Today's Revenue</p>
-            </CardContent>
-          </Card>
+          <Link to="/admin/revenue">
+            <Card variant="default" className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50">
+              <CardContent className="p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <DollarSign className="h-5 w-5 text-primary" />
+                </div>
+                <p className="text-2xl font-bold">{mockStats.revenue}</p>
+                <p className="text-sm text-muted-foreground">Today's Revenue</p>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card variant="default">
-            <CardContent className="p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <Clock className="h-5 w-5 text-warning" />
-              </div>
-              <p className="text-2xl font-bold">{mockStats.avgEta}</p>
-              <p className="text-sm text-muted-foreground">Avg ETA</p>
-            </CardContent>
-          </Card>
+          <Link to="/admin/sla">
+            <Card variant="default" className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50">
+              <CardContent className="p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <Clock className="h-5 w-5 text-warning" />
+                </div>
+                <p className="text-2xl font-bold">{mockStats.avgEta}</p>
+                <p className="text-sm text-muted-foreground">Avg ETA</p>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card variant="default">
-            <CardContent className="p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <TrendingUp className="h-5 w-5 text-success" />
-              </div>
-              <p className="text-2xl font-bold">{mockStats.slaCompliance}%</p>
-              <p className="text-sm text-muted-foreground">SLA Compliance</p>
-            </CardContent>
-          </Card>
+          <Link to="/admin/sla">
+            <Card variant="default" className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50">
+              <CardContent className="p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <TrendingUp className="h-5 w-5 text-success" />
+                </div>
+                <p className="text-2xl font-bold">{mockStats.slaCompliance}%</p>
+                <p className="text-sm text-muted-foreground">SLA Compliance</p>
+              </CardContent>
+            </Card>
+          </Link>
         </motion.div>
 
         <div className="grid gap-6 lg:grid-cols-3">

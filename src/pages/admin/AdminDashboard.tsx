@@ -165,21 +165,26 @@ export const AdminDashboard = () => {
                   Active Jobs
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm">
-                    <Filter className="mr-2 h-4 w-4" />
-                    Filter
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link to="/admin/active-jobs">
+                      <Filter className="mr-2 h-4 w-4" />
+                      Filter
+                    </Link>
                   </Button>
-                  <Button variant="ghost" size="icon-sm">
-                    <RefreshCw className="h-4 w-4" />
+                  <Button variant="ghost" size="icon-sm" asChild>
+                    <Link to="/admin/active-jobs">
+                      <RefreshCw className="h-4 w-4" />
+                    </Link>
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {mockActiveJobs.map((job) => (
-                    <div
+                    <Link
                       key={job.id}
-                      className="flex items-center gap-4 rounded-xl border border-border p-4 transition-colors hover:bg-muted/50"
+                      to="/admin/active-jobs"
+                      className="flex items-center gap-4 rounded-xl border border-border p-4 transition-colors hover:bg-muted/50 cursor-pointer"
                     >
                       <div className="flex-1">
                         <div className="mb-1 flex items-center gap-2">
@@ -223,10 +228,12 @@ export const AdminDashboard = () => {
                         <p className="text-lg font-bold text-primary">{job.eta}</p>
                         <p className="text-sm text-muted-foreground">ETA</p>
                       </div>
-                      <Button variant="ghost" size="icon-sm">
-                        <MoreVertical className="h-4 w-4" />
+                      <Button variant="ghost" size="icon-sm" asChild>
+                        <span>
+                          <MoreVertical className="h-4 w-4" />
+                        </span>
                       </Button>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </CardContent>

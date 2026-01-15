@@ -63,9 +63,9 @@ const initialActiveJobs = [
 ];
 
 const mockAlerts = [
-  { id: 1, type: "warning", message: "Driver David O. rating dropped below 4.0", time: "5 min ago" },
-  { id: 2, type: "error", message: "Payment failed for JOB-089", time: "12 min ago" },
-  { id: 3, type: "info", message: "New driver registration pending approval", time: "1 hr ago" },
+  { id: 1, type: "warning", message: "Driver David O. rating dropped below 4.0", time: "5 min ago", link: "/admin/drivers" },
+  { id: 2, type: "error", message: "Payment failed for JOB-089", time: "12 min ago", link: "/admin/payments" },
+  { id: 3, type: "info", message: "New driver registration pending approval", time: "1 hr ago", link: "/admin/drivers" },
 ];
 
 export const AdminDashboard = () => {
@@ -268,21 +268,22 @@ export const AdminDashboard = () => {
                   <AlertTriangle className="h-5 w-5 text-warning" />
                   Alerts
                 </CardTitle>
-                <Button variant="link" size="sm" className="text-primary">
-                  View All
+                <Button variant="link" size="sm" className="text-primary" asChild>
+                  <Link to="/admin/audit">View All</Link>
                 </Button>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   {mockAlerts.map((alert) => (
-                    <div
+                    <Link
                       key={alert.id}
-                      className={`rounded-xl p-3 ${
+                      to={alert.link}
+                      className={`block rounded-xl p-3 cursor-pointer transition-all hover:scale-[1.02] ${
                         alert.type === "error"
-                          ? "bg-destructive/10 border border-destructive/20"
+                          ? "bg-destructive/10 border border-destructive/20 hover:bg-destructive/15"
                           : alert.type === "warning"
-                          ? "bg-warning/10 border border-warning/20"
-                          : "bg-muted"
+                          ? "bg-warning/10 border border-warning/20 hover:bg-warning/15"
+                          : "bg-muted hover:bg-muted/80"
                       }`}
                     >
                       <div className="mb-1 flex items-center gap-2">
@@ -296,7 +297,7 @@ export const AdminDashboard = () => {
                         <span className="text-xs text-muted-foreground">{alert.time}</span>
                       </div>
                       <p className="text-sm">{alert.message}</p>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </CardContent>

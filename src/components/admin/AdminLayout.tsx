@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/Logo";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { useAuth } from "@/hooks/useAuth";
+import { NotificationBell } from "./NotificationBell";
 import {
   LayoutDashboard,
   Users,
@@ -17,7 +18,6 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Bell,
   Search,
   Menu,
   Wrench,
@@ -436,12 +436,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
             {/* Right side */}
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon-sm" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-                  3
-                </span>
-              </Button>
+              <NotificationBell />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

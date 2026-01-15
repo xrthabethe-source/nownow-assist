@@ -340,6 +340,42 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+          subject: string
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+          subject: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+          subject?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number

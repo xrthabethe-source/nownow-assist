@@ -115,15 +115,18 @@ export const AdminDashboard = () => {
             </Card>
           </Link>
 
-          <Link to="/admin/online-drivers">
-            <Card variant="default" className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50">
+          <Link to="/admin/live-map">
+            <Card variant="default" className="cursor-pointer transition-all hover:shadow-lg hover:border-primary/50 relative overflow-hidden">
               <CardContent className="p-4">
                 <div className="mb-2 flex items-center justify-between">
                   <Car className="h-5 w-5 text-success" />
+                  <StatusBadge variant="active" pulse>Live</StatusBadge>
                 </div>
                 <p className="text-2xl font-bold">{mockStats.driversOnline}</p>
                 <p className="text-sm text-muted-foreground">Drivers Online</p>
               </CardContent>
+              {/* Animated pulse overlay */}
+              <div className="absolute inset-0 bg-success/5 animate-pulse pointer-events-none" />
             </Card>
           </Link>
 

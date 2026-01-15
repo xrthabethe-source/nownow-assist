@@ -35,6 +35,7 @@ import AdminOnlineDrivers from "./pages/admin/AdminOnlineDrivers";
 import AdminRevenue from "./pages/admin/AdminRevenue";
 import AdminSLA from "./pages/admin/AdminSLA";
 import AdminLiveMap from "./pages/admin/AdminLiveMap";
+import AdminNotifications from "./pages/admin/AdminNotifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -190,6 +191,11 @@ const App = () => (
             <Route path="/admin/live-map" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminLiveMap />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/notifications" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminNotifications />
               </ProtectedRoute>
             } />
             

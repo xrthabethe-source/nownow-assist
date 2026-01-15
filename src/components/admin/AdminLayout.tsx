@@ -80,6 +80,7 @@ const navSections: NavSection[] = [
     items: [
       { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
       { icon: TrendingUp, label: "Analytics", path: "/admin/reports", badge: "New", badgeVariant: "success" },
+      { icon: AlertTriangle, label: "Notifications", path: "/admin/notifications" },
     ],
   },
   {

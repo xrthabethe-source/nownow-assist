@@ -229,6 +229,66 @@ export default function AdminReports() {
       ]
     : [];
 
+  const handleExport = () => {
+    // Build CSV content
+    let csvContent = "Analytics & Reports Export\n";
+    csvContent += `Date Range: Last ${dateRange} days\n`;
+    csvContent += `Generated: ${format(new Date(), "PPpp")}\n\n`;
+
+    // Key Metrics
+    csvContent += "=== KEY METRICS ===\n";
+    csvContent += `Total Jobs,${jobStats?.total || 0}\n`;
+    csvContent += `Total Revenue,R${revenueStats?.totalRevenue?.toFixed(0) || 0}\n`;
+    csvContent += `Total Users,${userStats?.totalUsers || 0}\n`;
+    csvContent += `Drivers Online,${userStats?.onlineDrivers || 0}\n\n`;
+
+    // Job Status Breakdown
+    csvContent += "=== JOB STATUS BREAKDOWN ===\n";
+    csvContent += "Status,Count\n";
+    statusPieData.forEach((item) => {
+      csvContent += `${item.name},${item.value}\n`;
+    });
+    csvContent += "\n";
+
+    // User Breakdown
+    csvContent += "=== USER BREAKDOWN ===\n";
+    csvContent += "Role,Count\n";
+    userPieData.forEach((item) => {
+      csvContent += `${item.name},${item.value}\n`;
+    });
+    csvContent += "\n";
+
+    // Daily Revenue
+    if (revenueStats?.dailyData) {
+      csvContent += "=== DAILY REVENUE ===\n";
+      csvContent += "Date,Revenue (R)\n";
+      revenueStats.dailyData.forEach((item) => {
+        csvContent += `${item.date},${item.revenue}\n`;
+      });
+      csvContent += "\n";
+    }
+
+    // Daily Jobs
+    if (jobStats?.dailyData) {
+      csvContent += "=== DAILY JOBS ===\n";
+      csvContent += "Date,Jobs\n";
+      jobStats.dailyData.forEach((item) => {
+        csvContent += `${item.date},${item.jobs}\n`;
+      });
+    }
+
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `analytics-report-${format(new Date(), "yyyy-MM-dd")}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -250,7 +310,7 @@ export default function AdminReports() {
                 <SelectItem value="90">Last 90 days</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExport}>
               <Download className="mr-2 h-4 w-4" />
               Export
             </Button>

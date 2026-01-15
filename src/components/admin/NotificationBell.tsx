@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, Briefcase, CreditCard, AlertTriangle, Check, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,6 +51,7 @@ const getSeverityStyles = (severity: AdminNotification['severity']) => {
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead } = useAdminNotifications();
 
   return (
@@ -134,7 +136,15 @@ export function NotificationBell() {
 
         <Separator />
         <div className="p-2">
-          <Button variant="ghost" size="sm" className="w-full text-xs">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="w-full text-xs"
+            onClick={() => {
+              setOpen(false);
+              navigate('/admin/notifications');
+            }}
+          >
             View All Notifications
           </Button>
         </div>

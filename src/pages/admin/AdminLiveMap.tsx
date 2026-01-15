@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -18,9 +18,128 @@ import {
   Activity,
   Users,
   Zap,
+  ZoomIn,
+  ZoomOut,
+  Locate,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix for default marker icons in react-leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+});
+
+// Custom driver icons
+const createDriverIcon = (status: "available" | "on_job" | "selected") => {
+  const colors = {
+    available: "#22c55e",
+    on_job: "#f59e0b",
+    selected: "#8b5cf6",
+  };
+  
+  return L.divIcon({
+    className: "custom-driver-marker",
+    html: `
+      <div style="
+        position: relative;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        ${status === "on_job" ? `
+          <div style="
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: ${colors[status]}40;
+            animation: pulse 2s infinite;
+          "></div>
+        ` : ""}
+        <div style="
+          width: 36px;
+          height: 36px;
+          background: ${colors[status]};
+          border: 3px solid white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        ">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+            <circle cx="7" cy="17" r="2"/>
+            <path d="M9 17h6"/>
+            <circle cx="17" cy="17" r="2"/>
+          </svg>
+        </div>
+      </div>
+    `,
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+    popupAnchor: [0, -20],
+  });
+};
+
+// Map controls component
+function MapControls({ onLocateDrivers }: { onLocateDrivers: () => void }) {
+  const map = useMap();
+  
+  return (
+    <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
+      <Button
+        size="icon"
+        variant="secondary"
+        className="bg-white shadow-lg hover:bg-gray-100"
+        onClick={() => map.zoomIn()}
+      >
+        <ZoomIn className="h-4 w-4" />
+      </Button>
+      <Button
+        size="icon"
+        variant="secondary"
+        className="bg-white shadow-lg hover:bg-gray-100"
+        onClick={() => map.zoomOut()}
+      >
+        <ZoomOut className="h-4 w-4" />
+      </Button>
+      <Button
+        size="icon"
+        variant="secondary"
+        className="bg-white shadow-lg hover:bg-gray-100"
+        onClick={onLocateDrivers}
+        title="Fit all drivers"
+      >
+        <Locate className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+// Component to fly to selected driver
+function FlyToDriver({ driver }: { driver: OnlineDriver | null }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (driver && driver.current_location_lat && driver.current_location_lng) {
+      map.flyTo([driver.current_location_lat, driver.current_location_lng], 15, {
+        duration: 1.5,
+      });
+    }
+  }, [driver, map]);
+  
+  return null;
+}
 
 interface OnlineDriver {
   id: string;
@@ -142,12 +261,50 @@ const demoDrivers: OnlineDriver[] = [
     profiles: { full_name: "Peter van der Berg", email: "peter@email.com", phone: "+27 83 333 4444" },
     currentJob: null,
   },
+  {
+    id: "drv-006",
+    user_id: "usr-006",
+    vehicle_plate: "GP 987 PQR",
+    vehicle_make: "Mercedes",
+    vehicle_model: "Vito",
+    vehicle_type: "van",
+    rating: 4.9,
+    total_jobs: 298,
+    current_location_lat: -26.0753,
+    current_location_lng: 28.0298,
+    status: "available",
+    profiles: { full_name: "James Sithole", email: "james@email.com", phone: "+27 79 555 6666" },
+    currentJob: null,
+  },
+  {
+    id: "drv-007",
+    user_id: "usr-007",
+    vehicle_plate: "GP 111 STU",
+    vehicle_make: "Toyota",
+    vehicle_model: "Quantum",
+    vehicle_type: "minibus",
+    rating: 4.4,
+    total_jobs: 45,
+    current_location_lat: -26.1623,
+    current_location_lng: 28.0712,
+    status: "on_job",
+    profiles: { full_name: "Lucky Mthembu", email: "lucky@email.com", phone: "+27 71 777 8888" },
+    currentJob: {
+      id: "job-003",
+      job_number: "JOB-2025-003",
+      status: "in_progress",
+      pickup_address: "78 William Nicol, Fourways",
+      eta_minutes: 15,
+      customer: { full_name: "Mike Richardson" },
+    },
+  },
 ];
 
 export default function AdminLiveMap() {
   const [selectedDriver, setSelectedDriver] = useState<OnlineDriver | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [simulatedPositions, setSimulatedPositions] = useState<Record<string, { lat: number; lng: number }>>({});
+  const mapRef = useRef<L.Map | null>(null);
 
   const { data: drivers, refetch } = useQuery({
     queryKey: ["admin-live-map-drivers"],
@@ -198,10 +355,9 @@ export default function AdminLiveMap() {
           const prevPos = prev[driver.id];
           
           if (prevPos) {
-            // Move slightly in a random direction
             newPositions[driver.id] = {
-              lat: prevPos.lat + (Math.random() - 0.5) * 0.002,
-              lng: prevPos.lng + (Math.random() - 0.5) * 0.002,
+              lat: prevPos.lat + (Math.random() - 0.5) * 0.001,
+              lng: prevPos.lng + (Math.random() - 0.5) * 0.001,
             };
           } else {
             newPositions[driver.id] = { lat: baseLat, lng: baseLng };
@@ -220,31 +376,50 @@ export default function AdminLiveMap() {
     setIsRefreshing(false);
   };
 
+  const handleLocateDrivers = () => {
+    if (mapRef.current && drivers && drivers.length > 0) {
+      const bounds = L.latLngBounds(
+        drivers
+          .filter(d => d.current_location_lat && d.current_location_lng)
+          .map(d => [
+            simulatedPositions[d.id]?.lat || d.current_location_lat!,
+            simulatedPositions[d.id]?.lng || d.current_location_lng!,
+          ] as [number, number])
+      );
+      mapRef.current.fitBounds(bounds, { padding: [50, 50] });
+    }
+  };
+
+  const getDriverPosition = (driver: OnlineDriver): [number, number] => {
+    const pos = simulatedPositions[driver.id];
+    return [
+      pos?.lat || driver.current_location_lat || -26.1076,
+      pos?.lng || driver.current_location_lng || 28.0567,
+    ];
+  };
+
   const stats = {
     total: drivers?.length || 0,
     available: drivers?.filter(d => !d.currentJob).length || 0,
     onJob: drivers?.filter(d => d.currentJob).length || 0,
   };
 
-  // Calculate driver positions for the simulated map
-  const getDriverPosition = (driver: OnlineDriver) => {
-    const pos = simulatedPositions[driver.id] || {
-      lat: driver.current_location_lat || -26.1076,
-      lng: driver.current_location_lng || 28.0567,
-    };
-    // Convert lat/lng to percentage positions on the map (simplified)
-    const centerLat = -26.11;
-    const centerLng = 28.06;
-    const scale = 1500;
-    
-    return {
-      x: 50 + (pos.lng - centerLng) * scale,
-      y: 50 + (pos.lat - centerLat) * scale,
-    };
-  };
-
   return (
     <AdminLayout>
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 0.6; }
+          50% { transform: scale(1.5); opacity: 0; }
+        }
+        .leaflet-container {
+          font-family: inherit;
+        }
+        .custom-driver-marker {
+          background: transparent;
+          border: none;
+        }
+      `}</style>
+      
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -318,122 +493,82 @@ export default function AdminLiveMap() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="relative h-[500px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
-                {/* Animated grid background */}
-                <div className="absolute inset-0 opacity-20">
-                  <div className="absolute inset-0" style={{
-                    backgroundImage: `
-                      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
-                    `,
-                    backgroundSize: '40px 40px',
-                  }} />
-                </div>
-
-                {/* Simulated roads */}
-                <svg className="absolute inset-0 w-full h-full opacity-30">
-                  <defs>
-                    <linearGradient id="roadGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.5" />
-                      <stop offset="100%" stopColor="hsl(var(--muted))" stopOpacity="0.3" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M0,250 Q150,200 300,250 T600,250" stroke="url(#roadGradient)" strokeWidth="3" fill="none" />
-                  <path d="M250,0 Q280,150 250,300 T250,500" stroke="url(#roadGradient)" strokeWidth="3" fill="none" />
-                  <path d="M100,100 L400,400" stroke="url(#roadGradient)" strokeWidth="2" fill="none" />
-                  <path d="M400,100 L100,400" stroke="url(#roadGradient)" strokeWidth="2" fill="none" />
-                </svg>
-
-                {/* Map center indicator */}
-                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-white/80">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-3 w-3 text-primary" />
-                    Johannesburg CBD Area
-                  </div>
-                </div>
-
-                {/* Driver markers */}
-                <AnimatePresence>
+              <div className="relative h-[500px]">
+                <MapContainer
+                  center={[-26.11, 28.06]}
+                  zoom={12}
+                  className="h-full w-full"
+                  ref={mapRef}
+                  zoomControl={false}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  
+                  <MapControls onLocateDrivers={handleLocateDrivers} />
+                  <FlyToDriver driver={selectedDriver} />
+                  
                   {drivers?.map((driver) => {
-                    const pos = getDriverPosition(driver);
+                    const position = getDriverPosition(driver);
                     const isOnJob = !!driver.currentJob;
                     const isSelected = selectedDriver?.id === driver.id;
                     
                     return (
-                      <motion.div
+                      <Marker
                         key={driver.id}
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ 
-                          scale: 1, 
-                          opacity: 1,
-                          x: `${pos.x}%`,
-                          y: `${pos.y}%`,
-                        }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        transition={{ 
-                          type: "spring",
-                          stiffness: 100,
-                          damping: 15,
-                        }}
-                        className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer z-10"
-                        onClick={() => setSelectedDriver(driver)}
-                        style={{ left: 0, top: 0 }}
-                      >
-                        {/* Pulse ring for drivers on job */}
-                        {isOnJob && (
-                          <motion.div
-                            className="absolute inset-0 rounded-full bg-warning/30"
-                            animate={{ scale: [1, 1.8, 1], opacity: [0.6, 0, 0.6] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            style={{ width: 48, height: 48, margin: -8 }}
-                          />
+                        position={position}
+                        icon={createDriverIcon(
+                          isSelected ? "selected" : isOnJob ? "on_job" : "available"
                         )}
-                        
-                        {/* Driver marker */}
-                        <motion.div
-                          whileHover={{ scale: 1.2 }}
-                          className={`relative flex items-center justify-center w-10 h-10 rounded-full border-2 shadow-lg ${
-                            isSelected
-                              ? "bg-primary border-white shadow-primary/50"
-                              : isOnJob
-                              ? "bg-warning border-warning-foreground shadow-warning/30"
-                              : "bg-success border-success-foreground shadow-success/30"
-                          }`}
-                        >
-                          <Car className="h-5 w-5 text-white" />
-                        </motion.div>
-
-                        {/* Driver label */}
-                        <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-medium px-2 py-0.5 rounded ${
-                          isSelected ? "bg-primary text-white" : "bg-black/70 text-white/90"
-                        }`}>
-                          {driver.profiles?.full_name?.split(' ')[0] || "Driver"}
-                        </div>
-                      </motion.div>
+                        eventHandlers={{
+                          click: () => setSelectedDriver(driver),
+                        }}
+                      >
+                        <Popup>
+                          <div className="p-1 min-w-[180px]">
+                            <div className="font-semibold text-base">{driver.profiles?.full_name}</div>
+                            <div className="text-sm text-gray-600 mt-1">
+                              {driver.vehicle_make} {driver.vehicle_model}
+                            </div>
+                            <div className="text-sm text-gray-500">{driver.vehicle_plate}</div>
+                            <div className="flex items-center gap-1 mt-2">
+                              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                              <span className="font-medium">{driver.rating?.toFixed(1)}</span>
+                            </div>
+                            {driver.currentJob && (
+                              <div className="mt-2 p-2 bg-amber-50 rounded text-sm">
+                                <div className="font-medium text-amber-800">On Job</div>
+                                <div className="text-amber-700">ETA: {driver.currentJob.eta_minutes} min</div>
+                              </div>
+                            )}
+                          </div>
+                        </Popup>
+                      </Marker>
                     );
                   })}
-                </AnimatePresence>
+                </MapContainer>
 
-                {/* Legend */}
-                <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-sm rounded-lg p-3 text-xs">
+                {/* Legend overlay */}
+                <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 backdrop-blur-sm rounded-lg p-3 text-xs shadow-lg">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-success" />
-                      <span className="text-white/80">Available</span>
+                      <span>Available</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-warning animate-pulse" />
-                      <span className="text-white/80">On Job</span>
+                      <span>On Job</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-primary" />
-                      <span className="text-white/80">Selected</span>
+                      <span>Selected</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Last updated */}
-                <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm rounded-lg px-3 py-2 text-xs text-white/60">
+                {/* Auto-refresh indicator */}
+                <div className="absolute bottom-4 right-4 z-[1000] bg-white/95 backdrop-blur-sm rounded-lg px-3 py-2 text-xs shadow-lg text-gray-600">
                   Auto-refresh: 10s
                 </div>
               </div>
@@ -499,7 +634,8 @@ export default function AdminLiveMap() {
                     <div className="flex items-center gap-3 text-sm">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
                       <span className="text-muted-foreground">
-                        {selectedDriver.current_location_lat?.toFixed(4)}, {selectedDriver.current_location_lng?.toFixed(4)}
+                        {(simulatedPositions[selectedDriver.id]?.lat || selectedDriver.current_location_lat)?.toFixed(4)}, 
+                        {(simulatedPositions[selectedDriver.id]?.lng || selectedDriver.current_location_lng)?.toFixed(4)}
                       </span>
                     </div>
                   </div>

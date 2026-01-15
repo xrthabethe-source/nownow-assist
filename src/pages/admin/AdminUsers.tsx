@@ -149,14 +149,13 @@ export default function AdminUsers() {
   const [newRole, setNewRole] = useState<AppRole>("customer");
   const [isRefreshing, setIsRefreshing] = useState(false);
   
-  // Local state for added users (demo mode)
-  const [addedUsers, setAddedUsers] = useState<UserWithRole[]>([]);
-  
   // New user form state
   const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserName, setNewUserName] = useState("");
   const [newUserPhone, setNewUserPhone] = useState("");
   const [newUserRole, setNewUserRole] = useState<AppRole>("customer");
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
   
   const queryClient = useQueryClient();
 
@@ -193,8 +192,7 @@ export default function AdminUsers() {
     },
   });
 
-  // Combine fetched users with locally added users
-  const users = [...addedUsers, ...(fetchedUsers || [])];
+  const users = fetchedUsers || [];
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -245,32 +243,61 @@ export default function AdminUsers() {
 
   const resetAddUserForm = () => {
     setNewUserEmail("");
+    setNewUserPassword("");
     setNewUserName("");
     setNewUserPhone("");
     setNewUserRole("customer");
   };
 
-  const handleAddUser = () => {
-    if (!newUserEmail || !newUserName) {
-      toast.error("Please fill in email and name");
+  const handleAddUser = async () => {
+    if (!newUserEmail || !newUserName || !newUserPassword) {
+      toast.error("Please fill in email, name, and password");
       return;
     }
 
-    // Create new user and add to local state
-    const newUser: UserWithRole = {
-      id: `usr-${Date.now()}`,
-      email: newUserEmail,
-      full_name: newUserName,
-      avatar_url: null,
-      phone: newUserPhone || null,
-      created_at: new Date().toISOString(),
-      role: newUserRole,
-    };
+    if (newUserPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
 
-    setAddedUsers((prev) => [newUser, ...prev]);
-    toast.success(`User "${newUserName}" added successfully as ${newUserRole}`);
-    setAddUserDialogOpen(false);
-    resetAddUserForm();
+    setIsCreatingUser(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        toast.error("You must be logged in to create users");
+        return;
+      }
+
+      const response = await supabase.functions.invoke("create-user", {
+        body: {
+          email: newUserEmail,
+          password: newUserPassword,
+          full_name: newUserName,
+          phone: newUserPhone || null,
+          role: newUserRole,
+        },
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
+
+      toast.success(`User "${newUserName}" created successfully as ${newUserRole}`);
+      setAddUserDialogOpen(false);
+      resetAddUserForm();
+      refetch(); // Refresh the user list
+    } catch (error: any) {
+      console.error("Error creating user:", error);
+      toast.error(error.message || "Failed to create user");
+    } finally {
+      setIsCreatingUser(false);
+    }
   };
 
   return (
@@ -515,6 +542,19 @@ export default function AdminUsers() {
               />
             </div>
             <div className="grid gap-2">
+              <Label htmlFor="password">Password *</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Min 6 characters"
+                value={newUserPassword}
+                onChange={(e) => setNewUserPassword(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                User can change this after first login
+              </p>
+            </div>
+            <div className="grid gap-2">
               <Label htmlFor="name">Full Name *</Label>
               <Input
                 id="name"
@@ -574,9 +614,9 @@ export default function AdminUsers() {
             }}>
               Cancel
             </Button>
-            <Button onClick={handleAddUser}>
+            <Button onClick={handleAddUser} disabled={isCreatingUser}>
               <UserPlus className="mr-2 h-4 w-4" />
-              Add User
+              {isCreatingUser ? "Creating..." : "Add User"}
             </Button>
           </DialogFooter>
         </DialogContent>

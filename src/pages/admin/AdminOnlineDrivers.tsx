@@ -53,6 +53,7 @@ interface OnlineDriver {
 
 export default function AdminOnlineDrivers() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const { data: drivers, isLoading, refetch } = useQuery({
     queryKey: ["admin-online-drivers"],
@@ -93,12 +94,17 @@ export default function AdminOnlineDrivers() {
 
   const filteredDrivers = drivers?.filter((driver) => {
     const searchLower = searchQuery.toLowerCase();
-    return (
+    const matchesSearch = (
       driver.profiles?.full_name?.toLowerCase().includes(searchLower) ||
       driver.profiles?.email?.toLowerCase().includes(searchLower) ||
       driver.profiles?.phone?.toLowerCase().includes(searchLower) ||
       driver.vehicle_plate?.toLowerCase().includes(searchLower)
     );
+    
+    if (statusFilter === "all") return matchesSearch;
+    if (statusFilter === "available") return matchesSearch && !driver.currentJob;
+    if (statusFilter === "onJob") return matchesSearch && !!driver.currentJob;
+    return matchesSearch;
   });
 
   const stats = {
@@ -133,7 +139,10 @@ export default function AdminOnlineDrivers() {
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-success/50 ${statusFilter === "all" ? "ring-2 ring-success" : ""}`}
+              onClick={() => setStatusFilter("all")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-success/10 p-3">
                   <Car className="h-5 w-5 text-success" />
@@ -147,7 +156,10 @@ export default function AdminOnlineDrivers() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-primary/50 ${statusFilter === "available" ? "ring-2 ring-primary" : ""}`}
+              onClick={() => setStatusFilter("available")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-primary/10 p-3">
                   <MapPin className="h-5 w-5 text-primary" />
@@ -161,7 +173,10 @@ export default function AdminOnlineDrivers() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-warning/50 ${statusFilter === "onJob" ? "ring-2 ring-warning" : ""}`}
+              onClick={() => setStatusFilter("onJob")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-warning/10 p-3">
                   <Activity className="h-5 w-5 text-warning" />

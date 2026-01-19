@@ -121,6 +121,7 @@ const demoActiveJobs = [
 
 export default function AdminActiveJobs() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const queryClient = useQueryClient();
 
   const { data: jobs, isLoading, refetch } = useQuery({
@@ -194,13 +195,19 @@ export default function AdminActiveJobs() {
 
   const filteredJobs = jobs?.filter((job) => {
     const searchLower = searchQuery.toLowerCase();
-    return (
+    const matchesSearch = (
       job.job_number?.toLowerCase().includes(searchLower) ||
       job.customer?.full_name?.toLowerCase().includes(searchLower) ||
       job.driverProfile?.full_name?.toLowerCase().includes(searchLower) ||
       job.pickup_address?.toLowerCase().includes(searchLower) ||
       job.services?.name?.toLowerCase().includes(searchLower)
     );
+    
+    if (statusFilter === "all") return matchesSearch;
+    if (statusFilter === "pending") return matchesSearch && job.status === "pending";
+    if (statusFilter === "dispatched") return matchesSearch && (job.status === "dispatched" || job.status === "accepted");
+    if (statusFilter === "in_progress") return matchesSearch && job.status === "in_progress";
+    return matchesSearch;
   });
 
   const stats = {
@@ -265,7 +272,10 @@ export default function AdminActiveJobs() {
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-primary/50 ${statusFilter === "all" ? "ring-2 ring-primary" : ""}`}
+              onClick={() => setStatusFilter("all")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-primary/10 p-3">
                   <Activity className="h-5 w-5 text-primary" />
@@ -279,7 +289,10 @@ export default function AdminActiveJobs() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-destructive/50 ${statusFilter === "pending" ? "ring-2 ring-destructive" : ""}`}
+              onClick={() => setStatusFilter("pending")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-destructive/10 p-3">
                   <Clock className="h-5 w-5 text-destructive" />
@@ -293,7 +306,10 @@ export default function AdminActiveJobs() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-warning/50 ${statusFilter === "dispatched" ? "ring-2 ring-warning" : ""}`}
+              onClick={() => setStatusFilter("dispatched")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-warning/10 p-3">
                   <Car className="h-5 w-5 text-warning" />
@@ -307,7 +323,10 @@ export default function AdminActiveJobs() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-primary/50 ${statusFilter === "in_progress" ? "ring-2 ring-primary" : ""}`}
+              onClick={() => setStatusFilter("in_progress")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-primary/10 p-3">
                   <Activity className="h-5 w-5 text-primary" />

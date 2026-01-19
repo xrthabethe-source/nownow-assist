@@ -150,14 +150,24 @@ export default function AdminServices() {
     upsertMutation.mutate(formData);
   };
 
+  const [activeFilter, setActiveFilter] = useState<string>("all");
+
   const stats = {
     total: services?.length || 0,
     active: services?.filter((s) => s.is_active).length || 0,
+    inactive: services?.filter((s) => !s.is_active).length || 0,
     avgPrice:
       services && services.length > 0
         ? services.reduce((acc, s) => acc + s.base_price, 0) / services.length
         : 0,
   };
+
+  const filteredServices = services?.filter((service) => {
+    if (activeFilter === "all") return true;
+    if (activeFilter === "active") return service.is_active;
+    if (activeFilter === "inactive") return !service.is_active;
+    return true;
+  });
 
   return (
     <AdminLayout>
@@ -300,7 +310,10 @@ export default function AdminServices() {
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-3">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-primary/50 ${activeFilter === "all" ? "ring-2 ring-primary" : ""}`}
+              onClick={() => setActiveFilter("all")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-primary/10 p-3">
                   <Wrench className="h-5 w-5 text-primary" />
@@ -314,7 +327,10 @@ export default function AdminServices() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-success/50 ${activeFilter === "active" ? "ring-2 ring-success" : ""}`}
+              onClick={() => setActiveFilter("active")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-success/10 p-3">
                   <Zap className="h-5 w-5 text-success" />
@@ -366,7 +382,7 @@ export default function AdminServices() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {services?.map((service) => (
+                  {filteredServices?.map((service) => (
                     <TableRow key={service.id}>
                       <TableCell>
                         <div>

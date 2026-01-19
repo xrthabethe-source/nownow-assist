@@ -260,7 +260,10 @@ export default function AdminPayments() {
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-success/50 ${statusFilter === "completed" ? "ring-2 ring-success" : ""}`}
+              onClick={() => setStatusFilter("completed")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-success/10 p-3">
                   <DollarSign className="h-5 w-5 text-success" />
@@ -274,7 +277,10 @@ export default function AdminPayments() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-primary/50 ${statusFilter === "all" ? "ring-2 ring-primary" : ""}`}
+              onClick={() => setStatusFilter("all")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-primary/10 p-3">
                   <CreditCard className="h-5 w-5 text-primary" />
@@ -288,7 +294,10 @@ export default function AdminPayments() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-warning/50 ${statusFilter === "pending" ? "ring-2 ring-warning" : ""}`}
+              onClick={() => setStatusFilter("pending")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-warning/10 p-3">
                   <TrendingUp className="h-5 w-5 text-warning" />
@@ -302,7 +311,10 @@ export default function AdminPayments() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-destructive/50 ${statusFilter === "failed" ? "ring-2 ring-destructive" : ""}`}
+              onClick={() => setStatusFilter("failed")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-destructive/10 p-3">
                   <AlertTriangle className="h-5 w-5 text-destructive" />

@@ -111,7 +111,10 @@ export default function AdminAudit() {
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-primary/50 ${severityFilter === "all" ? "ring-2 ring-primary" : ""}`}
+              onClick={() => setSeverityFilter("all")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-primary/10 p-3">
                   <Shield className="h-5 w-5 text-primary" />
@@ -125,7 +128,10 @@ export default function AdminAudit() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-muted-foreground/50 ${severityFilter === "info" ? "ring-2 ring-muted-foreground" : ""}`}
+              onClick={() => setSeverityFilter("info")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-muted p-3">
                   <Info className="h-5 w-5 text-muted-foreground" />
@@ -139,7 +145,10 @@ export default function AdminAudit() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-warning/50 ${severityFilter === "warn" ? "ring-2 ring-warning" : ""}`}
+              onClick={() => setSeverityFilter("warn")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-warning/10 p-3">
                   <AlertTriangle className="h-5 w-5 text-warning" />
@@ -153,7 +162,10 @@ export default function AdminAudit() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-destructive/50 ${severityFilter === "critical" ? "ring-2 ring-destructive" : ""}`}
+              onClick={() => setSeverityFilter("critical")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-destructive/10 p-3">
                   <AlertOctagon className="h-5 w-5 text-destructive" />

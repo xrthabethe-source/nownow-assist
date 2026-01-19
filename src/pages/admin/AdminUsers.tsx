@@ -358,7 +358,10 @@ export default function AdminUsers() {
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-primary/50 ${roleFilter === "all" ? "ring-2 ring-primary" : ""}`}
+              onClick={() => setRoleFilter("all")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-primary/10 p-3">
                   <Users className="h-5 w-5 text-primary" />
@@ -372,7 +375,10 @@ export default function AdminUsers() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-success/50 ${roleFilter === "customer" ? "ring-2 ring-success" : ""}`}
+              onClick={() => setRoleFilter("customer")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-success/10 p-3">
                   <UserCheck className="h-5 w-5 text-success" />
@@ -386,7 +392,10 @@ export default function AdminUsers() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-warning/50 ${roleFilter === "driver" ? "ring-2 ring-warning" : ""}`}
+              onClick={() => setRoleFilter("driver")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-warning/10 p-3">
                   <UserX className="h-5 w-5 text-warning" />
@@ -400,7 +409,10 @@ export default function AdminUsers() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-destructive/50 ${roleFilter === "admin" ? "ring-2 ring-destructive" : ""}`}
+              onClick={() => setRoleFilter("admin")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-destructive/10 p-3">
                   <Shield className="h-5 w-5 text-destructive" />

@@ -352,7 +352,10 @@ export default function AdminDisputes() {
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-primary/50 ${statusFilter === "all" ? "ring-2 ring-primary" : ""}`}
+              onClick={() => setStatusFilter("all")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-primary/10 p-3">
                   <MessageSquare className="h-5 w-5 text-primary" />
@@ -366,7 +369,10 @@ export default function AdminDisputes() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-destructive/50 ${statusFilter === "open" ? "ring-2 ring-destructive" : ""}`}
+              onClick={() => setStatusFilter("open")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-destructive/10 p-3">
                   <AlertTriangle className="h-5 w-5 text-destructive" />
@@ -380,7 +386,10 @@ export default function AdminDisputes() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-warning/50 ${statusFilter === "investigating" ? "ring-2 ring-warning" : ""}`}
+              onClick={() => setStatusFilter("investigating")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-warning/10 p-3">
                   <Clock className="h-5 w-5 text-warning" />
@@ -394,7 +403,10 @@ export default function AdminDisputes() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card>
+            <Card 
+              className={`cursor-pointer transition-all hover:shadow-md hover:border-success/50 ${statusFilter === "resolved" ? "ring-2 ring-success" : ""}`}
+              onClick={() => setStatusFilter("resolved")}
+            >
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-success/10 p-3">
                   <CheckCircle className="h-5 w-5 text-success" />

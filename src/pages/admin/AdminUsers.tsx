@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -45,11 +47,16 @@ import {
   MoreVertical,
   Users,
   UserCheck,
-  UserX,
+  Car,
   Shield,
   RefreshCw,
   UserPlus,
   KeyRound,
+  Settings,
+  FileText,
+  DollarSign,
+  AlertTriangle,
+  BarChart3,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -63,6 +70,7 @@ interface UserWithRole {
   phone: string | null;
   created_at: string;
   role: AppRole;
+  permissions?: string[];
 }
 
 // Demo users data
@@ -111,6 +119,7 @@ const demoUsers: UserWithRole[] = [
     phone: "+27 86 567 8901",
     created_at: "2024-01-01T00:00:00Z",
     role: "admin",
+    permissions: ["all"],
   },
   {
     id: "usr-006",
@@ -132,22 +141,49 @@ const demoUsers: UserWithRole[] = [
   },
   {
     id: "usr-008",
-    email: "peter.vdb@email.com",
-    full_name: "Peter van der Berg",
+    email: "ops.manager@nownow.co.za",
+    full_name: "Operations Manager",
     avatar_url: null,
-    phone: "+27 89 890 1234",
-    created_at: "2025-07-12T08:30:00Z",
-    role: "customer",
+    phone: "+27 82 111 2222",
+    created_at: "2025-03-15T09:00:00Z",
+    role: "admin",
+    permissions: ["jobs", "drivers", "disputes"],
+  },
+  {
+    id: "usr-009",
+    email: "finance@nownow.co.za",
+    full_name: "Finance Admin",
+    avatar_url: null,
+    phone: "+27 83 333 4444",
+    created_at: "2025-04-20T10:30:00Z",
+    role: "admin",
+    permissions: ["payments", "reports", "pricing"],
   },
 ];
 
+const availablePermissions = [
+  { id: "all", label: "Full Access", icon: Shield, description: "Complete system access" },
+  { id: "users", label: "User Management", icon: Users, description: "Manage customers and user accounts" },
+  { id: "drivers", label: "Driver Management", icon: Car, description: "Manage driver applications and profiles" },
+  { id: "jobs", label: "Job Operations", icon: Settings, description: "View and manage active/completed jobs" },
+  { id: "payments", label: "Payments", icon: DollarSign, description: "Process payments and refunds" },
+  { id: "pricing", label: "Pricing", icon: DollarSign, description: "Manage service pricing" },
+  { id: "disputes", label: "Disputes", icon: AlertTriangle, description: "Handle customer disputes" },
+  { id: "reports", label: "Reports & Analytics", icon: BarChart3, description: "View reports and analytics" },
+  { id: "settings", label: "Settings", icon: Settings, description: "Manage system settings" },
+  { id: "audit", label: "Audit Logs", icon: FileText, description: "View security audit logs" },
+];
+
 export default function AdminUsers() {
+  const [activeTab, setActiveTab] = useState("platform");
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false);
   const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
   const [newRole, setNewRole] = useState<AppRole>("customer");
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   // New user form state
@@ -156,6 +192,7 @@ export default function AdminUsers() {
   const [newUserName, setNewUserName] = useState("");
   const [newUserPhone, setNewUserPhone] = useState("");
   const [newUserRole, setNewUserRole] = useState<AppRole>("customer");
+  const [newUserPermissions, setNewUserPermissions] = useState<string[]>(["users"]);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   
   const queryClient = useQueryClient();
@@ -163,7 +200,6 @@ export default function AdminUsers() {
   const { data: fetchedUsers, isLoading, refetch } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      // First get all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("*")
@@ -171,24 +207,24 @@ export default function AdminUsers() {
 
       if (profilesError) throw profilesError;
 
-      // If no real data, return demo users
       if (!profiles || profiles.length === 0) {
         return demoUsers;
       }
 
-      // Then get all roles
       const { data: roles, error: rolesError } = await supabase
         .from("user_roles")
         .select("user_id, role");
 
       if (rolesError) throw rolesError;
 
-      // Combine the data
       const rolesMap = new Map(roles?.map((r) => [r.user_id, r.role as AppRole]));
 
-      return (profiles || []).map((profile) => ({
+      return (profiles || []).map((profile, index) => ({
         ...profile,
         role: rolesMap.get(profile.id) || "customer",
+        permissions: rolesMap.get(profile.id) === "admin" 
+          ? (index === 0 ? ["all"] : ["users", "jobs"]) 
+          : undefined,
       })) as UserWithRole[];
     },
   });
@@ -221,7 +257,9 @@ export default function AdminUsers() {
     },
   });
 
-  const filteredUsers = users?.filter((user) => {
+  // Platform users (customers & drivers)
+  const platformUsers = users.filter((u) => u.role !== "admin");
+  const filteredPlatformUsers = platformUsers.filter((user) => {
     const matchesSearch =
       user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -229,11 +267,20 @@ export default function AdminUsers() {
     return matchesSearch && matchesRole;
   });
 
+  // Office staff (admins)
+  const officeStaff = users.filter((u) => u.role === "admin");
+  const filteredOfficeStaff = officeStaff.filter((user) => {
+    const matchesSearch =
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
+  });
+
   const stats = {
-    total: users?.length || 0,
-    customers: users?.filter((u) => u.role === "customer").length || 0,
-    drivers: users?.filter((u) => u.role === "driver").length || 0,
-    admins: users?.filter((u) => u.role === "admin").length || 0,
+    total: users.length,
+    customers: users.filter((u) => u.role === "customer").length,
+    drivers: users.filter((u) => u.role === "driver").length,
+    admins: users.filter((u) => u.role === "admin").length,
   };
 
   const handleChangeRole = (user: UserWithRole) => {
@@ -242,12 +289,54 @@ export default function AdminUsers() {
     setRoleDialogOpen(true);
   };
 
+  const handleEditPermissions = (user: UserWithRole) => {
+    setSelectedUser(user);
+    setSelectedPermissions(user.permissions || ["users"]);
+    setPermissionsDialogOpen(true);
+  };
+
+  const handleSavePermissions = () => {
+    if (!selectedUser) return;
+    toast.success(`Permissions updated for ${selectedUser.full_name}`);
+    setPermissionsDialogOpen(false);
+    setSelectedUser(null);
+  };
+
+  const togglePermission = (permissionId: string) => {
+    if (permissionId === "all") {
+      setSelectedPermissions((prev) => prev.includes("all") ? [] : ["all"]);
+    } else {
+      setSelectedPermissions((prev) => {
+        const withoutAll = prev.filter((p) => p !== "all");
+        if (prev.includes(permissionId)) {
+          return withoutAll.filter((p) => p !== permissionId);
+        }
+        return [...withoutAll, permissionId];
+      });
+    }
+  };
+
+  const toggleNewUserPermission = (permissionId: string) => {
+    if (permissionId === "all") {
+      setNewUserPermissions((prev) => prev.includes("all") ? [] : ["all"]);
+    } else {
+      setNewUserPermissions((prev) => {
+        const withoutAll = prev.filter((p) => p !== "all");
+        if (prev.includes(permissionId)) {
+          return withoutAll.filter((p) => p !== permissionId);
+        }
+        return [...withoutAll, permissionId];
+      });
+    }
+  };
+
   const resetAddUserForm = () => {
     setNewUserEmail("");
     setNewUserPassword("");
     setNewUserName("");
     setNewUserPhone("");
     setNewUserRole("customer");
+    setNewUserPermissions(["users"]);
   };
 
   const handleAddUser = async () => {
@@ -258,6 +347,11 @@ export default function AdminUsers() {
 
     if (newUserPassword.length < 6) {
       toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    if (newUserRole === "admin" && newUserPermissions.length === 0) {
+      toast.error("Please select at least one permission for admin users");
       return;
     }
 
@@ -292,7 +386,7 @@ export default function AdminUsers() {
       toast.success(`User "${newUserName}" created successfully as ${newUserRole}`);
       setAddUserDialogOpen(false);
       resetAddUserForm();
-      refetch(); // Refresh the user list
+      refetch();
     } catch (error: any) {
       console.error("Error creating user:", error);
       toast.error(error.message || "Failed to create user");
@@ -334,14 +428,25 @@ export default function AdminUsers() {
     }
   };
 
+  const getPermissionLabel = (permissions?: string[]) => {
+    if (!permissions || permissions.length === 0) return "No permissions";
+    if (permissions.includes("all")) return "Full Access";
+    if (permissions.length <= 2) {
+      return permissions.map((p) => 
+        availablePermissions.find((ap) => ap.id === p)?.label || p
+      ).join(", ");
+    }
+    return `${permissions.length} permissions`;
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold">User Management</h1>
-            <p className="text-muted-foreground">Manage all users and their roles</p>
+            <h1 className="text-2xl font-bold">Team & Access</h1>
+            <p className="text-muted-foreground">Manage platform users and office staff permissions</p>
           </div>
           <div className="flex gap-2">
             <Button onClick={handleRefresh} variant="outline" disabled={isRefreshing}>
@@ -358,10 +463,7 @@ export default function AdminUsers() {
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card 
-              className={`cursor-pointer transition-all hover:shadow-md hover:border-primary/50 ${roleFilter === "all" ? "ring-2 ring-primary" : ""}`}
-              onClick={() => setRoleFilter("all")}
-            >
+            <Card>
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-primary/10 p-3">
                   <Users className="h-5 w-5 text-primary" />
@@ -375,10 +477,7 @@ export default function AdminUsers() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card 
-              className={`cursor-pointer transition-all hover:shadow-md hover:border-success/50 ${roleFilter === "customer" ? "ring-2 ring-success" : ""}`}
-              onClick={() => setRoleFilter("customer")}
-            >
+            <Card>
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-success/10 p-3">
                   <UserCheck className="h-5 w-5 text-success" />
@@ -392,13 +491,10 @@ export default function AdminUsers() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card 
-              className={`cursor-pointer transition-all hover:shadow-md hover:border-warning/50 ${roleFilter === "driver" ? "ring-2 ring-warning" : ""}`}
-              onClick={() => setRoleFilter("driver")}
-            >
+            <Card>
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-warning/10 p-3">
-                  <UserX className="h-5 w-5 text-warning" />
+                  <Car className="h-5 w-5 text-warning" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.drivers}</p>
@@ -409,129 +505,242 @@ export default function AdminUsers() {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card 
-              className={`cursor-pointer transition-all hover:shadow-md hover:border-destructive/50 ${roleFilter === "admin" ? "ring-2 ring-destructive" : ""}`}
-              onClick={() => setRoleFilter("admin")}
-            >
+            <Card>
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="rounded-full bg-destructive/10 p-3">
                   <Shield className="h-5 w-5 text-destructive" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.admins}</p>
-                  <p className="text-sm text-muted-foreground">Admins</p>
+                  <p className="text-sm text-muted-foreground">Office Staff</p>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
         </div>
 
-        {/* Filters */}
-        <Card>
-          <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle>All Users</CardTitle>
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search users..."
-                  className="w-64 pl-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-36">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="Filter by role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="customer">Customers</SelectItem>
-                  <SelectItem value="driver">Drivers</SelectItem>
-                  <SelectItem value="admin">Admins</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Joined</TableHead>
-                    <TableHead className="w-12"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers?.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={user.avatar_url || undefined} />
-                            <AvatarFallback>
-                              {user.full_name?.charAt(0).toUpperCase() || "U"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">{user.full_name || "Unnamed"}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.phone || "-"}</TableCell>
-                      <TableCell>
-                        <StatusBadge
-                          variant={
-                            user.role === "admin"
-                              ? "destructive"
-                              : user.role === "driver"
-                              ? "warning"
-                              : "success"
-                          }
-                        >
-                          {user.role}
-                        </StatusBadge>
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(user.created_at), "MMM d, yyyy")}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon-sm">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleChangeRole(user)}>
-                              <Shield className="mr-2 h-4 w-4" />
-                              Change Role
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => handleResetPassword(user)}
-                              disabled={!user.email}
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="platform" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Platform Users
+            </TabsTrigger>
+            <TabsTrigger value="office" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Office Staff
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Platform Users Tab */}
+          <TabsContent value="platform" className="mt-4">
+            <Card>
+              <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
+                <div>
+                  <CardTitle>Platform Users</CardTitle>
+                  <CardDescription>Customers and drivers using the app</CardDescription>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="Search users..."
+                      className="w-64 pl-10"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <Select value={roleFilter} onValueChange={setRoleFilter}>
+                    <SelectTrigger className="w-36">
+                      <Filter className="mr-2 h-4 w-4" />
+                      <SelectValue placeholder="Filter" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="customer">Customers</SelectItem>
+                      <SelectItem value="driver">Drivers</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>User</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Joined</TableHead>
+                        <TableHead className="w-12"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredPlatformUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar>
+                                <AvatarImage src={user.avatar_url || undefined} />
+                                <AvatarFallback>
+                                  {user.full_name?.charAt(0).toUpperCase() || "U"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium">{user.full_name || "Unnamed"}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>{user.phone || "-"}</TableCell>
+                          <TableCell>
+                            <StatusBadge variant={user.role === "driver" ? "warning" : "success"}>
+                              {user.role}
+                            </StatusBadge>
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(user.created_at), "MMM d, yyyy")}
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon-sm">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleChangeRole(user)}>
+                                  <Shield className="mr-2 h-4 w-4" />
+                                  Change Role
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleResetPassword(user)}
+                                  disabled={!user.email}
+                                >
+                                  <KeyRound className="mr-2 h-4 w-4" />
+                                  Reset Password
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {filteredPlatformUsers.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                            No platform users found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Office Staff Tab */}
+          <TabsContent value="office" className="mt-4">
+            <Card>
+              <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
+                <div>
+                  <CardTitle>Office Staff</CardTitle>
+                  <CardDescription>Employees with access to admin software</CardDescription>
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Search staff..."
+                    className="w-64 pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Staff Member</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Permissions</TableHead>
+                        <TableHead>Added</TableHead>
+                        <TableHead className="w-12"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredOfficeStaff.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar>
+                                <AvatarImage src={user.avatar_url || undefined} />
+                                <AvatarFallback>
+                                  {user.full_name?.charAt(0).toUpperCase() || "A"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium">{user.full_name || "Unnamed"}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>{user.phone || "-"}</TableCell>
+                          <TableCell>
+                            <StatusBadge
+                              variant={user.permissions?.includes("all") ? "success" : "warning"}
                             >
-                              <KeyRound className="mr-2 h-4 w-4" />
-                              Reset Password
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+                              {getPermissionLabel(user.permissions)}
+                            </StatusBadge>
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(user.created_at), "MMM d, yyyy")}
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon-sm">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleEditPermissions(user)}>
+                                  <Shield className="mr-2 h-4 w-4" />
+                                  Edit Permissions
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleResetPassword(user)}
+                                  disabled={!user.email}
+                                >
+                                  <KeyRound className="mr-2 h-4 w-4" />
+                                  Reset Password
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {filteredOfficeStaff.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                            No office staff found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Change Role Dialog */}
@@ -551,7 +760,7 @@ export default function AdminUsers() {
               <SelectContent>
                 <SelectItem value="customer">Customer</SelectItem>
                 <SelectItem value="driver">Driver</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="admin">Admin (Office Staff)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -571,16 +780,61 @@ export default function AdminUsers() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Permissions Dialog */}
+      <Dialog open={permissionsDialogOpen} onOpenChange={setPermissionsDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Permissions</DialogTitle>
+            <DialogDescription>
+              Configure access permissions for {selectedUser?.full_name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+            {availablePermissions.map((permission) => (
+              <div
+                key={permission.id}
+                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                  selectedPermissions.includes(permission.id)
+                    ? "border-primary bg-primary/5"
+                    : "border-border hover:bg-muted/50"
+                }`}
+                onClick={() => togglePermission(permission.id)}
+              >
+                <Checkbox
+                  checked={selectedPermissions.includes(permission.id)}
+                  onCheckedChange={() => togglePermission(permission.id)}
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <permission.icon className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-sm">{permission.label}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {permission.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPermissionsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSavePermissions}>Save Permissions</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Add User Dialog */}
       <Dialog open={addUserDialogOpen} onOpenChange={(open) => {
         setAddUserDialogOpen(open);
         if (!open) resetAddUserForm();
       }}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New User</DialogTitle>
             <DialogDescription>
-              Create a new user account and assign their role. They will receive an invitation email.
+              Create a new user account and assign their role.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -603,9 +857,6 @@ export default function AdminUsers() {
                 value={newUserPassword}
                 onChange={(e) => setNewUserPassword(e.target.value)}
               />
-              <p className="text-xs text-muted-foreground">
-                User can change this after first login
-              </p>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="name">Full Name *</Label>
@@ -627,10 +878,10 @@ export default function AdminUsers() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="role">User Role *</Label>
+              <Label htmlFor="role">User Type *</Label>
               <Select value={newUserRole} onValueChange={(v) => setNewUserRole(v as AppRole)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
+                  <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="customer">
@@ -641,24 +892,47 @@ export default function AdminUsers() {
                   </SelectItem>
                   <SelectItem value="driver">
                     <div className="flex items-center gap-2">
-                      <UserX className="h-4 w-4 text-warning" />
+                      <Car className="h-4 w-4 text-warning" />
                       <span>Driver</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="admin">
                     <div className="flex items-center gap-2">
                       <Shield className="h-4 w-4 text-destructive" />
-                      <span>Admin</span>
+                      <span>Office Staff (Admin)</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                {newUserRole === "customer" && "Can request services and track jobs"}
-                {newUserRole === "driver" && "Can accept and complete service jobs"}
-                {newUserRole === "admin" && "Full access to admin dashboard and all features"}
-              </p>
             </div>
+
+            {newUserRole === "admin" && (
+              <div className="grid gap-2">
+                <Label>Permissions *</Label>
+                <div className="space-y-2 max-h-48 overflow-y-auto border rounded-lg p-2">
+                  {availablePermissions.map((permission) => (
+                    <div
+                      key={permission.id}
+                      className={`flex items-center gap-3 p-2 rounded cursor-pointer transition-colors ${
+                        newUserPermissions.includes(permission.id)
+                          ? "bg-primary/10"
+                          : "hover:bg-muted/50"
+                      }`}
+                      onClick={() => toggleNewUserPermission(permission.id)}
+                    >
+                      <Checkbox
+                        checked={newUserPermissions.includes(permission.id)}
+                        onCheckedChange={() => toggleNewUserPermission(permission.id)}
+                      />
+                      <div className="flex items-center gap-2">
+                        <permission.icon className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{permission.label}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => {

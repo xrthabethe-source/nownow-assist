@@ -26,7 +26,6 @@ import {
   FileText,
   TrendingUp,
   Wallet,
-  UserCog,
   MapPin,
   Clock,
   HelpCircle,
@@ -86,9 +85,8 @@ const navSections: NavSection[] = [
   {
     title: "User Management",
     items: [
-      { icon: Users, label: "All Users", path: "/admin/users" },
+      { icon: Users, label: "Team & Access", path: "/admin/users" },
       { icon: Car, label: "Drivers", path: "/admin/drivers" },
-      { icon: UserCog, label: "Roles & Permissions", path: "/admin/roles" },
     ],
   },
   {

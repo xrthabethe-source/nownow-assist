@@ -26,6 +26,7 @@ import AdminServices from "./pages/admin/AdminServices";
 import AdminPricing from "./pages/admin/AdminPricing";
 import AdminPayments from "./pages/admin/AdminPayments";
 import AdminDisputes from "./pages/admin/AdminDisputes";
+import AdminRoles from "./pages/admin/AdminRoles";
 import AdminReports from "./pages/admin/AdminReports";
 import AdminAudit from "./pages/admin/AdminAudit";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -126,6 +127,11 @@ const App = () => (
             <Route path="/admin/drivers" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminDrivers />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/roles" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminRoles />
               </ProtectedRoute>
             } />
             <Route path="/admin/services" element={

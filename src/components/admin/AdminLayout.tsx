@@ -88,7 +88,7 @@ const navSections: NavSection[] = [
     items: [
       { icon: Users, label: "All Users", path: "/admin/users" },
       { icon: Car, label: "Drivers", path: "/admin/drivers" },
-      { icon: UserCog, label: "Roles & Permissions", path: "/admin/users?tab=roles" },
+      { icon: UserCog, label: "Roles & Permissions", path: "/admin/roles" },
     ],
   },
   {
@@ -164,16 +164,26 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     );
   };
 
-  const isActiveItem = (item: NavItem) => {
-    const [path, query] = item.path.split("?");
-    if (location.pathname !== path) return false;
-    if (!query) return location.pathname === path && !location.search;
-    return location.search.includes(query);
-  };
-
-  const isExactPath = (path: string) => {
-    const [basePath] = path.split("?");
-    return location.pathname === basePath;
+  const isActiveItem = (itemPath: string) => {
+    const [basePath, query] = itemPath.split("?");
+    const currentPath = location.pathname;
+    const currentSearch = location.search;
+    
+    // If paths don't match, not active
+    if (currentPath !== basePath) return false;
+    
+    // If item has no query params, it's active only if current URL also has no query params
+    if (!query) return !currentSearch || currentSearch === "";
+    
+    // If item has query params, check if current URL contains them
+    const itemParams = new URLSearchParams(query);
+    const currentParams = new URLSearchParams(currentSearch);
+    
+    // All item params must match current params
+    for (const [key, value] of itemParams.entries()) {
+      if (currentParams.get(key) !== value) return false;
+    }
+    return true;
   };
 
   const NavContent = ({ mobile = false }: { mobile?: boolean }) => (
@@ -210,7 +220,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <nav className="space-y-1 p-3">
           {navSections.map((section, sectionIndex) => {
             const isExpanded = expandedSections.includes(section.title);
-            const hasActiveItem = section.items.some((item) => isExactPath(item.path));
+            const hasActiveItem = section.items.some((item) => isActiveItem(item.path));
 
             return (
               <div key={section.title}>
@@ -222,7 +232,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   // Collapsed: show only icons
                   <div className="space-y-1">
                     {section.items.map((item) => {
-                      const isActive = isExactPath(item.path);
+                      const isActive = isActiveItem(item.path);
                       return (
                         <Link
                           key={item.path}
@@ -283,7 +293,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
                     <CollapsibleContent className="space-y-1 pt-1">
                       {section.items.map((item) => {
-                        const isActive = isExactPath(item.path);
+                        const isActive = isActiveItem(item.path);
                         return (
                           <Link
                             key={item.path}

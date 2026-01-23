@@ -98,10 +98,10 @@ export const CustomerHome = () => {
             
             setLocation(locationStr);
           } else {
-            setLocation(`Near ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+            setLocation("Current location detected");
           }
         } catch {
-          setLocation(`Near ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+          setLocation("Current location detected");
         }
         setIsLocating(false);
       },

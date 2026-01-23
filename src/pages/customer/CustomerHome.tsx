@@ -62,24 +62,46 @@ export const CustomerHome = () => {
         const { latitude, longitude } = position.coords;
         setCoordinates({ lat: latitude, lng: longitude });
         try {
+          // Use Nominatim reverse geocoding with zoom level 18 for street-level detail
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`,
             { headers: { 'User-Agent': 'NowNowAssist/1.0' } }
           );
           const data = await response.json();
           
           if (data.address) {
-            const { road, house_number, suburb, city, town, village } = data.address;
-            const streetNumber = house_number || "";
-            const streetName = road || "Unknown Street";
-            const area = suburb || city || town || village || "";
-            const fullStreet = streetNumber ? `${streetNumber} ${streetName}` : streetName;
-            setLocation(`${fullStreet}${area ? `, ${area}` : ""}`);
+            const { road, house_number, suburb, city, town, village, neighbourhood, amenity, building } = data.address;
+            
+            // Build location string with nearby landmark or street
+            let locationStr = "";
+            
+            // If there's a specific amenity or building, use "Near [name]"
+            if (amenity || building) {
+              const landmark = amenity || building;
+              locationStr = `Near ${landmark}`;
+              if (road) locationStr += `, ${road}`;
+            } else if (road) {
+              // Use street with house number if available
+              const streetNumber = house_number || "";
+              locationStr = streetNumber ? `${streetNumber} ${road}` : `Near ${road}`;
+            } else if (neighbourhood) {
+              locationStr = `Near ${neighbourhood}`;
+            } else {
+              locationStr = "Current location";
+            }
+            
+            // Add area context
+            const area = suburb || neighbourhood || city || town || village || "";
+            if (area && !locationStr.includes(area)) {
+              locationStr += `, ${area}`;
+            }
+            
+            setLocation(locationStr);
           } else {
-            setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+            setLocation(`Near ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
           }
         } catch {
-          setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+          setLocation(`Near ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
         }
         setIsLocating(false);
       },

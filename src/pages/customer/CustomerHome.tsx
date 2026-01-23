@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { SaveLocationDialog } from "@/components/customer/SaveLocationDialog";
 import { LocationSelector } from "@/components/customer/LocationSelector";
 import { useSavedLocations, SavedLocation } from "@/hooks/useSavedLocations";
+import { supabase } from "@/integrations/supabase/client";
 import { MapPin, Clock, Phone, Loader2, RefreshCw, Bookmark, BookmarkPlus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -62,44 +63,15 @@ export const CustomerHome = () => {
         const { latitude, longitude } = position.coords;
         setCoordinates({ lat: latitude, lng: longitude });
         try {
-          // Use Nominatim reverse geocoding with zoom level 18 for street-level detail
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&zoom=18`,
-            { headers: { 'User-Agent': 'NowNowAssist/1.0' } }
-          );
-          const data = await response.json();
-          
-          if (data.address) {
-            const { road, house_number, suburb, city, town, village, neighbourhood, amenity, building } = data.address;
-            
-            // Build location string with nearby landmark or street
-            let locationStr = "";
-            
-            // If there's a specific amenity or building, use "Near [name]"
-            if (amenity || building) {
-              const landmark = amenity || building;
-              locationStr = `Near ${landmark}`;
-              if (road) locationStr += `, ${road}`;
-            } else if (road) {
-              // Use street with house number if available
-              const streetNumber = house_number || "";
-              locationStr = streetNumber ? `${streetNumber} ${road}` : `Near ${road}`;
-            } else if (neighbourhood) {
-              locationStr = `Near ${neighbourhood}`;
-            } else {
-              locationStr = "Current location";
-            }
-            
-            // Add area context
-            const area = suburb || neighbourhood || city || town || village || "";
-            if (area && !locationStr.includes(area)) {
-              locationStr += `, ${area}`;
-            }
-            
-            setLocation(locationStr);
-          } else {
-            setLocation("Current location detected");
-          }
+          // Reverse geocode via backend function to avoid browser network/CORS issues.
+          const { data, error } = await supabase.functions.invoke("reverse-geocode", {
+            body: { lat: latitude, lon: longitude },
+          });
+
+          if (error) throw error;
+
+          const resolved = typeof data?.location === "string" ? data.location : "Current location detected";
+          setLocation(resolved);
         } catch {
           setLocation("Current location detected");
         }

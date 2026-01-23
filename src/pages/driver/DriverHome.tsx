@@ -13,6 +13,7 @@ import { useDriverLocation } from "@/hooks/useDriverLocation";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useAvailableJobs, useAcceptJob } from "@/hooks/useJobs";
 
 const mockStats = {
   todayEarnings: "R1,250",
@@ -22,20 +23,16 @@ const mockStats = {
   acceptanceRate: 95,
 };
 
-const mockPendingJob = {
-  id: "job-123",
-  service: "Tyre Change",
-  icon: TyreIcon,
-  customerName: "John M.",
-  location: "123 Main Street, Sandton",
-  distance: "2.3 km",
-  payout: "R280",
-  expiresIn: 18,
+const serviceIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  "Tyre Change": TyreIcon,
+  "Jump-Start": BatteryIcon,
+  "Fuel Rescue": FuelIcon,
+  "Battery Boost + Diagnostics": BatteryIcon,
+  "Call a Mechanic": WrenchIcon,
 };
 
 export const DriverHome = () => {
   const [isOnline, setIsOnline] = useState(true);
-  const [showJobAlert, setShowJobAlert] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -53,6 +50,13 @@ export const DriverHome = () => {
     },
     enabled: !!user?.id,
   });
+
+  // Fetch available jobs from database
+  const { data: availableJobs } = useAvailableJobs(driverRecord?.id || null);
+  const acceptJobMutation = useAcceptJob();
+  
+  // Get first pending job to show as alert
+  const pendingJob = availableJobs?.[0];
 
   // GPS Location tracking
   const {
@@ -80,8 +84,18 @@ export const DriverHome = () => {
     updateOnlineStatus();
   }, [isOnline, driverRecord?.id]);
 
-  const handleAcceptJob = () => {
-    navigate("/driver/job/active");
+  const handleAcceptJob = async (jobId: string) => {
+    if (!driverRecord?.id) return;
+    
+    try {
+      await acceptJobMutation.mutateAsync({
+        jobId,
+        driverId: driverRecord.id,
+      });
+      navigate("/driver/job/active");
+    } catch (error) {
+      console.error("Failed to accept job:", error);
+    }
   };
 
   return (
@@ -180,7 +194,7 @@ export const DriverHome = () => {
       </div>
 
       {/* Incoming Job Alert */}
-      {isOnline && showJobAlert && (
+      {isOnline && pendingJob && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -192,50 +206,54 @@ export const DriverHome = () => {
                 className="h-full bg-primary"
                 initial={{ width: "100%" }}
                 animate={{ width: "0%" }}
-                transition={{ duration: 20, ease: "linear" }}
+                transition={{ duration: 60, ease: "linear" }}
               />
             </div>
             <CardContent className="p-4">
               <div className="mb-3 flex items-center justify-between">
                 <StatusBadge variant="primary" pulse>New Request</StatusBadge>
                 <span className="text-sm font-medium text-muted-foreground">
-                  {mockPendingJob.expiresIn}s remaining
+                  {pendingJob.eta_minutes || 20}min ETA
                 </span>
               </div>
 
               <div className="mb-4 flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                  <mockPendingJob.icon className="h-6 w-6 text-primary" />
+                  {(() => {
+                    const IconComponent = serviceIcons[pendingJob.services?.name || ""] || TyreIcon;
+                    return <IconComponent className="h-6 w-6 text-primary" />;
+                  })()}
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-foreground">{mockPendingJob.service}</p>
-                  <p className="text-sm text-muted-foreground">{mockPendingJob.customerName}</p>
+                  <p className="font-semibold text-foreground">{pendingJob.services?.name || "Service"}</p>
+                  <p className="text-sm text-muted-foreground">{(pendingJob as any).customer?.full_name || "Customer"}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-bold text-primary">{mockPendingJob.payout}</p>
-                  <p className="text-sm text-muted-foreground">{mockPendingJob.distance}</p>
+                  <p className="text-xl font-bold text-primary">R{Math.round((pendingJob.estimated_price || 0) * 0.8)}</p>
+                  <p className="text-sm text-muted-foreground">Payout</p>
                 </div>
               </div>
 
               <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                <span>{mockPendingJob.location}</span>
+                <span>{pendingJob.pickup_address || "Location pending"}</span>
               </div>
 
               <div className="flex gap-3">
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={() => setShowJobAlert(false)}
+                  disabled={acceptJobMutation.isPending}
                 >
                   Decline
                 </Button>
                 <Button
                   variant="amber"
                   className="flex-1"
-                  onClick={handleAcceptJob}
+                  onClick={() => handleAcceptJob(pendingJob.id)}
+                  disabled={acceptJobMutation.isPending}
                 >
-                  Accept Job
+                  {acceptJobMutation.isPending ? "Accepting..." : "Accept Job"}
                 </Button>
               </div>
             </CardContent>

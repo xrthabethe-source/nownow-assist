@@ -9,6 +9,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { friendDetailsSchema } from "@/lib/validations";
 import { toast } from "sonner";
+import { useCreateJob } from "@/hooks/useJobs";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const services: Record<string, any> = {
   fuel: { 
@@ -66,10 +69,32 @@ export const ServiceRequest = () => {
     location: "",
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  
+  const createJobMutation = useCreateJob();
+  
+  // Fetch service from database if available
+  const { data: dbService } = useQuery({
+    queryKey: ["service", serviceId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("services")
+        .select("*")
+        .eq("name", serviceId === "fuel" ? "Fuel Rescue" : 
+            serviceId === "jumpstart" ? "Jump-Start" :
+            serviceId === "tyre" ? "Tyre Change" :
+            serviceId === "diagnostics" ? "Battery Boost + Diagnostics" :
+            "Call a Mechanic")
+        .single();
+      return data;
+    },
+  });
 
   const service = services[serviceId || "fuel"];
   const ServiceIcon = service?.icon || FuelIcon;
   const isMechanicService = service?.isMechanic === true;
+  
+  // Use database price if available
+  const actualPrice = dbService?.base_price || service?.price;
 
   const validateFriendDetails = () => {
     if (!requestForOther) return true;
@@ -90,7 +115,7 @@ export const ServiceRequest = () => {
     return true;
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     // Validate friend details if requesting for someone else
     if (!validateFriendDetails()) {
       toast.error("Please fix the errors in friend's details");
@@ -104,9 +129,29 @@ export const ServiceRequest = () => {
     }
     
     setIsProcessing(true);
-    setTimeout(() => {
+    
+    try {
+      // Create job in database
+      if (dbService?.id) {
+        await createJobMutation.mutateAsync({
+          serviceId: dbService.id,
+          pickupAddress: requestForOther ? friendDetails.location : "123 Main Street, Sandton",
+          pickupLat: -26.1076,
+          pickupLng: 28.0567,
+          estimatedPrice: actualPrice,
+          etaMinutes: dbService.eta_minutes || 20,
+          notes: requestForOther ? `Request for: ${friendDetails.name}, Phone: ${friendDetails.phone}` : undefined,
+        });
+        toast.success("Service request created!");
+      }
+      
       navigate("/customer/tracking");
-    }, 1500);
+    } catch (error) {
+      console.error("Failed to create job:", error);
+      toast.error("Failed to create request. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleFriendDetailChange = (field: string, value: string) => {
@@ -182,7 +227,7 @@ export const ServiceRequest = () => {
                   <p className="text-sm text-muted-foreground">{service?.description}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-primary">R{service?.price}</p>
+                  <p className="text-2xl font-bold text-primary">R{actualPrice}</p>
                   <p className="text-sm text-muted-foreground">{service?.eta}</p>
                 </div>
               </div>
@@ -446,7 +491,7 @@ export const ServiceRequest = () => {
               <span className="text-muted-foreground">
                 {isMechanicService ? "Connection Fee" : "Service"}
               </span>
-              <span className="font-medium">R{service?.price}</span>
+              <span className="font-medium">R{actualPrice}</span>
             </div>
             {isMechanicService && (
               <p className="text-xs text-muted-foreground italic">
@@ -456,7 +501,7 @@ export const ServiceRequest = () => {
             <div className="border-t border-border pt-2">
               <div className="flex justify-between">
                 <span className="font-semibold">Total</span>
-                <span className="text-xl font-bold text-primary">R{service?.price}</span>
+                <span className="text-xl font-bold text-primary">R{actualPrice}</span>
               </div>
             </div>
           </div>
@@ -485,9 +530,9 @@ export const ServiceRequest = () => {
                 {isMechanicService ? "Finding mechanic..." : "Processing..."}
               </span>
             ) : isMechanicService ? (
-              "Find Me a Mechanic – R149"
+              `Find Me a Mechanic – R${actualPrice}`
             ) : (
-              `Confirm & Pay R${service?.price}`
+              `Confirm & Pay R${actualPrice}`
             )}
           </Button>
         </motion.div>

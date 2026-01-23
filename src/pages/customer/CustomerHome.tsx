@@ -5,7 +5,7 @@ import { Logo } from "@/components/shared/Logo";
 import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, MechanicIcon, DiagnosticsIcon } from "@/components/icons/ServiceIcons";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { MapPin, Navigation, Clock, Star, ChevronRight, Phone, Loader2 } from "lucide-react";
+import { MapPin, Navigation, Clock, Star, ChevronRight, Phone, Loader2, RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -38,7 +38,7 @@ export const CustomerHome = () => {
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const fetchLocation = () => {
     if (!navigator.geolocation) {
       setLocation("Location not supported");
       setIsLocating(false);
@@ -46,11 +46,13 @@ export const CustomerHome = () => {
       return;
     }
 
+    setIsLocating(true);
+    setLocationError(null);
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
         try {
-          // Reverse geocode using free Nominatim API
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
             { headers: { 'User-Agent': 'NowNowAssist/1.0' } }
@@ -66,7 +68,6 @@ export const CustomerHome = () => {
             setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
           }
         } catch {
-          // Fallback to coordinates if geocoding fails
           setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
         }
         setIsLocating(false);
@@ -91,8 +92,12 @@ export const CustomerHome = () => {
             setLocationError("An unknown error occurred");
         }
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
+  };
+
+  useEffect(() => {
+    fetchLocation();
   }, []);
 
   const handleServiceSelect = (serviceId: string) => {
@@ -136,8 +141,14 @@ export const CustomerHome = () => {
                     <p className="text-xs text-destructive">{locationError}</p>
                   )}
                 </div>
-                <Button variant="ghost" size="icon-sm">
-                  <Navigation className="h-5 w-5 text-primary" />
+                <Button 
+                  variant="ghost" 
+                  size="icon-sm" 
+                  onClick={fetchLocation}
+                  disabled={isLocating}
+                  className="shrink-0"
+                >
+                  <RefreshCw className={`h-5 w-5 text-primary ${isLocating ? 'animate-spin' : ''}`} />
                 </Button>
               </div>
             </CardContent>

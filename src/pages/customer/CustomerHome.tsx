@@ -5,7 +5,10 @@ import { Logo } from "@/components/shared/Logo";
 import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, MechanicIcon, DiagnosticsIcon } from "@/components/icons/ServiceIcons";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { MapPin, Navigation, Clock, Star, ChevronRight, Phone, Loader2, RefreshCw } from "lucide-react";
+import { SaveLocationDialog } from "@/components/customer/SaveLocationDialog";
+import { LocationSelector } from "@/components/customer/LocationSelector";
+import { useSavedLocations, SavedLocation } from "@/hooks/useSavedLocations";
+import { MapPin, Clock, Phone, Loader2, RefreshCw, Bookmark, BookmarkPlus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -33,10 +36,14 @@ const item = {
 
 export const CustomerHome = () => {
   const [location, setLocation] = useState("Detecting your location...");
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(true);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [isFromSaved, setIsFromSaved] = useState(false);
   const navigate = useNavigate();
+  const { data: savedLocations } = useSavedLocations();
 
   const fetchLocation = () => {
     if (!navigator.geolocation) {
@@ -48,10 +55,12 @@ export const CustomerHome = () => {
 
     setIsLocating(true);
     setLocationError(null);
+    setIsFromSaved(false);
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
+        setCoordinates({ lat: latitude, lng: longitude });
         try {
           const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
@@ -60,10 +69,12 @@ export const CustomerHome = () => {
           const data = await response.json();
           
           if (data.address) {
-            const { road, suburb, city, town, village } = data.address;
+            const { road, house_number, suburb, city, town, village } = data.address;
+            const streetNumber = house_number || "";
             const streetName = road || "Unknown Street";
             const area = suburb || city || town || village || "";
-            setLocation(`${streetName}${area ? `, ${area}` : ""}`);
+            const fullStreet = streetNumber ? `${streetNumber} ${streetName}` : streetName;
+            setLocation(`${fullStreet}${area ? `, ${area}` : ""}`);
           } else {
             setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
           }
@@ -96,14 +107,32 @@ export const CustomerHome = () => {
     );
   };
 
+  // Load default saved location or detect GPS
   useEffect(() => {
-    fetchLocation();
-  }, []);
+    const defaultLocation = savedLocations?.find((loc) => loc.is_default);
+    if (defaultLocation) {
+      setLocation(defaultLocation.address);
+      setCoordinates({ lat: Number(defaultLocation.latitude), lng: Number(defaultLocation.longitude) });
+      setIsLocating(false);
+      setIsFromSaved(true);
+    } else {
+      fetchLocation();
+    }
+  }, [savedLocations]);
+
+  const handleSavedLocationSelect = (savedLoc: SavedLocation) => {
+    setLocation(savedLoc.address);
+    setCoordinates({ lat: Number(savedLoc.latitude), lng: Number(savedLoc.longitude) });
+    setIsFromSaved(true);
+    setLocationError(null);
+  };
 
   const handleServiceSelect = (serviceId: string) => {
     setSelectedService(serviceId);
     navigate(`/customer/request/${serviceId}`);
   };
+
+  const canSaveLocation = coordinates && !isLocating && !locationError && !isFromSaved;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -130,6 +159,8 @@ export const CustomerHome = () => {
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
                   {isLocating ? (
                     <Loader2 className="h-6 w-6 text-primary-foreground animate-spin" />
+                  ) : isFromSaved ? (
+                    <Bookmark className="h-6 w-6 text-primary-foreground fill-primary-foreground" />
                   ) : (
                     <MapPin className="h-6 w-6 text-primary-foreground" />
                   )}
@@ -141,20 +172,44 @@ export const CustomerHome = () => {
                     <p className="text-xs text-destructive">{locationError}</p>
                   )}
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon-sm" 
-                  onClick={fetchLocation}
-                  disabled={isLocating}
-                  className="shrink-0"
-                >
-                  <RefreshCw className={`h-5 w-5 text-primary ${isLocating ? 'animate-spin' : ''}`} />
-                </Button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <LocationSelector onSelect={handleSavedLocationSelect} />
+                  {canSaveLocation && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon-sm" 
+                      onClick={() => setShowSaveDialog(true)}
+                      title="Save this location"
+                    >
+                      <BookmarkPlus className="h-5 w-5 text-primary" />
+                    </Button>
+                  )}
+                  <Button 
+                    variant="ghost" 
+                    size="icon-sm" 
+                    onClick={fetchLocation}
+                    disabled={isLocating}
+                    title="Refresh location"
+                  >
+                    <RefreshCw className={`h-5 w-5 text-primary ${isLocating ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
         </motion.div>
       </div>
+
+      {/* Save Location Dialog */}
+      {coordinates && (
+        <SaveLocationDialog
+          open={showSaveDialog}
+          onOpenChange={setShowSaveDialog}
+          address={location}
+          latitude={coordinates.lat}
+          longitude={coordinates.lng}
+        />
+      )}
 
       {/* Services Grid */}
       <div className="container py-4">

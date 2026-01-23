@@ -5,8 +5,8 @@ import { Logo } from "@/components/shared/Logo";
 import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, MechanicIcon, DiagnosticsIcon } from "@/components/icons/ServiceIcons";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { MapPin, Navigation, Clock, Star, ChevronRight, Phone } from "lucide-react";
-import { useState } from "react";
+import { MapPin, Navigation, Clock, Star, ChevronRight, Phone, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const services = [
@@ -33,8 +33,67 @@ const item = {
 
 export const CustomerHome = () => {
   const [location, setLocation] = useState("Detecting your location...");
+  const [isLocating, setIsLocating] = useState(true);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocation("Location not supported");
+      setIsLocating(false);
+      setLocationError("Geolocation is not supported by your browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          // Reverse geocode using free Nominatim API
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`,
+            { headers: { 'User-Agent': 'NowNowAssist/1.0' } }
+          );
+          const data = await response.json();
+          
+          if (data.address) {
+            const { road, suburb, city, town, village } = data.address;
+            const streetName = road || "Unknown Street";
+            const area = suburb || city || town || village || "";
+            setLocation(`${streetName}${area ? `, ${area}` : ""}`);
+          } else {
+            setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+          }
+        } catch {
+          // Fallback to coordinates if geocoding fails
+          setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+        }
+        setIsLocating(false);
+      },
+      (error) => {
+        setIsLocating(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setLocation("Location access denied");
+            setLocationError("Please enable location access");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setLocation("Location unavailable");
+            setLocationError("Unable to determine your location");
+            break;
+          case error.TIMEOUT:
+            setLocation("Location timeout");
+            setLocationError("Location request timed out");
+            break;
+          default:
+            setLocation("Location error");
+            setLocationError("An unknown error occurred");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  }, []);
 
   const handleServiceSelect = (serviceId: string) => {
     setSelectedService(serviceId);
@@ -64,11 +123,18 @@ export const CustomerHome = () => {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-                  <MapPin className="h-6 w-6 text-primary-foreground" />
+                  {isLocating ? (
+                    <Loader2 className="h-6 w-6 text-primary-foreground animate-spin" />
+                  ) : (
+                    <MapPin className="h-6 w-6 text-primary-foreground" />
+                  )}
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-muted-foreground">Your Location</p>
-                  <p className="font-semibold text-foreground">123 Main Street, Sandton</p>
+                  <p className="font-semibold text-foreground truncate">{location}</p>
+                  {locationError && (
+                    <p className="text-xs text-destructive">{locationError}</p>
+                  )}
                 </div>
                 <Button variant="ghost" size="icon-sm">
                   <Navigation className="h-5 w-5 text-primary" />

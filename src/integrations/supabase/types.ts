@@ -559,6 +559,42 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_locations: {
+        Row: {
+          address: string
+          created_at: string
+          id: string
+          is_default: boolean | null
+          latitude: number
+          longitude: number
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          latitude: number
+          longitude: number
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          latitude?: number
+          longitude?: number
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           base_price: number

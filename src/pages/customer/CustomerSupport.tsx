@@ -90,9 +90,12 @@ export const CustomerSupport = () => {
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [reportCategory, setReportCategory] = useState("");
   const [reportSubject, setReportSubject] = useState("");
   const [reportDescription, setReportDescription] = useState("");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailMessage, setEmailMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -187,6 +190,60 @@ export const CustomerSupport = () => {
     }
   };
 
+  const handleEmailSubmit = async () => {
+    if (!emailSubject.trim() || !emailMessage.trim()) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    if (!user) {
+      toast.error("Please log in to send an email");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Create support ticket for the email
+      const { error: ticketError } = await supabase
+        .from("support_tickets")
+        .insert({
+          user_id: user.id,
+          subject: emailSubject.trim(),
+          description: emailMessage.trim(),
+          category: "general",
+          priority: "normal",
+        });
+
+      if (ticketError) throw ticketError;
+
+      // Create admin notification
+      await supabase
+        .from("admin_notifications")
+        .insert({
+          type: "dispute",
+          title: "New Customer Email",
+          message: emailSubject.trim(),
+          severity: "info",
+          metadata: { 
+            category: "general", 
+            subject: emailSubject.trim(),
+            user_id: user.id,
+          },
+        });
+
+      toast.success("Your message has been sent. We'll respond within 24 hours.");
+      setShowEmailDialog(false);
+      setEmailSubject("");
+      setEmailMessage("");
+    } catch (error) {
+      console.error("Failed to send email:", error);
+      toast.error("Failed to send message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleReportSubmit = async () => {
     if (!reportCategory || !reportSubject.trim() || !reportDescription.trim()) {
       toast.error("Please fill in all fields");
@@ -260,7 +317,11 @@ export const CustomerSupport = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card variant="interactive">
+          <Card 
+            variant="interactive" 
+            className="cursor-pointer"
+            onClick={() => setShowEmailDialog(true)}
+          >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
@@ -268,8 +329,9 @@ export const CustomerSupport = () => {
                 </div>
                 <div className="flex-1">
                   <p className="font-medium">Email Support</p>
-                  <p className="text-sm text-muted-foreground">support@nownowassist.co.za</p>
+                  <p className="text-sm text-muted-foreground">Send us a message</p>
                 </div>
+                <Send className="h-5 w-5 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
@@ -505,6 +567,67 @@ export const CustomerSupport = () => {
                 <>
                   <Send className="mr-2 h-4 w-4" />
                   Submit Report
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Dialog */}
+      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-primary" />
+              Send us a Message
+            </DialogTitle>
+            <DialogDescription>
+              We'll respond to your email within 24 hours.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email-subject">Subject</Label>
+              <Input
+                id="email-subject"
+                placeholder="What's this about?"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                maxLength={100}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email-message">Message</Label>
+              <Textarea
+                id="email-message"
+                placeholder="How can we help you?"
+                value={emailMessage}
+                onChange={(e) => setEmailMessage(e.target.value)}
+                rows={6}
+                maxLength={2000}
+              />
+              <p className="text-xs text-muted-foreground text-right">
+                {emailMessage.length}/2000
+              </p>
+            </div>
+
+            <Button 
+              className="w-full" 
+              onClick={handleEmailSubmit}
+              disabled={isSubmitting || !emailSubject.trim() || !emailMessage.trim()}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="mr-2 h-4 w-4" />
+                  Send Message
                 </>
               )}
             </Button>

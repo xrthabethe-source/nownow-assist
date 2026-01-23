@@ -87,6 +87,7 @@ const navSections: NavSection[] = [
     items: [
       { icon: Users, label: "Team & Access", path: "/admin/users" },
       { icon: Car, label: "Drivers", path: "/admin/drivers" },
+      { icon: Users, label: "Customers", path: "/admin/customers" },
     ],
   },
   {

@@ -21,6 +21,7 @@ import DriverEarnings from "./pages/driver/DriverEarnings";
 import ActiveJob from "./pages/driver/ActiveJob";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
+import AdminCustomers from "./pages/admin/AdminCustomers";
 import AdminDrivers from "./pages/admin/AdminDrivers";
 import AdminServices from "./pages/admin/AdminServices";
 import AdminPricing from "./pages/admin/AdminPricing";
@@ -121,6 +122,11 @@ const App = () => (
             <Route path="/admin/users" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminUsers />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/customers" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminCustomers />
               </ProtectedRoute>
             } />
             <Route path="/admin/drivers" element={

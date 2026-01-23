@@ -43,10 +43,8 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import {
   Search,
-  Filter,
   MoreVertical,
   Users,
-  UserCheck,
   Car,
   Shield,
   RefreshCw,
@@ -73,26 +71,8 @@ interface UserWithRole {
   permissions?: string[];
 }
 
-// Demo users data
+// Demo users data - only office staff and drivers
 const demoUsers: UserWithRole[] = [
-  {
-    id: "usr-001",
-    email: "john.mokoena@email.com",
-    full_name: "John Mokoena",
-    avatar_url: null,
-    phone: "+27 82 123 4567",
-    created_at: "2025-06-15T08:00:00Z",
-    role: "customer",
-  },
-  {
-    id: "usr-002",
-    email: "sarah.nkosi@email.com",
-    full_name: "Sarah Nkosi",
-    avatar_url: null,
-    phone: "+27 83 234 5678",
-    created_at: "2025-08-22T10:30:00Z",
-    role: "customer",
-  },
   {
     id: "usr-003",
     email: "samuel.khumalo@email.com",
@@ -120,15 +100,6 @@ const demoUsers: UserWithRole[] = [
     created_at: "2024-01-01T00:00:00Z",
     role: "admin",
     permissions: ["all"],
-  },
-  {
-    id: "usr-006",
-    email: "thabo.molefe@email.com",
-    full_name: "Thabo Molefe",
-    avatar_url: null,
-    phone: "+27 87 678 9012",
-    created_at: "2025-11-18T11:45:00Z",
-    role: "customer",
   },
   {
     id: "usr-007",
@@ -175,14 +146,14 @@ const availablePermissions = [
 ];
 
 export default function AdminUsers() {
-  const [activeTab, setActiveTab] = useState("platform");
+  const [activeTab, setActiveTab] = useState("office");
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [selectedUser, setSelectedUser] = useState<UserWithRole | null>(null);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false);
   const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
-  const [newRole, setNewRole] = useState<AppRole>("customer");
+  const [newRole, setNewRole] = useState<AppRole>("admin");
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   
@@ -191,14 +162,14 @@ export default function AdminUsers() {
   const [newUserPassword, setNewUserPassword] = useState("");
   const [newUserName, setNewUserName] = useState("");
   const [newUserPhone, setNewUserPhone] = useState("");
-  const [newUserRole, setNewUserRole] = useState<AppRole>("customer");
+  const [newUserRole, setNewUserRole] = useState<AppRole>("admin");
   const [newUserPermissions, setNewUserPermissions] = useState<string[]>(["users"]);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   
   const queryClient = useQueryClient();
 
   const { data: fetchedUsers, isLoading, refetch } = useQuery({
-    queryKey: ["admin-users"],
+    queryKey: ["admin-users-team"],
     queryFn: async () => {
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
@@ -219,13 +190,16 @@ export default function AdminUsers() {
 
       const rolesMap = new Map(roles?.map((r) => [r.user_id, r.role as AppRole]));
 
-      return (profiles || []).map((profile, index) => ({
-        ...profile,
-        role: rolesMap.get(profile.id) || "customer",
-        permissions: rolesMap.get(profile.id) === "admin" 
-          ? (index === 0 ? ["all"] : ["users", "jobs"]) 
-          : undefined,
-      })) as UserWithRole[];
+      // Only include admins and drivers (not customers)
+      return (profiles || [])
+        .map((profile, index) => ({
+          ...profile,
+          role: rolesMap.get(profile.id) || "customer",
+          permissions: rolesMap.get(profile.id) === "admin" 
+            ? (index === 0 ? ["all"] : ["users", "jobs"]) 
+            : undefined,
+        }))
+        .filter((u) => u.role !== "customer") as UserWithRole[];
     },
   });
 
@@ -257,14 +231,13 @@ export default function AdminUsers() {
     },
   });
 
-  // Platform users (customers & drivers)
-  const platformUsers = users.filter((u) => u.role !== "admin");
-  const filteredPlatformUsers = platformUsers.filter((user) => {
+  // Drivers only
+  const driverUsers = users.filter((u) => u.role === "driver");
+  const filteredDriverUsers = driverUsers.filter((user) => {
     const matchesSearch =
       user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    return matchesSearch && matchesRole;
+    return matchesSearch;
   });
 
   // Office staff (admins)
@@ -278,7 +251,6 @@ export default function AdminUsers() {
 
   const stats = {
     total: users.length,
-    customers: users.filter((u) => u.role === "customer").length,
     drivers: users.filter((u) => u.role === "driver").length,
     admins: users.filter((u) => u.role === "admin").length,
   };
@@ -335,7 +307,7 @@ export default function AdminUsers() {
     setNewUserPassword("");
     setNewUserName("");
     setNewUserPhone("");
-    setNewUserRole("customer");
+    setNewUserRole("admin");
     setNewUserPermissions(["users"]);
   };
 
@@ -461,7 +433,7 @@ export default function AdminUsers() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card>
               <CardContent className="flex items-center gap-4 p-4">
@@ -470,7 +442,7 @@ export default function AdminUsers() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{stats.total}</p>
-                  <p className="text-sm text-muted-foreground">Total Users</p>
+                  <p className="text-sm text-muted-foreground">Total Team</p>
                 </div>
               </CardContent>
             </Card>
@@ -479,12 +451,12 @@ export default function AdminUsers() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <Card>
               <CardContent className="flex items-center gap-4 p-4">
-                <div className="rounded-full bg-success/10 p-3">
-                  <UserCheck className="h-5 w-5 text-success" />
+                <div className="rounded-full bg-destructive/10 p-3">
+                  <Shield className="h-5 w-5 text-destructive" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{stats.customers}</p>
-                  <p className="text-sm text-muted-foreground">Customers</p>
+                  <p className="text-2xl font-bold">{stats.admins}</p>
+                  <p className="text-sm text-muted-foreground">Office Staff</p>
                 </div>
               </CardContent>
             </Card>
@@ -503,144 +475,20 @@ export default function AdminUsers() {
               </CardContent>
             </Card>
           </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card>
-              <CardContent className="flex items-center gap-4 p-4">
-                <div className="rounded-full bg-destructive/10 p-3">
-                  <Shield className="h-5 w-5 text-destructive" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.admins}</p>
-                  <p className="text-sm text-muted-foreground">Office Staff</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
         </div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="platform" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Platform Users
-            </TabsTrigger>
             <TabsTrigger value="office" className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
               Office Staff
             </TabsTrigger>
+            <TabsTrigger value="drivers" className="flex items-center gap-2">
+              <Car className="h-4 w-4" />
+              Drivers
+            </TabsTrigger>
           </TabsList>
-
-          {/* Platform Users Tab */}
-          <TabsContent value="platform" className="mt-4">
-            <Card>
-              <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
-                <div>
-                  <CardTitle>Platform Users</CardTitle>
-                  <CardDescription>Customers and drivers using the app</CardDescription>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      placeholder="Search users..."
-                      className="w-64 pl-10"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                  <Select value={roleFilter} onValueChange={setRoleFilter}>
-                    <SelectTrigger className="w-36">
-                      <Filter className="mr-2 h-4 w-4" />
-                      <SelectValue placeholder="Filter" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="customer">Customers</SelectItem>
-                      <SelectItem value="driver">Drivers</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead className="w-12"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredPlatformUsers.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar>
-                                <AvatarImage src={user.avatar_url || undefined} />
-                                <AvatarFallback>
-                                  {user.full_name?.charAt(0).toUpperCase() || "U"}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="font-medium">{user.full_name || "Unnamed"}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>{user.email}</TableCell>
-                          <TableCell>{user.phone || "-"}</TableCell>
-                          <TableCell>
-                            <StatusBadge variant={user.role === "driver" ? "warning" : "success"}>
-                              {user.role}
-                            </StatusBadge>
-                          </TableCell>
-                          <TableCell>
-                            {format(new Date(user.created_at), "MMM d, yyyy")}
-                          </TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon-sm">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleChangeRole(user)}>
-                                  <Shield className="mr-2 h-4 w-4" />
-                                  Change Role
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => handleResetPassword(user)}
-                                  disabled={!user.email}
-                                >
-                                  <KeyRound className="mr-2 h-4 w-4" />
-                                  Reset Password
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {filteredPlatformUsers.length === 0 && (
-                        <TableRow>
-                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                            No platform users found
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           {/* Office Staff Tab */}
           <TabsContent value="office" className="mt-4">
@@ -731,6 +579,97 @@ export default function AdminUsers() {
                         <TableRow>
                           <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                             No office staff found
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Drivers Tab */}
+          <TabsContent value="drivers" className="mt-4">
+            <Card>
+              <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
+                <div>
+                  <CardTitle>Drivers</CardTitle>
+                  <CardDescription>Drivers using the platform</CardDescription>
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Search drivers..."
+                    className="w-64 pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Driver</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Phone</TableHead>
+                        <TableHead>Joined</TableHead>
+                        <TableHead className="w-12"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredDriverUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar>
+                                <AvatarImage src={user.avatar_url || undefined} />
+                                <AvatarFallback>
+                                  {user.full_name?.charAt(0).toUpperCase() || "D"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium">{user.full_name || "Unnamed"}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>{user.phone || "-"}</TableCell>
+                          <TableCell>
+                            {format(new Date(user.created_at), "MMM d, yyyy")}
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon-sm">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleChangeRole(user)}>
+                                  <Shield className="mr-2 h-4 w-4" />
+                                  Change Role
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => handleResetPassword(user)}
+                                  disabled={!user.email}
+                                >
+                                  <KeyRound className="mr-2 h-4 w-4" />
+                                  Reset Password
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {filteredDriverUsers.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                            No drivers found
                           </TableCell>
                         </TableRow>
                       )}
@@ -832,9 +771,9 @@ export default function AdminUsers() {
       }}>
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
+            <DialogTitle>Add Team Member</DialogTitle>
             <DialogDescription>
-              Create a new user account and assign their role.
+              Add a new office staff member or driver to the team.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -884,22 +823,16 @@ export default function AdminUsers() {
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="customer">
+                  <SelectItem value="admin">
                     <div className="flex items-center gap-2">
-                      <UserCheck className="h-4 w-4 text-success" />
-                      <span>Customer</span>
+                      <Shield className="h-4 w-4 text-destructive" />
+                      <span>Office Staff (Admin)</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="driver">
                     <div className="flex items-center gap-2">
                       <Car className="h-4 w-4 text-warning" />
                       <span>Driver</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="admin">
-                    <div className="flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-destructive" />
-                      <span>Office Staff (Admin)</span>
                     </div>
                   </SelectItem>
                 </SelectContent>

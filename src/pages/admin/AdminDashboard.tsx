@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,45 +29,9 @@ import {
   Bell,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const mockStats = {
-  activeJobs: 8,
-  driversOnline: 24,
-  completedToday: 156,
-  revenue: "R48,250",
-  avgEta: "18 min",
-  slaCompliance: 94,
-};
-
-const initialActiveJobs = [
-  {
-    id: "JOB-001",
-    customer: "John M.",
-    driver: "Samuel K.",
-    service: "Tyre Change",
-    status: "in_progress",
-    location: "Sandton, JHB",
-    eta: "12 min",
-  },
-  {
-    id: "JOB-002",
-    customer: "Sarah L.",
-    driver: "David O.",
-    service: "Jump Start",
-    status: "dispatched",
-    location: "Rosebank, JHB",
-    eta: "8 min",
-  },
-  {
-    id: "JOB-003",
-    customer: "Mike R.",
-    driver: null,
-    service: "Fuel Delivery",
-    status: "pending",
-    location: "Fourways, JHB",
-    eta: "--",
-  },
-];
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeJobs, useRealtimeDrivers } from "@/hooks/useJobs";
 
 const mockAlerts = [
   { id: 1, type: "warning", message: "Driver David O. rating dropped below 4.0", time: "5 min ago", link: "/admin/drivers" },
@@ -76,22 +40,108 @@ const mockAlerts = [
 ];
 
 export const AdminDashboard = () => {
-  const [activeJobs, setActiveJobs] = useState(initialActiveJobs);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const queryClient = useQueryClient();
 
-  const handleRefreshJobs = useCallback(() => {
+  // Enable realtime updates
+  useRealtimeJobs();
+  useRealtimeDrivers();
+
+  // Fetch active jobs from database
+  const { data: activeJobs = [], refetch: refetchJobs } = useQuery({
+    queryKey: ["admin-active-jobs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("jobs")
+        .select(`
+          *,
+          services (id, name, icon)
+        `)
+        .in("status", ["pending", "accepted", "dispatched", "in_progress"])
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+
+      // Fetch customer and driver profiles
+      if (data && data.length > 0) {
+        const customerIds = [...new Set(data.map(j => j.customer_id).filter(Boolean))];
+        const driverIds = [...new Set(data.map(j => j.driver_id).filter(Boolean))];
+
+        const [customersRes, driversRes] = await Promise.all([
+          customerIds.length > 0 
+            ? supabase.from("profiles").select("id, full_name, phone").in("id", customerIds)
+            : { data: [] },
+          driverIds.length > 0
+            ? supabase.from("drivers").select("id, user_id, vehicle_plate").in("id", driverIds)
+            : { data: [] }
+        ]);
+
+        // Fetch driver profiles
+        const driverUserIds = driversRes.data?.map(d => d.user_id) || [];
+        const driverProfilesRes = driverUserIds.length > 0
+          ? await supabase.from("profiles").select("id, full_name").in("id", driverUserIds)
+          : { data: [] };
+
+        return data.map(job => ({
+          ...job,
+          customer: customersRes.data?.find(p => p.id === job.customer_id) || null,
+          driver: driversRes.data?.find(d => d.id === job.driver_id) || null,
+          driverProfile: driverProfilesRes.data?.find(p => 
+            p.id === driversRes.data?.find(d => d.id === job.driver_id)?.user_id
+          ) || null,
+        }));
+      }
+
+      return data || [];
+    },
+    refetchInterval: 30000, // Auto refresh every 30 seconds
+  });
+
+  // Fetch stats
+  const { data: stats } = useQuery({
+    queryKey: ["admin-stats"],
+    queryFn: async () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const [activeJobsRes, driversOnlineRes, completedTodayRes, revenueTodayRes] = await Promise.all([
+        supabase.from("jobs").select("id", { count: "exact" })
+          .in("status", ["pending", "accepted", "dispatched", "in_progress"]),
+        supabase.from("drivers").select("id", { count: "exact" }).eq("is_online", true),
+        supabase.from("jobs").select("id", { count: "exact" })
+          .eq("status", "completed")
+          .gte("completed_at", today.toISOString()),
+        supabase.from("payments").select("amount")
+          .eq("status", "completed")
+          .gte("created_at", today.toISOString()),
+      ]);
+
+      const totalRevenue = revenueTodayRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+
+      return {
+        activeJobs: activeJobsRes.count || 0,
+        driversOnline: driversOnlineRes.count || 0,
+        completedToday: completedTodayRes.count || 0,
+        revenue: `R${totalRevenue.toLocaleString()}`,
+        avgEta: "18 min",
+        slaCompliance: 94,
+      };
+    },
+    refetchInterval: 30000,
+  });
+
+  const handleRefreshJobs = useCallback(async () => {
     setIsRefreshing(true);
-    // Simulate refresh - in production this would fetch from the database
-    setTimeout(() => {
-      setActiveJobs([...initialActiveJobs]);
-      setIsRefreshing(false);
-    }, 500);
-  }, []);
+    await refetchJobs();
+    queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
+    setIsRefreshing(false);
+  }, [refetchJobs, queryClient]);
 
   const filteredJobs = useMemo(() => {
     if (statusFilter === "all") return activeJobs;
-    return activeJobs.filter((job) => job.status === statusFilter);
+    return activeJobs.filter((job: any) => job.status === statusFilter);
   }, [activeJobs, statusFilter]);
 
   return (
@@ -109,7 +159,7 @@ export const AdminDashboard = () => {
                   <Activity className="h-5 w-5 text-primary" />
                   <StatusBadge variant="active" pulse>Live</StatusBadge>
                 </div>
-                <p className="text-2xl font-bold">{mockStats.activeJobs}</p>
+                <p className="text-2xl font-bold">{stats?.activeJobs || 0}</p>
                 <p className="text-sm text-muted-foreground">Active Jobs</p>
               </CardContent>
             </Card>
@@ -122,7 +172,7 @@ export const AdminDashboard = () => {
                   <Car className="h-5 w-5 text-success" />
                   <StatusBadge variant="active" pulse>Live</StatusBadge>
                 </div>
-                <p className="text-2xl font-bold">{mockStats.driversOnline}</p>
+                <p className="text-2xl font-bold">{stats?.driversOnline || 0}</p>
                 <p className="text-sm text-muted-foreground">Drivers Online</p>
               </CardContent>
               {/* Animated pulse overlay */}
@@ -136,7 +186,7 @@ export const AdminDashboard = () => {
                 <div className="mb-2 flex items-center justify-between">
                   <CheckCircle2 className="h-5 w-5 text-success" />
                 </div>
-                <p className="text-2xl font-bold">{mockStats.completedToday}</p>
+                <p className="text-2xl font-bold">{stats?.completedToday || 0}</p>
                 <p className="text-sm text-muted-foreground">Completed Today</p>
               </CardContent>
             </Card>
@@ -148,7 +198,7 @@ export const AdminDashboard = () => {
                 <div className="mb-2 flex items-center justify-between">
                   <DollarSign className="h-5 w-5 text-primary" />
                 </div>
-                <p className="text-2xl font-bold">{mockStats.revenue}</p>
+                <p className="text-2xl font-bold">{stats?.revenue || "R0"}</p>
                 <p className="text-sm text-muted-foreground">Today's Revenue</p>
               </CardContent>
             </Card>
@@ -160,7 +210,7 @@ export const AdminDashboard = () => {
                 <div className="mb-2 flex items-center justify-between">
                   <Clock className="h-5 w-5 text-warning" />
                 </div>
-                <p className="text-2xl font-bold">{mockStats.avgEta}</p>
+                <p className="text-2xl font-bold">{stats?.avgEta || "-- min"}</p>
                 <p className="text-sm text-muted-foreground">Avg ETA</p>
               </CardContent>
             </Card>
@@ -172,7 +222,7 @@ export const AdminDashboard = () => {
                 <div className="mb-2 flex items-center justify-between">
                   <TrendingUp className="h-5 w-5 text-success" />
                 </div>
-                <p className="text-2xl font-bold">{mockStats.slaCompliance}%</p>
+                <p className="text-2xl font-bold">{stats?.slaCompliance || 0}%</p>
                 <p className="text-sm text-muted-foreground">SLA Compliance</p>
               </CardContent>
             </Card>
@@ -238,7 +288,7 @@ export const AdminDashboard = () => {
                       <div className="flex-1">
                         <div className="mb-1 flex items-center gap-2">
                           <span className="font-mono text-sm font-medium text-muted-foreground">
-                            {job.id}
+                            {job.job_number}
                           </span>
                           <StatusBadge
                             variant={
@@ -257,24 +307,24 @@ export const AdminDashboard = () => {
                               : "Pending Driver"}
                           </StatusBadge>
                         </div>
-                        <p className="font-medium">{job.service}</p>
+                        <p className="font-medium">{(job as any).services?.name || "Service"}</p>
                         <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Users className="h-3 w-3" />
-                            {job.customer}
+                            {(job as any).customer?.full_name || "Customer"}
                           </span>
                           <span className="flex items-center gap-1">
                             <Car className="h-3 w-3" />
-                            {job.driver || "Unassigned"}
+                            {(job as any).driverProfile?.full_name || "Unassigned"}
                           </span>
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
-                            {job.location}
+                            {job.pickup_address || "Location"}
                           </span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-primary">{job.eta}</p>
+                        <p className="text-lg font-bold text-primary">{job.eta_minutes || "--"} min</p>
                         <p className="text-sm text-muted-foreground">ETA</p>
                       </div>
                       <Button variant="ghost" size="icon-sm" asChild>

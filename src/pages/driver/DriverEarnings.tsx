@@ -37,7 +37,7 @@ export const DriverEarnings = () => {
           animate={{ opacity: 1, y: 0 }}
           className="grid grid-cols-2 gap-3"
         >
-          <Card variant="amber">
+          <Card variant="amber" className="cursor-pointer transition-all hover:opacity-90 active:scale-[0.98]">
             <CardContent className="p-4">
               <div className="mb-2 flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary-foreground" />
@@ -47,7 +47,7 @@ export const DriverEarnings = () => {
             </CardContent>
           </Card>
 
-          <Card variant="default">
+          <Card variant="default" className="cursor-pointer transition-all hover:border-primary/50 active:scale-[0.98]">
             <CardContent className="p-4">
               <div className="mb-2 flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -57,7 +57,7 @@ export const DriverEarnings = () => {
             </CardContent>
           </Card>
 
-          <Card variant="success">
+          <Card variant="success" className="cursor-pointer transition-all hover:opacity-90 active:scale-[0.98]">
             <CardContent className="p-4">
               <div className="mb-2 flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
@@ -67,7 +67,7 @@ export const DriverEarnings = () => {
             </CardContent>
           </Card>
 
-          <Card variant="default">
+          <Card variant="default" className="cursor-pointer transition-all hover:border-primary/50 active:scale-[0.98]">
             <CardContent className="p-4">
               <div className="mb-2 flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
@@ -110,7 +110,7 @@ export const DriverEarnings = () => {
               {mockTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="flex items-center justify-between rounded-xl border border-border p-3"
+                  className="flex cursor-pointer items-center justify-between rounded-xl border border-border p-3 transition-all hover:border-primary/50 hover:bg-muted/50 active:scale-[0.99]"
                 >
                   <div className="flex items-center gap-3">
                     <div
@@ -131,13 +131,16 @@ export const DriverEarnings = () => {
                       <p className="text-sm text-muted-foreground">{transaction.time}</p>
                     </div>
                   </div>
-                  <span
-                    className={`font-semibold ${
-                      transaction.type === "earning" ? "text-success" : "text-foreground"
-                    }`}
-                  >
-                    {transaction.amount}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`font-semibold ${
+                        transaction.type === "earning" ? "text-success" : "text-foreground"
+                      }`}
+                    >
+                      {transaction.amount}
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </div>
               ))}
             </CardContent>
@@ -150,16 +153,19 @@ export const DriverEarnings = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card variant="interactive">
+          <Card variant="interactive" className="cursor-pointer transition-all hover:border-primary/50 active:scale-[0.99]">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium text-foreground">Next Payout</p>
                   <p className="text-sm text-muted-foreground">Friday, Dec 15</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-primary">{mockEarnings.pending}</p>
-                  <StatusBadge variant="pending">Processing</StatusBadge>
+                <div className="flex items-center gap-2">
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-primary">{mockEarnings.pending}</p>
+                    <StatusBadge variant="pending">Processing</StatusBadge>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </div>
               </div>
             </CardContent>

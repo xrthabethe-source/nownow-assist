@@ -135,7 +135,7 @@ export const LiveTracking = () => {
       title: "Request cancelled",
       description: "Your service request has been cancelled.",
     });
-    navigate("/customer");
+    navigate("/");
   };
 
   return (

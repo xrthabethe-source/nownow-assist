@@ -1,19 +1,29 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Logo } from "@/components/shared/Logo";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { TyreIcon } from "@/components/icons/ServiceIcons";
-import { Phone, MessageCircle, AlertTriangle, Star, Car, Navigation, Check, X } from "lucide-react";
+import { TyreIcon, FuelIcon, BatteryIcon, MechanicIcon } from "@/components/icons/ServiceIcons";
+import { Phone, MessageCircle, AlertTriangle, Star, Car, Check, X, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 const mockDriver = {
   name: "Samuel K.",
   rating: 4.9,
   vehicle: "Toyota Hilux",
   plate: "CA 123-456",
-  phone: "+27 82 123 4567",
+  phone: "+27821234567",
   photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
   eta: 12,
 };
@@ -26,10 +36,39 @@ const statuses = [
   { key: "arrived", label: "Responder arrived", icon: "🎉" },
 ];
 
+const serviceIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  fuel: FuelIcon,
+  jumpstart: BatteryIcon,
+  tyre: TyreIcon,
+  mechanic: MechanicIcon,
+};
+
+const serviceNames: Record<string, string> = {
+  fuel: "Fuel Rescue",
+  jumpstart: "Jump-Start Rescue",
+  tyre: "Tyre Change",
+  mechanic: "Mechanic Callout",
+};
+
+const EMERGENCY_NUMBER = "10111"; // South African emergency number
+
 export const LiveTracking = () => {
   const navigate = useNavigate();
+  const { serviceId } = useParams();
+  const location = useLocation();
+  const { toast } = useToast();
+  
   const [currentStatus, setCurrentStatus] = useState(0);
   const [eta, setEta] = useState(mockDriver.eta);
+  const [showSOSDialog, setShowSOSDialog] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+
+  // Get address from navigation state or use fallback
+  const pickupAddress = (location.state as { address?: string })?.address || "Your current location";
+  
+  // Get the correct service icon and name
+  const ServiceIcon = serviceIcons[serviceId || "tyre"] || TyreIcon;
+  const serviceName = serviceNames[serviceId || "tyre"] || "Service Request";
 
   useEffect(() => {
     // Simulate status progression
@@ -47,6 +86,50 @@ export const LiveTracking = () => {
       clearInterval(etaInterval);
     };
   }, []);
+
+  const handleCallDriver = () => {
+    window.location.href = `tel:${mockDriver.phone}`;
+    toast({
+      title: "Calling driver",
+      description: `Dialing ${mockDriver.name}...`,
+    });
+  };
+
+  const handleMessageDriver = () => {
+    const message = encodeURIComponent(`Hi ${mockDriver.name}, I'm waiting for my ${serviceName} service.`);
+    window.location.href = `sms:${mockDriver.phone}?body=${message}`;
+    toast({
+      title: "Opening messages",
+      description: `Sending SMS to ${mockDriver.name}...`,
+    });
+  };
+
+  const handleEmergencySOS = () => {
+    setShowSOSDialog(true);
+  };
+
+  const confirmEmergencyCall = () => {
+    setShowSOSDialog(false);
+    window.location.href = `tel:${EMERGENCY_NUMBER}`;
+    toast({
+      title: "Emergency call",
+      description: `Calling ${EMERGENCY_NUMBER}...`,
+      variant: "destructive",
+    });
+  };
+
+  const handleCancelRequest = () => {
+    setShowCancelDialog(true);
+  };
+
+  const confirmCancel = () => {
+    setShowCancelDialog(false);
+    toast({
+      title: "Request cancelled",
+      description: "Your service request has been cancelled.",
+    });
+    navigate("/customer");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -177,11 +260,11 @@ export const LiveTracking = () => {
                 </div>
 
                 <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1">
+                  <Button variant="outline" className="flex-1" onClick={handleMessageDriver}>
                     <MessageCircle className="mr-2 h-4 w-4" />
                     Message
                   </Button>
-                  <Button variant="amber" className="flex-1">
+                  <Button variant="amber" className="flex-1" onClick={handleCallDriver}>
                     <Phone className="mr-2 h-4 w-4" />
                     Call
                   </Button>
@@ -202,11 +285,14 @@ export const LiveTracking = () => {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-                  <TyreIcon className="h-6 w-6 text-primary-foreground" />
+                  <ServiceIcon className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <div>
-                  <p className="font-semibold text-foreground">Tyre Change</p>
-                  <p className="text-sm text-muted-foreground">123 Main Street, Sandton</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground">{serviceName}</p>
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <MapPin className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{pickupAddress}</span>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -241,7 +327,7 @@ export const LiveTracking = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Button variant="sos" size="lg" className="w-full">
+          <Button variant="sos" size="lg" className="w-full" onClick={handleEmergencySOS}>
             <AlertTriangle className="mr-2 h-5 w-5" />
             Emergency SOS
           </Button>
@@ -254,12 +340,55 @@ export const LiveTracking = () => {
           transition={{ delay: 0.3 }}
           className="mt-4 text-center"
         >
-          <Button variant="ghost" className="text-muted-foreground">
+          <Button variant="ghost" className="text-muted-foreground" onClick={handleCancelRequest}>
             <X className="mr-2 h-4 w-4" />
             Cancel Request
           </Button>
         </motion.div>
       </div>
+
+      {/* Emergency SOS Confirmation Dialog */}
+      <AlertDialog open={showSOSDialog} onOpenChange={setShowSOSDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Emergency SOS
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will call the emergency services ({EMERGENCY_NUMBER}). Only use this in a real emergency situation where your safety is at risk.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmEmergencyCall}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              <Phone className="mr-2 h-4 w-4" />
+              Call {EMERGENCY_NUMBER}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel Request Confirmation Dialog */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Request?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel your service request? A responder may already be on their way.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Request</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmCancel} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Yes, Cancel
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

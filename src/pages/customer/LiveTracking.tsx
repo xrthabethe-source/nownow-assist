@@ -19,6 +19,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { InAppChatDialog } from "@/components/customer/InAppChatDialog";
 import { InAppCallDialog } from "@/components/customer/InAppCallDialog";
+import { useJobMessages } from "@/hooks/useJobMessages";
 
 const mockDriver = {
   name: "Samuel K.",
@@ -72,6 +73,14 @@ export const LiveTracking = () => {
   
   // Get job ID from navigation state (would be real in production)
   const jobId = (location.state as { jobId?: string })?.jobId || null;
+
+  // Subscribe to job messages for push notifications
+  const { messages, unreadCount, sendMessage, setChatOpen } = useJobMessages(jobId, mockDriver.name);
+
+  // Track chat open state for notification suppression
+  useEffect(() => {
+    setChatOpen(showChatDialog);
+  }, [showChatDialog, setChatOpen]);
   
   // Get the correct service icon and name
   const ServiceIcon = serviceIcons[serviceId || "tyre"] || TyreIcon;
@@ -258,9 +267,14 @@ export const LiveTracking = () => {
                 </div>
 
                 <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1" onClick={handleMessageDriver}>
+                  <Button variant="outline" className="flex-1 relative" onClick={handleMessageDriver}>
                     <MessageCircle className="mr-2 h-4 w-4" />
                     Message
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
                   </Button>
                   <Button variant="amber" className="flex-1" onClick={handleCallDriver}>
                     <Phone className="mr-2 h-4 w-4" />
@@ -392,9 +406,10 @@ export const LiveTracking = () => {
       <InAppChatDialog
         open={showChatDialog}
         onOpenChange={setShowChatDialog}
-        jobId={jobId}
         driverName={mockDriver.name}
         driverPhone={mockDriver.phone}
+        messages={messages}
+        onSendMessage={sendMessage}
         onCallClick={() => {
           setShowChatDialog(false);
           setShowCallDialog(true);

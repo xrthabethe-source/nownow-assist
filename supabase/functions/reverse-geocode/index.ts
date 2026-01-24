@@ -15,21 +15,14 @@ function buildLocationString(address: Record<string, unknown>): string {
   }
 
   const road = get('road')
-  const suburb = get('suburb')
-  const neighbourhood = get('neighbourhood')
-  const city = get('city')
-  const town = get('town')
-  const village = get('village')
-  const state = get('state')
 
-  // Prefer street names only; do NOT include house numbers or area (per product requirement)
+  // ONLY return street names - never return areas, suburbs, wards, or regions
   if (road) {
     return `Near ${road}`
   }
 
-  // Fallback to area only if no street name available
-  const fallbackArea = neighbourhood || suburb || city || town || village
-  return fallbackArea ? `Near ${fallbackArea}` : 'Current location detected'
+  // If no street found, return generic message - never fall back to area names
+  return ''
 }
 
 Deno.serve(async (req) => {

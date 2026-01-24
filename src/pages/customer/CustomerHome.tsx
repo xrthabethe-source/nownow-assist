@@ -267,14 +267,16 @@ export const CustomerHome = () => {
                     )}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={handleEditClick}
-                      title="Edit location"
-                    >
-                      <Edit2 className="h-5 w-5 text-primary" />
-                    </Button>
+                    {!isLocating && location && (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={handleEditClick}
+                        title="Edit location"
+                      >
+                        <Edit2 className="h-5 w-5 text-primary" />
+                      </Button>
+                    )}
                     <LocationSelector onSelect={handleSavedLocationSelect} />
                     {canSaveLocation && (
                       <Button 

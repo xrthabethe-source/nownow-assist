@@ -1,15 +1,19 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { TrendingUp, Calendar, DollarSign, Clock, ChevronRight, Download, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TrendingUp, Calendar, DollarSign, ChevronRight, Download, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TodayJobsDialog } from "@/components/driver/TodayJobsDialog";
+import { WeekJobsDialog } from "@/components/driver/WeekJobsDialog";
+import { PendingPaymentsDialog } from "@/components/driver/PendingPaymentsDialog";
+import { RequestPayoutDialog } from "@/components/driver/RequestPayoutDialog";
 
 const mockEarnings = {
   today: "R1,250",
   thisWeek: "R8,450",
   pending: "R2,100",
-  completedJobs: 12,
 };
 
 const mockTransactions = [
@@ -20,6 +24,11 @@ const mockTransactions = [
 ];
 
 export const DriverEarnings = () => {
+  const [showTodayJobs, setShowTodayJobs] = useState(false);
+  const [showWeekJobs, setShowWeekJobs] = useState(false);
+  const [showPendingPayments, setShowPendingPayments] = useState(false);
+  const [showPayoutDialog, setShowPayoutDialog] = useState(false);
+
   return (
     <div className="min-h-screen bg-background pb-24 dark">
       {/* Header */}
@@ -31,49 +40,51 @@ export const DriverEarnings = () => {
       </header>
 
       <div className="container py-4 space-y-4">
-        {/* Summary Cards */}
+        {/* Summary Cards - Now 3 cards */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-2 gap-3"
+          className="grid grid-cols-3 gap-3"
         >
-          <Card variant="amber" className="cursor-pointer transition-all hover:opacity-90 active:scale-[0.98]">
+          <Card 
+            variant="amber" 
+            className="cursor-pointer transition-all hover:opacity-90 active:scale-[0.98]"
+            onClick={() => setShowTodayJobs(true)}
+          >
             <CardContent className="p-4">
               <div className="mb-2 flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary-foreground" />
                 <span className="text-sm text-primary-foreground/80">Today</span>
               </div>
-              <p className="text-2xl font-bold text-primary-foreground">{mockEarnings.today}</p>
+              <p className="text-xl font-bold text-primary-foreground">{mockEarnings.today}</p>
             </CardContent>
           </Card>
 
-          <Card variant="default" className="cursor-pointer transition-all hover:border-primary/50 active:scale-[0.98]">
+          <Card 
+            variant="default" 
+            className="cursor-pointer transition-all hover:border-primary/50 active:scale-[0.98]"
+            onClick={() => setShowWeekJobs(true)}
+          >
             <CardContent className="p-4">
               <div className="mb-2 flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">This Week</span>
+                <span className="text-sm text-muted-foreground">Week</span>
               </div>
-              <p className="text-2xl font-bold text-foreground">{mockEarnings.thisWeek}</p>
+              <p className="text-xl font-bold text-foreground">{mockEarnings.thisWeek}</p>
             </CardContent>
           </Card>
 
-          <Card variant="success" className="cursor-pointer transition-all hover:opacity-90 active:scale-[0.98]">
+          <Card 
+            variant="success" 
+            className="cursor-pointer transition-all hover:opacity-90 active:scale-[0.98]"
+            onClick={() => setShowPendingPayments(true)}
+          >
             <CardContent className="p-4">
               <div className="mb-2 flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
                 <span className="text-sm">Pending</span>
               </div>
-              <p className="text-2xl font-bold">{mockEarnings.pending}</p>
-            </CardContent>
-          </Card>
-
-          <Card variant="default" className="cursor-pointer transition-all hover:border-primary/50 active:scale-[0.98]">
-            <CardContent className="p-4">
-              <div className="mb-2 flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Jobs</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{mockEarnings.completedJobs}</p>
+              <p className="text-xl font-bold">{mockEarnings.pending}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -85,7 +96,7 @@ export const DriverEarnings = () => {
           transition={{ delay: 0.1 }}
           className="flex gap-3"
         >
-          <Button variant="amber" className="flex-1">
+          <Button variant="amber" className="flex-1" onClick={() => setShowPayoutDialog(true)}>
             Request Payout
           </Button>
           <Button variant="outline" size="icon">
@@ -174,6 +185,16 @@ export const DriverEarnings = () => {
       </div>
 
       <BottomNav type="driver" />
+
+      {/* Dialogs */}
+      <TodayJobsDialog open={showTodayJobs} onOpenChange={setShowTodayJobs} />
+      <WeekJobsDialog open={showWeekJobs} onOpenChange={setShowWeekJobs} />
+      <PendingPaymentsDialog open={showPendingPayments} onOpenChange={setShowPendingPayments} />
+      <RequestPayoutDialog 
+        open={showPayoutDialog} 
+        onOpenChange={setShowPayoutDialog}
+        availableBalance={mockEarnings.pending}
+      />
     </div>
   );
 };

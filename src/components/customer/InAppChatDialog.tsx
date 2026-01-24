@@ -3,80 +3,42 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Phone } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { Send, Phone, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
+  job_id: string;
   sender_id: string;
   sender_type: "customer" | "driver";
   message: string;
+  is_read: boolean;
   created_at: string;
 }
 
 interface InAppChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  jobId: string | null;
   driverName: string;
   driverPhone: string;
+  messages: Message[];
+  onSendMessage: (text: string) => Promise<{ error: string | null }>;
   onCallClick: () => void;
 }
 
 export const InAppChatDialog = ({
   open,
   onOpenChange,
-  jobId,
   driverName,
   driverPhone,
+  messages,
+  onSendMessage,
   onCallClick,
 }: InAppChatDialogProps) => {
-  const { user } = useAuth();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { toast } = useToast();
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  // Fetch messages and subscribe to real-time updates
-  useEffect(() => {
-    if (!open || !jobId) return;
-
-    const fetchMessages = async () => {
-      const { data, error } = await supabase
-        .from("job_messages")
-        .select("*")
-        .eq("job_id", jobId)
-        .order("created_at", { ascending: true });
-
-      if (!error && data) {
-        setMessages(data as Message[]);
-      }
-    };
-
-    fetchMessages();
-
-    // Subscribe to new messages
-    const channel = supabase
-      .channel(`job-messages-${jobId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "job_messages",
-          filter: `job_id=eq.${jobId}`,
-        },
-        (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message]);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [open, jobId]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -86,20 +48,21 @@ export const InAppChatDialog = ({
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !jobId || !user) return;
+    if (!newMessage.trim() || sending) return;
 
     setSending(true);
-    const { error } = await supabase.from("job_messages").insert({
-      job_id: jobId,
-      sender_id: user.id,
-      sender_type: "customer",
-      message: newMessage.trim(),
-    });
+    const { error } = await onSendMessage(newMessage);
+    setSending(false);
 
-    if (!error) {
+    if (error) {
+      toast({
+        title: "Failed to send",
+        description: error,
+        variant: "destructive",
+      });
+    } else {
       setNewMessage("");
     }
-    setSending(false);
   };
 
   const formatTime = (dateString: string) => {
@@ -184,14 +147,18 @@ export const InAppChatDialog = ({
                   handleSendMessage();
                 }
               }}
-              disabled={!jobId}
+              disabled={sending}
             />
             <Button
               size="icon"
               onClick={handleSendMessage}
-              disabled={!newMessage.trim() || sending || !jobId}
+              disabled={!newMessage.trim() || sending}
             >
-              <Send className="h-4 w-4" />
+              {sending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>

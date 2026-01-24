@@ -22,20 +22,14 @@ function buildLocationString(address: Record<string, unknown>): string {
   const village = get('village')
   const state = get('state')
 
-  // Prefer street names; do NOT include house numbers (per product requirement)
-  let base = road ? `Near ${road}` : ''
-
-  if (!base) {
-    const fallbackArea = neighbourhood || suburb || city || town || village
-    base = fallbackArea ? `Near ${fallbackArea}` : 'Current location detected'
+  // Prefer street names only; do NOT include house numbers or area (per product requirement)
+  if (road) {
+    return `Near ${road}`
   }
 
-  const area = suburb || neighbourhood || city || town || village || state
-  if (area && !base.includes(area)) {
-    base += `, ${area}`
-  }
-
-  return base
+  // Fallback to area only if no street name available
+  const fallbackArea = neighbourhood || suburb || city || town || village
+  return fallbackArea ? `Near ${fallbackArea}` : 'Current location detected'
 }
 
 Deno.serve(async (req) => {

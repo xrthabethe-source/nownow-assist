@@ -259,11 +259,15 @@ export const CustomerHome = () => {
       <div className="container py-4">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-semibold text-foreground">Recent Activity</h3>
-          <Button variant="link" size="sm" className="text-primary">
+          <Button variant="link" size="sm" className="text-primary" onClick={() => navigate('/customer/history')}>
             View All
           </Button>
         </div>
-        <Card variant="default">
+        <Card 
+          variant="interactive" 
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => navigate('/customer/history')}
+        >
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success/10">

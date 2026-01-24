@@ -80,7 +80,7 @@ const App = () => (
                 <ServiceRequest />
               </ProtectedRoute>
             } />
-            <Route path="/customer/tracking" element={
+            <Route path="/customer/tracking/:serviceId" element={
               <ProtectedRoute allowedRoles={['customer', 'admin']}>
                 <LiveTracking />
               </ProtectedRoute>

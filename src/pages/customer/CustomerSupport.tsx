@@ -91,6 +91,7 @@ export const CustomerSupport = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [showChatDialog, setShowChatDialog] = useState(false);
   const [reportCategory, setReportCategory] = useState("");
   const [reportSubject, setReportSubject] = useState("");
   const [reportDescription, setReportDescription] = useState("");
@@ -337,104 +338,28 @@ export const CustomerSupport = () => {
           </Card>
         </motion.div>
 
-        {/* AI Chat */}
+        {/* AI Chat - Compact Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card variant="default">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Bot className="h-5 w-5 text-primary" />
-                Chat with AI Assistant
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {/* Chat Messages */}
-              <div
-                ref={chatContainerRef}
-                className="h-64 overflow-y-auto rounded-lg border border-border bg-muted/30 p-3 space-y-3"
-              >
-                {messages.length === 0 ? (
-                  <div className="flex h-full items-center justify-center text-center text-sm text-muted-foreground">
-                    <div>
-                      <Bot className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                      <p>Ask me anything about our services!</p>
-                      <p className="text-xs mt-1">I can help with questions about pricing, services, and more.</p>
-                    </div>
-                  </div>
-                ) : (
-                  <AnimatePresence mode="popLayout">
-                    {messages.map((msg, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                      >
-                        {msg.role === "assistant" && (
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                            <Bot className="h-4 w-4 text-primary" />
-                          </div>
-                        )}
-                        <div
-                          className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${
-                            msg.role === "user"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-card border border-border"
-                          }`}
-                        >
-                          {msg.content}
-                        </div>
-                        {msg.role === "user" && (
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted">
-                            <User className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        )}
-                      </motion.div>
-                    ))}
-                    {isLoading && messages[messages.length - 1]?.role === "user" && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex gap-2"
-                      >
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                          <Bot className="h-4 w-4 text-primary" />
-                        </div>
-                        <div className="bg-card border border-border rounded-xl px-3 py-2">
-                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                )}
+          <Card 
+            variant="interactive" 
+            className="cursor-pointer"
+            onClick={() => setShowChatDialog(true)}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <Bot className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">AI Assistant</p>
+                  <p className="text-sm text-muted-foreground">Get instant answers</p>
+                </div>
+                <Send className="h-5 w-5 text-muted-foreground" />
               </div>
-
-              {/* Chat Input */}
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Type your question..."
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
-                  className="flex-1"
-                  disabled={isLoading}
-                />
-                <Button 
-                  variant="amber" 
-                  size="icon" 
-                  onClick={handleSendMessage}
-                  disabled={isLoading || !inputMessage.trim()}
-                >
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </div>
-
-              <p className="text-xs text-muted-foreground text-center">
-                Can't find an answer? Use the Report Issue form below to email us.
-              </p>
             </CardContent>
           </Card>
         </motion.div>
@@ -631,6 +556,104 @@ export const CustomerSupport = () => {
                 </>
               )}
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Chat Dialog */}
+      <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
+        <DialogContent className="max-w-md max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bot className="h-5 w-5 text-primary" />
+              AI Assistant
+            </DialogTitle>
+            <DialogDescription>
+              Ask me anything about our services
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 flex flex-col min-h-0 space-y-3">
+            {/* Chat Messages */}
+            <div
+              ref={chatContainerRef}
+              className="flex-1 min-h-[200px] max-h-[300px] overflow-y-auto rounded-lg border border-border bg-muted/30 p-3 space-y-3"
+            >
+              {messages.length === 0 ? (
+                <div className="flex h-full items-center justify-center text-center text-sm text-muted-foreground">
+                  <div>
+                    <Bot className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                    <p>Ask me anything!</p>
+                    <p className="text-xs mt-1">I can help with pricing, services, and more.</p>
+                  </div>
+                </div>
+              ) : (
+                <AnimatePresence mode="popLayout">
+                  {messages.map((msg, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`flex gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      {msg.role === "assistant" && (
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                          <Bot className="h-4 w-4 text-primary" />
+                        </div>
+                      )}
+                      <div
+                        className={`max-w-[80%] rounded-xl px-3 py-2 text-sm ${
+                          msg.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-card border border-border"
+                        }`}
+                      >
+                        {msg.content}
+                      </div>
+                      {msg.role === "user" && (
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                  {isLoading && messages[messages.length - 1]?.role === "user" && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex gap-2"
+                    >
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                        <Bot className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="bg-card border border-border rounded-xl px-3 py-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              )}
+            </div>
+
+            {/* Chat Input */}
+            <div className="flex gap-2">
+              <Input
+                placeholder="Type your question..."
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
+                className="flex-1"
+                disabled={isLoading}
+              />
+              <Button 
+                variant="amber" 
+                size="icon" 
+                onClick={handleSendMessage}
+                disabled={isLoading || !inputMessage.trim()}
+              >
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

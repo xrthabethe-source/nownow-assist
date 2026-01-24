@@ -5,7 +5,7 @@ import { Logo } from "@/components/shared/Logo";
 import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, WrenchIcon } from "@/components/icons/ServiceIcons";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { MapPin, Clock, Zap, Star, TrendingUp, Bell, Settings, ChevronRight, Navigation, Loader2 } from "lucide-react";
+import { MapPin, Clock, Zap, Star, TrendingUp, Bell, Settings, ChevronRight, Navigation, Loader2, Volume2, VolumeX } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAvailableJobs, useAcceptJob } from "@/hooks/useJobs";
+import { useJobAlert } from "@/hooks/useJobAlert";
 
 const mockStats = {
   todayEarnings: "R1,250",
@@ -33,6 +34,7 @@ const serviceIcons: Record<string, React.ComponentType<{ className?: string }>> 
 
 export const DriverHome = () => {
   const [isOnline, setIsOnline] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -57,6 +59,9 @@ export const DriverHome = () => {
   
   // Get first pending job to show as alert
   const pendingJob = availableJobs?.[0];
+
+  // Job alert ringtone - plays when there's a pending job and not muted
+  const { stopRinging } = useJobAlert(!!pendingJob && isOnline && !isMuted);
 
   // GPS Location tracking
   const {
@@ -211,7 +216,21 @@ export const DriverHome = () => {
             </div>
             <CardContent className="p-4">
               <div className="mb-3 flex items-center justify-between">
-                <StatusBadge variant="primary" pulse>New Request</StatusBadge>
+                <div className="flex items-center gap-2">
+                  <StatusBadge variant="primary" pulse>New Request</StatusBadge>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="h-7 w-7 rounded-full"
+                    onClick={() => setIsMuted(!isMuted)}
+                  >
+                    {isMuted ? (
+                      <VolumeX className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Volume2 className="h-4 w-4 text-primary" />
+                    )}
+                  </Button>
+                </div>
                 <span className="text-sm font-medium text-muted-foreground">
                   {pendingJob.eta_minutes || 20}min ETA
                 </span>

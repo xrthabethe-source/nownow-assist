@@ -51,12 +51,33 @@ export const CustomerHome = () => {
   const navigate = useNavigate();
   const { data: savedLocations } = useSavedLocations();
 
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 3000; // 3 seconds between retries
+
+  const attemptReverseGeocode = async (
+    lat: number,
+    lon: number,
+    attempt: number
+  ): Promise<string | null> => {
+    try {
+      const { data } = await supabase.functions.invoke("reverse-geocode", {
+        body: { lat, lon },
+      });
+      if (data?.location && data.location.length > 0) {
+        return data.location;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   const fetchLocation = () => {
     if (!navigator.geolocation) {
       setLocation("");
       setIsLocating(false);
-      setLocationError("Geolocation is not supported by your browser");
-      setIsEditing(true); // Open manual input when GPS not available
+      setLocationError("GPS not supported. Enter your street.");
+      setIsEditing(true);
       return;
     }
 
@@ -69,44 +90,47 @@ export const CustomerHome = () => {
       async (position) => {
         const { latitude, longitude } = position.coords;
         setCoordinates({ lat: latitude, lng: longitude });
-        try {
-          const { data } = await supabase.functions.invoke("reverse-geocode", {
-            body: { lat: latitude, lon: longitude },
-          });
-          // Only set location if we got a valid street name (not empty)
-          if (data?.location && data.location.length > 0) {
-            setLocation(data.location);
-          } else {
-            // No street found - prompt manual entry
-            setLocation("");
-            setIsEditing(true);
+
+        // Try up to MAX_RETRIES times with delay between attempts
+        let streetName: string | null = null;
+        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+          streetName = await attemptReverseGeocode(latitude, longitude, attempt);
+          if (streetName) break;
+          if (attempt < MAX_RETRIES) {
+            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
           }
-        } catch {
-          // On error, prompt manual entry
-          setLocation("");
-          setIsEditing(true);
         }
-        setIsLocating(false);
+
+        if (streetName) {
+          setLocation(streetName);
+          setIsLocating(false);
+        } else {
+          // All retries failed - open manual entry
+          setLocation("");
+          setLocationError("Street not found. Enter it manually.");
+          setIsEditing(true);
+          setIsLocating(false);
+        }
       },
       (error) => {
         setIsLocating(false);
-        setIsEditing(true); // Open manual input on GPS error
+        setIsEditing(true);
         switch (error.code) {
           case error.PERMISSION_DENIED:
             setLocation("");
-            setLocationError("Location access denied - please enter your street");
+            setLocationError("Location denied. Enter your street.");
             break;
           case error.POSITION_UNAVAILABLE:
             setLocation("");
-            setLocationError("Unable to detect location - please enter your street");
+            setLocationError("Can't detect location. Enter your street.");
             break;
           case error.TIMEOUT:
             setLocation("");
-            setLocationError("Location timeout - please enter your street");
+            setLocationError("Location timed out. Enter your street.");
             break;
           default:
             setLocation("");
-            setLocationError("Please enter your street name");
+            setLocationError("Enter your street name.");
         }
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }

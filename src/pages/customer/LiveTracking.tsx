@@ -17,6 +17,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { InAppChatDialog } from "@/components/customer/InAppChatDialog";
+import { InAppCallDialog } from "@/components/customer/InAppCallDialog";
 
 const mockDriver = {
   name: "Samuel K.",
@@ -62,9 +64,14 @@ export const LiveTracking = () => {
   const [eta, setEta] = useState(mockDriver.eta);
   const [showSOSDialog, setShowSOSDialog] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showChatDialog, setShowChatDialog] = useState(false);
+  const [showCallDialog, setShowCallDialog] = useState(false);
 
   // Get address from navigation state or use fallback
   const pickupAddress = (location.state as { address?: string })?.address || "Your current location";
+  
+  // Get job ID from navigation state (would be real in production)
+  const jobId = (location.state as { jobId?: string })?.jobId || null;
   
   // Get the correct service icon and name
   const ServiceIcon = serviceIcons[serviceId || "tyre"] || TyreIcon;
@@ -88,20 +95,11 @@ export const LiveTracking = () => {
   }, []);
 
   const handleCallDriver = () => {
-    window.location.href = `tel:${mockDriver.phone}`;
-    toast({
-      title: "Calling driver",
-      description: `Dialing ${mockDriver.name}...`,
-    });
+    setShowCallDialog(true);
   };
 
   const handleMessageDriver = () => {
-    const message = encodeURIComponent(`Hi ${mockDriver.name}, I'm waiting for my ${serviceName} service.`);
-    window.location.href = `sms:${mockDriver.phone}?body=${message}`;
-    toast({
-      title: "Opening messages",
-      description: `Sending SMS to ${mockDriver.name}...`,
-    });
+    setShowChatDialog(true);
   };
 
   const handleEmergencySOS = () => {
@@ -389,6 +387,27 @@ export const LiveTracking = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* In-App Chat Dialog */}
+      <InAppChatDialog
+        open={showChatDialog}
+        onOpenChange={setShowChatDialog}
+        jobId={jobId}
+        driverName={mockDriver.name}
+        driverPhone={mockDriver.phone}
+        onCallClick={() => {
+          setShowChatDialog(false);
+          setShowCallDialog(true);
+        }}
+      />
+
+      {/* In-App Call Dialog */}
+      <InAppCallDialog
+        open={showCallDialog}
+        onOpenChange={setShowCallDialog}
+        driverName={mockDriver.name}
+        driverPhone={mockDriver.phone}
+      />
     </div>
   );
 };

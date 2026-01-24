@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSaveLocation } from "@/hooks/useSavedLocations";
+import { validateStreetInput } from "@/lib/streetValidation";
 import { Home, Briefcase, MapPin, Loader2 } from "lucide-react";
 
 interface SaveLocationDialogProps {
@@ -36,21 +37,45 @@ export function SaveLocationDialog({
   longitude,
 }: SaveLocationDialogProps) {
   const [name, setName] = useState("");
+  const [streetAddress, setStreetAddress] = useState(address);
+  const [addressError, setAddressError] = useState<string | null>(null);
   const [isDefault, setIsDefault] = useState(false);
   const saveLocation = useSaveLocation();
+
+  // Sync address prop when dialog opens
+  useEffect(() => {
+    if (open) {
+      setStreetAddress(address);
+      setAddressError(null);
+    }
+  }, [open, address]);
+
+  const handleAddressChange = (value: string) => {
+    setStreetAddress(value);
+    if (addressError) setAddressError(null);
+  };
 
   const handleSave = async () => {
     if (!name.trim()) return;
 
+    // Validate street address
+    const validation = validateStreetInput(streetAddress);
+    if (!validation.isValid) {
+      setAddressError(validation.error || "Invalid street name");
+      return;
+    }
+
     await saveLocation.mutateAsync({
       name: name.trim(),
-      address,
+      address: streetAddress.trim(),
       latitude,
       longitude,
       is_default: isDefault,
     });
 
     setName("");
+    setStreetAddress("");
+    setAddressError(null);
     setIsDefault(false);
     onOpenChange(false);
   };
@@ -100,9 +125,19 @@ export function SaveLocationDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Address</Label>
-            <p className="text-sm text-muted-foreground rounded-md bg-muted p-3">
-              {address}
+            <Label htmlFor="street-address">Street Address</Label>
+            <Input
+              id="street-address"
+              value={streetAddress}
+              onChange={(e) => handleAddressChange(e.target.value)}
+              placeholder="e.g., Church Street, Near Jan Smuts Drive"
+              className={addressError ? "border-destructive" : ""}
+            />
+            {addressError && (
+              <p className="text-xs text-destructive">{addressError}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Enter a street name only - not an area, ward, or suburb
             </p>
           </div>
 

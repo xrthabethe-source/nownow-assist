@@ -1,15 +1,17 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/shared/Logo";
-import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, MechanicIcon, DiagnosticsIcon } from "@/components/icons/ServiceIcons";
+import { TyreIcon, BatteryIcon, FuelIcon, MechanicIcon } from "@/components/icons/ServiceIcons";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { SaveLocationDialog } from "@/components/customer/SaveLocationDialog";
 import { LocationSelector } from "@/components/customer/LocationSelector";
 import { useSavedLocations, SavedLocation } from "@/hooks/useSavedLocations";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Clock, Phone, Loader2, RefreshCw, Bookmark, BookmarkPlus } from "lucide-react";
+import { validateStreetInput } from "@/lib/streetValidation";
+import { MapPin, Clock, Phone, Loader2, RefreshCw, Bookmark, BookmarkPlus, Edit2, Check, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -36,7 +38,10 @@ const item = {
 };
 
 export const CustomerHome = () => {
-  const [location, setLocation] = useState("Detecting your location...");
+  const [location, setLocation] = useState("");
+  const [manualInput, setManualInput] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputError, setInputError] = useState<string | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [isLocating, setIsLocating] = useState(true);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -48,15 +53,17 @@ export const CustomerHome = () => {
 
   const fetchLocation = () => {
     if (!navigator.geolocation) {
-      setLocation("Location not supported");
+      setLocation("");
       setIsLocating(false);
       setLocationError("Geolocation is not supported by your browser");
+      setIsEditing(true); // Open manual input when GPS not available
       return;
     }
 
     setIsLocating(true);
     setLocationError(null);
     setIsFromSaved(false);
+    setIsEditing(false);
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -66,30 +73,40 @@ export const CustomerHome = () => {
           const { data } = await supabase.functions.invoke("reverse-geocode", {
             body: { lat: latitude, lon: longitude },
           });
-          setLocation(data?.location || "Current location detected");
+          // Only set location if we got a valid street name (not empty)
+          if (data?.location && data.location.length > 0) {
+            setLocation(data.location);
+          } else {
+            // No street found - prompt manual entry
+            setLocation("");
+            setIsEditing(true);
+          }
         } catch {
-          setLocation("Current location detected");
+          // On error, prompt manual entry
+          setLocation("");
+          setIsEditing(true);
         }
         setIsLocating(false);
       },
       (error) => {
         setIsLocating(false);
+        setIsEditing(true); // Open manual input on GPS error
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            setLocation("Location access denied");
-            setLocationError("Please enable location access");
+            setLocation("");
+            setLocationError("Location access denied - please enter your street");
             break;
           case error.POSITION_UNAVAILABLE:
-            setLocation("Location unavailable");
-            setLocationError("Unable to determine your location");
+            setLocation("");
+            setLocationError("Unable to detect location - please enter your street");
             break;
           case error.TIMEOUT:
-            setLocation("Location timeout");
-            setLocationError("Location request timed out");
+            setLocation("");
+            setLocationError("Location timeout - please enter your street");
             break;
           default:
-            setLocation("Location error");
-            setLocationError("An unknown error occurred");
+            setLocation("");
+            setLocationError("Please enter your street name");
         }
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -114,14 +131,57 @@ export const CustomerHome = () => {
     setCoordinates({ lat: Number(savedLoc.latitude), lng: Number(savedLoc.longitude) });
     setIsFromSaved(true);
     setLocationError(null);
+    setInputError(null);
+    setIsEditing(false);
   };
 
   const handleServiceSelect = (serviceId: string) => {
+    // Validate location before proceeding
+    if (!location.trim()) {
+      setInputError("Please enter a street name before requesting service");
+      setIsEditing(true);
+      return;
+    }
     setSelectedService(serviceId);
     navigate(`/customer/request/${serviceId}`);
   };
 
-  const canSaveLocation = coordinates && !isLocating && !locationError && !isFromSaved;
+  const handleEditClick = () => {
+    setManualInput(location);
+    setIsEditing(true);
+    setInputError(null);
+  };
+
+  const handleManualInputChange = (value: string) => {
+    setManualInput(value);
+    // Clear error when typing
+    if (inputError) setInputError(null);
+  };
+
+  const handleManualSubmit = () => {
+    const validation = validateStreetInput(manualInput);
+    
+    if (!validation.isValid) {
+      setInputError(validation.error || "Invalid street name");
+      return;
+    }
+
+    setLocation(manualInput.trim());
+    setIsEditing(false);
+    setInputError(null);
+    setLocationError(null);
+    setIsFromSaved(false);
+    // Clear coordinates since this is manual entry
+    setCoordinates(null);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setManualInput("");
+    setInputError(null);
+  };
+
+  const canSaveLocation = coordinates && !isLocating && !locationError && !isFromSaved && location;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -144,46 +204,103 @@ export const CustomerHome = () => {
         >
           <Card variant="amber" className="overflow-hidden">
             <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-                  {isLocating ? (
-                    <Loader2 className="h-6 w-6 text-primary-foreground animate-spin" />
-                  ) : isFromSaved ? (
-                    <Bookmark className="h-6 w-6 text-primary-foreground fill-primary-foreground" />
-                  ) : (
-                    <MapPin className="h-6 w-6 text-primary-foreground" />
+              {isEditing ? (
+                // Manual input mode
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-primary shrink-0" />
+                    <span className="text-sm font-medium text-muted-foreground">
+                      Enter street name or nearest street
+                    </span>
+                  </div>
+                  <Input
+                    value={manualInput}
+                    onChange={(e) => handleManualInputChange(e.target.value)}
+                    placeholder="e.g., Church Street, Corner of Jan Smuts and Beyers Naudé"
+                    className={inputError ? "border-destructive" : ""}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleManualSubmit();
+                      if (e.key === "Escape") handleCancelEdit();
+                    }}
+                    autoFocus
+                  />
+                  {inputError && (
+                    <p className="text-xs text-destructive">{inputError}</p>
                   )}
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={handleManualSubmit}
+                      className="flex-1"
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      Confirm
+                    </Button>
+                    {location && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCancelEdit}
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-muted-foreground">Your Location</p>
-                  <p className="font-semibold text-foreground truncate">{location}</p>
-                  {locationError && (
-                    <p className="text-xs text-destructive">{locationError}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <LocationSelector onSelect={handleSavedLocationSelect} />
-                  {canSaveLocation && (
+              ) : (
+                // Display mode
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
+                    {isLocating ? (
+                      <Loader2 className="h-6 w-6 text-primary-foreground animate-spin" />
+                    ) : isFromSaved ? (
+                      <Bookmark className="h-6 w-6 text-primary-foreground fill-primary-foreground" />
+                    ) : (
+                      <MapPin className="h-6 w-6 text-primary-foreground" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-muted-foreground">Your Location</p>
+                    <p className="font-semibold text-foreground truncate">
+                      {location || "Enter your street name"}
+                    </p>
+                    {locationError && (
+                      <p className="text-xs text-destructive">{locationError}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={handleEditClick}
+                      title="Edit location"
+                    >
+                      <Edit2 className="h-5 w-5 text-primary" />
+                    </Button>
+                    <LocationSelector onSelect={handleSavedLocationSelect} />
+                    {canSaveLocation && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon-sm" 
+                        onClick={() => setShowSaveDialog(true)}
+                        title="Save this location"
+                      >
+                        <BookmarkPlus className="h-5 w-5 text-primary" />
+                      </Button>
+                    )}
                     <Button 
                       variant="ghost" 
                       size="icon-sm" 
-                      onClick={() => setShowSaveDialog(true)}
-                      title="Save this location"
+                      onClick={fetchLocation}
+                      disabled={isLocating}
+                      title="Detect via GPS"
                     >
-                      <BookmarkPlus className="h-5 w-5 text-primary" />
+                      <RefreshCw className={`h-5 w-5 text-primary ${isLocating ? 'animate-spin' : ''}`} />
                     </Button>
-                  )}
-                  <Button 
-                    variant="ghost" 
-                    size="icon-sm" 
-                    onClick={fetchLocation}
-                    disabled={isLocating}
-                    title="Refresh location"
-                  >
-                    <RefreshCw className={`h-5 w-5 text-primary ${isLocating ? 'animate-spin' : ''}`} />
-                  </Button>
+                  </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

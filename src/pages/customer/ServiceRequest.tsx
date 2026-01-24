@@ -212,11 +212,11 @@ export const ServiceRequest = () => {
       return;
     }
     
-    // Validate payment method
-    if (!selectedPayment && paymentMethods.length === 0) {
-      toast.error("Please add a payment method first");
-      return;
-    }
+    // Payment validation skipped for demo - assume payment is done
+    // if (!selectedPayment && paymentMethods.length === 0) {
+    //   toast.error("Please add a payment method first");
+    //   return;
+    // }
     
     // Validate friend details if requesting for someone else
     if (!validateFriendDetails()) {

@@ -525,13 +525,15 @@ export const ServiceRequest = () => {
                     >
                       <RefreshCw className={`h-4 w-4 ${isLoadingLocation ? "animate-spin" : ""}`} />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => setIsEditingLocation(true)}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
+                    {!isLoadingLocation && location !== "Detecting location..." && (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => setIsEditingLocation(true)}
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}

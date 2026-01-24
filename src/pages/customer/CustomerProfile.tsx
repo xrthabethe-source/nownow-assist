@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { User, Car, CreditCard, Bell, Shield, LogOut, ChevronRight, Camera } from "lucide-react";
+import { User, Car, CreditCard, Bell, Shield, LogOut, ChevronRight, Camera, FileText, Clock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,9 @@ import { useVehicles } from "@/hooks/useVehicles";
 import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 import { VehiclesDialog } from "@/components/customer/VehiclesDialog";
 import { PaymentMethodsDialog } from "@/components/customer/PaymentMethodsDialog";
+import { NotificationsDialog } from "@/components/customer/NotificationsDialog";
+import { PrivacySecurityDialog } from "@/components/customer/PrivacySecurityDialog";
+import { LegalDialog } from "@/components/customer/LegalDialog";
 
 interface Profile {
   id: string;
@@ -42,6 +45,9 @@ export const CustomerProfile = () => {
   });
   const [vehiclesDialogOpen, setVehiclesDialogOpen] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [notificationsDialogOpen, setNotificationsDialogOpen] = useState(false);
+  const [privacyDialogOpen, setPrivacyDialogOpen] = useState(false);
+  const [legalDialogOpen, setLegalDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -301,7 +307,10 @@ export const CustomerProfile = () => {
         >
           <Card variant="default">
             <CardContent className="p-0">
-              <button className="flex w-full items-center justify-between p-4 transition-colors hover:bg-muted/50">
+              <button 
+                onClick={() => setNotificationsDialogOpen(true)}
+                className="flex w-full items-center justify-between p-4 transition-colors hover:bg-muted/50"
+              >
                 <div className="flex items-center gap-3">
                   <Bell className="h-5 w-5 text-muted-foreground" />
                   <span>Notifications</span>
@@ -309,10 +318,46 @@ export const CustomerProfile = () => {
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </button>
               <div className="border-t border-border" />
-              <button className="flex w-full items-center justify-between p-4 transition-colors hover:bg-muted/50">
+              <button 
+                onClick={() => navigate("/customer/history")}
+                className="flex w-full items-center justify-between p-4 transition-colors hover:bg-muted/50"
+              >
+                <div className="flex items-center gap-3">
+                  <Clock className="h-5 w-5 text-muted-foreground" />
+                  <span>Previous Assists</span>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </button>
+              <div className="border-t border-border" />
+              <button 
+                onClick={() => setPaymentDialogOpen(true)}
+                className="flex w-full items-center justify-between p-4 transition-colors hover:bg-muted/50"
+              >
+                <div className="flex items-center gap-3">
+                  <CreditCard className="h-5 w-5 text-muted-foreground" />
+                  <span>Payment History</span>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </button>
+              <div className="border-t border-border" />
+              <button 
+                onClick={() => setPrivacyDialogOpen(true)}
+                className="flex w-full items-center justify-between p-4 transition-colors hover:bg-muted/50"
+              >
                 <div className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-muted-foreground" />
                   <span>Privacy & Security</span>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </button>
+              <div className="border-t border-border" />
+              <button 
+                onClick={() => setLegalDialogOpen(true)}
+                className="flex w-full items-center justify-between p-4 transition-colors hover:bg-muted/50"
+              >
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <span>Legal</span>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </button>
@@ -346,6 +391,18 @@ export const CustomerProfile = () => {
       <PaymentMethodsDialog 
         open={paymentDialogOpen} 
         onOpenChange={setPaymentDialogOpen} 
+      />
+      <NotificationsDialog 
+        open={notificationsDialogOpen} 
+        onOpenChange={setNotificationsDialogOpen} 
+      />
+      <PrivacySecurityDialog 
+        open={privacyDialogOpen} 
+        onOpenChange={setPrivacyDialogOpen} 
+      />
+      <LegalDialog 
+        open={legalDialogOpen} 
+        onOpenChange={setLegalDialogOpen} 
       />
 
       <BottomNav type="customer" />

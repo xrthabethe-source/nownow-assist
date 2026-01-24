@@ -263,11 +263,8 @@ export const DriverHome = () => {
 
       {/* Stats Grid */}
       <div className="container py-4">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-3">
           <h3 className="font-semibold text-foreground">Today's Summary</h3>
-          <Button variant="link" size="sm" className="text-primary">
-            View Details
-          </Button>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -276,7 +273,7 @@ export const DriverHome = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card variant="default">
+            <Card variant="default" className="cursor-pointer transition-all hover:border-primary/50" onClick={() => navigate("/driver/earnings")}>
               <CardContent className="p-4">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                   <TrendingUp className="h-4 w-4" />
@@ -292,7 +289,7 @@ export const DriverHome = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
           >
-            <Card variant="default">
+            <Card variant="default" className="cursor-pointer transition-all hover:border-primary/50" onClick={() => navigate("/driver/earnings")}>
               <CardContent className="p-4">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                   <Clock className="h-4 w-4" />
@@ -308,7 +305,7 @@ export const DriverHome = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card variant="default">
+            <Card variant="default" className="cursor-pointer transition-all hover:border-primary/50" onClick={() => navigate("/driver/earnings")}>
               <CardContent className="p-4">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                   <Star className="h-4 w-4" />
@@ -324,7 +321,7 @@ export const DriverHome = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
           >
-            <Card variant="default">
+            <Card variant="default" className="cursor-pointer transition-all hover:border-primary/50" onClick={() => navigate("/driver/earnings")}>
               <CardContent className="p-4">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                   <Zap className="h-4 w-4" />

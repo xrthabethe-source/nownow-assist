@@ -4,14 +4,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { TyreIcon, BatteryIcon, FuelIcon, DiagnosticsIcon, MechanicIcon } from "@/components/icons/ServiceIcons";
-import { ArrowLeft, MapPin, Clock, CreditCard, Shield, ChevronRight, Check, User, Phone, Users, AlertCircle, AlertTriangle } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, CreditCard, Shield, ChevronRight, Check, User, Phone, Users, AlertCircle, AlertTriangle, RefreshCw, Edit2 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { friendDetailsSchema } from "@/lib/validations";
 import { toast } from "sonner";
 import { useCreateJob } from "@/hooks/useJobs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { validateStreetInput } from "@/lib/streetValidation";
+import { usePaymentMethods } from "@/hooks/usePaymentMethods";
+import { useSavedLocations, SavedLocation } from "@/hooks/useSavedLocations";
+import { LocationSelector } from "@/components/customer/LocationSelector";
 
 const services: Record<string, any> = {
   fuel: { 
@@ -70,6 +74,19 @@ export const ServiceRequest = () => {
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   
+  // Location state (same as home page)
+  const [location, setLocation] = useState<string>("Detecting location...");
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+  const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [manualLocation, setManualLocation] = useState("");
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+  
+  // Payment methods
+  const { paymentMethods, loading: loadingPayments } = usePaymentMethods();
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
+  const [showPaymentSelector, setShowPaymentSelector] = useState(false);
+  
   const createJobMutation = useCreateJob();
   
   // Fetch service from database if available
@@ -95,6 +112,79 @@ export const ServiceRequest = () => {
   
   // Use database price if available
   const actualPrice = dbService?.base_price || service?.price;
+  
+  // Selected payment method
+  const selectedPayment = paymentMethods.find(pm => pm.id === selectedPaymentId) || paymentMethods[0];
+
+  // Auto-detect location on mount (same as home page)
+  useEffect(() => {
+    detectLocation();
+  }, []);
+  
+  // Auto-select default payment method
+  useEffect(() => {
+    if (paymentMethods.length > 0 && !selectedPaymentId) {
+      const defaultPm = paymentMethods.find(pm => pm.is_default) || paymentMethods[0];
+      setSelectedPaymentId(defaultPm.id);
+    }
+  }, [paymentMethods, selectedPaymentId]);
+
+  const detectLocation = async () => {
+    setIsLoadingLocation(true);
+    setLocationError(null);
+    
+    if (!navigator.geolocation) {
+      setLocation("Location unavailable");
+      setIsLoadingLocation(false);
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setCoordinates({ lat: latitude, lng: longitude });
+        
+        try {
+          const { data, error } = await supabase.functions.invoke("reverse-geocode", {
+            body: { lat: latitude, lon: longitude },
+          });
+          
+          if (error) throw error;
+          setLocation(data?.location || "Current location detected");
+        } catch (err) {
+          console.error("Geocoding error:", err);
+          setLocation("Current location detected");
+        } finally {
+          setIsLoadingLocation(false);
+        }
+      },
+      (err) => {
+        console.error("Geolocation error:", err);
+        setLocation("Location unavailable");
+        setIsLoadingLocation(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const handleManualLocationSubmit = () => {
+    const validation = validateStreetInput(manualLocation);
+    if (!validation.isValid) {
+      setLocationError(validation.error || "Invalid location");
+      return;
+    }
+    setLocation(manualLocation);
+    setIsEditingLocation(false);
+    setManualLocation("");
+    setLocationError(null);
+  };
+
+  const handleSavedLocationSelect = (savedLocation: SavedLocation) => {
+    setLocation(savedLocation.address);
+    if (savedLocation.latitude && savedLocation.longitude) {
+      setCoordinates({ lat: savedLocation.latitude, lng: savedLocation.longitude });
+    }
+  };
 
   const validateFriendDetails = () => {
     if (!requestForOther) return true;
@@ -116,6 +206,18 @@ export const ServiceRequest = () => {
   };
 
   const handleConfirm = async () => {
+    // Validate location
+    if (!location || location === "Detecting location..." || location === "Location unavailable") {
+      toast.error("Please set your location first");
+      return;
+    }
+    
+    // Validate payment method
+    if (!selectedPayment && paymentMethods.length === 0) {
+      toast.error("Please add a payment method first");
+      return;
+    }
+    
     // Validate friend details if requesting for someone else
     if (!validateFriendDetails()) {
       toast.error("Please fix the errors in friend's details");
@@ -135,9 +237,9 @@ export const ServiceRequest = () => {
       if (dbService?.id) {
         await createJobMutation.mutateAsync({
           serviceId: dbService.id,
-          pickupAddress: requestForOther ? friendDetails.location : "123 Main Street, Sandton",
-          pickupLat: -26.1076,
-          pickupLng: 28.0567,
+          pickupAddress: requestForOther ? friendDetails.location : location,
+          pickupLat: coordinates?.lat || -26.1076,
+          pickupLng: coordinates?.lng || 28.0567,
           estimatedPrice: actualPrice,
           etaMinutes: dbService.eta_minutes || 20,
           notes: requestForOther ? `Request for: ${friendDetails.name}, Phone: ${friendDetails.phone}` : undefined,
@@ -357,16 +459,82 @@ export const ServiceRequest = () => {
         >
           <Card variant="interactive" className="mb-4">
             <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/10">
-                  <MapPin className="h-6 w-6 text-success" />
+              {isEditingLocation ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-foreground">Enter Street Name</p>
+                    <LocationSelector onSelect={handleSavedLocationSelect} />
+                  </div>
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Enter street name or nearest street where you need assistance"
+                      value={manualLocation}
+                      onChange={(e) => {
+                        setManualLocation(e.target.value);
+                        setLocationError(null);
+                      }}
+                      className={locationError ? "border-destructive" : ""}
+                    />
+                    {locationError && (
+                      <p className="text-sm text-destructive flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        {locationError}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        setIsEditingLocation(false);
+                        setManualLocation("");
+                        setLocationError(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="amber"
+                      size="sm"
+                      className="flex-1"
+                      onClick={handleManualLocationSubmit}
+                    >
+                      Save
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Pickup Location</p>
-                  <p className="font-semibold text-foreground">123 Main Street, Sandton</p>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/10">
+                    <MapPin className="h-6 w-6 text-success" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-muted-foreground">Pickup Location</p>
+                    <p className="font-semibold text-foreground">
+                      {isLoadingLocation ? "Detecting..." : location}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={detectLocation}
+                      disabled={isLoadingLocation}
+                    >
+                      <RefreshCw className={`h-4 w-4 ${isLoadingLocation ? "animate-spin" : ""}`} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => setIsEditingLocation(true)}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
-              </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -398,7 +566,11 @@ export const ServiceRequest = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card variant="interactive" className="mb-4">
+          <Card 
+            variant="interactive" 
+            className="mb-4 cursor-pointer"
+            onClick={() => setShowPaymentSelector(!showPaymentSelector)}
+          >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
@@ -406,10 +578,70 @@ export const ServiceRequest = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Payment Method</p>
-                  <p className="font-semibold text-foreground">•••• 4242</p>
+                  {loadingPayments ? (
+                    <p className="font-semibold text-foreground">Loading...</p>
+                  ) : selectedPayment ? (
+                    <p className="font-semibold text-foreground">
+                      {selectedPayment.card_brand || "Card"} •••• {selectedPayment.card_last_four}
+                    </p>
+                  ) : paymentMethods.length === 0 ? (
+                    <p className="font-semibold text-destructive">Add a payment method</p>
+                  ) : (
+                    <p className="font-semibold text-foreground">Select a card</p>
+                  )}
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                <ChevronRight className={`h-5 w-5 text-muted-foreground transition-transform ${showPaymentSelector ? "rotate-90" : ""}`} />
               </div>
+              
+              {/* Payment selector dropdown */}
+              {showPaymentSelector && paymentMethods.length > 0 && (
+                <div className="mt-4 space-y-2 border-t pt-4">
+                  {paymentMethods.map((pm) => (
+                    <div
+                      key={pm.id}
+                      className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                        selectedPaymentId === pm.id 
+                          ? "bg-primary/10 border border-primary" 
+                          : "bg-muted/50 hover:bg-muted"
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPaymentId(pm.id);
+                        setShowPaymentSelector(false);
+                      }}
+                    >
+                      <CreditCard className="h-5 w-5 text-muted-foreground" />
+                      <div className="flex-1">
+                        <p className="font-medium">
+                          {pm.card_brand || "Card"} •••• {pm.card_last_four}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Expires {String(pm.expiry_month).padStart(2, "0")}/{pm.expiry_year}
+                        </p>
+                      </div>
+                      {selectedPaymentId === pm.id && (
+                        <Check className="h-5 w-5 text-primary" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {showPaymentSelector && paymentMethods.length === 0 && (
+                <div className="mt-4 p-4 text-center border-t">
+                  <p className="text-sm text-muted-foreground mb-2">No payment methods saved</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate("/customer/profile");
+                    }}
+                  >
+                    Add Card in Profile
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

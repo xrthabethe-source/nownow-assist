@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Car } from "lucide-react";
+import { Plus, Trash2, Car, Pencil } from "lucide-react";
 import { useVehicles, Vehicle, VehicleInput } from "@/hooks/useVehicles";
 
 interface VehiclesDialogProps {
@@ -12,8 +12,9 @@ interface VehiclesDialogProps {
 }
 
 export const VehiclesDialog = ({ open, onOpenChange }: VehiclesDialogProps) => {
-  const { vehicles, loading, addVehicle, deleteVehicle } = useVehicles();
-  const [showAddForm, setShowAddForm] = useState(false);
+  const { vehicles, loading, addVehicle, updateVehicle, deleteVehicle } = useVehicles();
+  const [showForm, setShowForm] = useState(false);
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
   const [formData, setFormData] = useState<VehicleInput>({
     make: "",
     model: "",
@@ -22,18 +23,55 @@ export const VehiclesDialog = ({ open, onOpenChange }: VehiclesDialogProps) => {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  // Reset form when opening add mode
+  const handleAddNew = () => {
+    setEditingVehicle(null);
+    setFormData({ make: "", model: "", registration_number: "", color: "" });
+    setShowForm(true);
+  };
+
+  // Populate form when editing
+  const handleEdit = (vehicle: Vehicle) => {
+    setEditingVehicle(vehicle);
+    setFormData({
+      make: vehicle.make,
+      model: vehicle.model || "",
+      registration_number: vehicle.registration_number,
+      color: vehicle.color || "",
+    });
+    setShowForm(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.make || !formData.registration_number) return;
 
     setSubmitting(true);
-    const { error } = await addVehicle(formData);
-    setSubmitting(false);
-
-    if (!error) {
-      setFormData({ make: "", model: "", registration_number: "", color: "" });
-      setShowAddForm(false);
+    
+    if (editingVehicle) {
+      // Update existing vehicle
+      const { error } = await updateVehicle(editingVehicle.id, formData);
+      if (!error) {
+        setFormData({ make: "", model: "", registration_number: "", color: "" });
+        setShowForm(false);
+        setEditingVehicle(null);
+      }
+    } else {
+      // Add new vehicle
+      const { error } = await addVehicle(formData);
+      if (!error) {
+        setFormData({ make: "", model: "", registration_number: "", color: "" });
+        setShowForm(false);
+      }
     }
+    
+    setSubmitting(false);
+  };
+
+  const handleCancel = () => {
+    setFormData({ make: "", model: "", registration_number: "", color: "" });
+    setShowForm(false);
+    setEditingVehicle(null);
   };
 
   const handleDelete = async (id: string) => {
@@ -54,7 +92,7 @@ export const VehiclesDialog = ({ open, onOpenChange }: VehiclesDialogProps) => {
           {/* Existing vehicles */}
           {loading ? (
             <div className="text-center py-4 text-muted-foreground">Loading...</div>
-          ) : vehicles.length === 0 && !showAddForm ? (
+          ) : vehicles.length === 0 && !showForm ? (
             <div className="text-center py-6 text-muted-foreground">
               <Car className="h-12 w-12 mx-auto mb-2 opacity-50" />
               <p>No vehicles saved yet</p>
@@ -75,22 +113,36 @@ export const VehiclesDialog = ({ open, onOpenChange }: VehiclesDialogProps) => {
                       {vehicle.color && ` • ${vehicle.color}`}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(vehicle.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(vehicle)}
+                      className="text-muted-foreground hover:text-primary"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(vehicle.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Add vehicle form */}
-          {showAddForm ? (
+          {/* Add/Edit vehicle form */}
+          {showForm ? (
             <form onSubmit={handleSubmit} className="space-y-4 border-t pt-4">
+              <p className="text-sm font-medium text-muted-foreground">
+                {editingVehicle ? "Edit Vehicle" : "Add New Vehicle"}
+              </p>
+              
               <div className="space-y-2">
                 <Label htmlFor="make">Make *</Label>
                 <Input
@@ -149,7 +201,7 @@ export const VehiclesDialog = ({ open, onOpenChange }: VehiclesDialogProps) => {
                   type="button"
                   variant="outline"
                   className="flex-1"
-                  onClick={() => setShowAddForm(false)}
+                  onClick={handleCancel}
                 >
                   Cancel
                 </Button>
@@ -158,13 +210,13 @@ export const VehiclesDialog = ({ open, onOpenChange }: VehiclesDialogProps) => {
                   className="flex-1"
                   disabled={submitting || !formData.make || !formData.registration_number}
                 >
-                  {submitting ? "Saving..." : "Save Vehicle"}
+                  {submitting ? "Saving..." : editingVehicle ? "Update Vehicle" : "Save Vehicle"}
                 </Button>
               </div>
             </form>
           ) : (
             <Button
-              onClick={() => setShowAddForm(true)}
+              onClick={handleAddNew}
               className="w-full"
               variant="outline"
             >

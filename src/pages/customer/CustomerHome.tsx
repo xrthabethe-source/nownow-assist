@@ -63,15 +63,10 @@ export const CustomerHome = () => {
         const { latitude, longitude } = position.coords;
         setCoordinates({ lat: latitude, lng: longitude });
         try {
-          // Reverse geocode via backend function to avoid browser network/CORS issues.
-          const { data, error } = await supabase.functions.invoke("reverse-geocode", {
+          const { data } = await supabase.functions.invoke("reverse-geocode", {
             body: { lat: latitude, lon: longitude },
           });
-
-          if (error) throw error;
-
-          const resolved = typeof data?.location === "string" ? data.location : "Current location detected";
-          setLocation(resolved);
+          setLocation(data?.location || "Current location detected");
         } catch {
           setLocation("Current location detected");
         }

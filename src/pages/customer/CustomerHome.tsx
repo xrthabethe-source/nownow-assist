@@ -187,11 +187,8 @@ export const CustomerHome = () => {
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-xl">
-        <div className="container flex items-center justify-between py-4">
+        <div className="container flex items-center justify-center py-4">
           <Logo size="sm" />
-          <Button variant="ghost" size="icon-sm" className="rounded-full">
-            <Phone className="h-5 w-5" />
-          </Button>
         </div>
       </header>
 

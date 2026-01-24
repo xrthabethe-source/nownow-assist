@@ -247,7 +247,7 @@ export const ServiceRequest = () => {
         toast.success("Service request created!");
       }
       
-      navigate("/customer/tracking");
+      navigate(`/customer/tracking/${serviceId}`, { state: { address: requestForOther ? friendDetails.location : location } });
     } catch (error) {
       console.error("Failed to create job:", error);
       toast.error("Failed to create request. Please try again.");

@@ -38,10 +38,15 @@ export function LocationMapPicker({
         body: { lat, lon: lng },
       });
       
-      if (!error && data?.display_name) {
-        setAddress(data.display_name);
-      } else if (!error && data?.location) {
+      // Prefer the short location format (street only), fall back to display_name if needed
+      if (!error && data?.location && data.location !== '') {
         setAddress(data.location);
+      } else if (!error && data?.display_name) {
+        // Parse display_name to extract just the street/area, not full address
+        const parts = data.display_name.split(',').map((p: string) => p.trim());
+        // Take first 1-2 meaningful parts only
+        const shortAddress = parts.slice(0, 2).join(', ');
+        setAddress(shortAddress);
       } else {
         setAddress("Location selected");
       }

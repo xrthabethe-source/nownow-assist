@@ -15,13 +15,28 @@ function buildLocationString(address: Record<string, unknown>): string {
   }
 
   const road = get('road')
+  const houseNumber = get('house_number')
+  const suburb = get('suburb') || get('neighbourhood') || get('residential')
 
-  // ONLY return street names - never return areas, suburbs, wards, or regions
+  // Build a clean, Uber-style short address
+  // Priority: house_number + road, or just road, then suburb as last resort
   if (road) {
-    return `Near ${road}`
+    if (houseNumber) {
+      return `${houseNumber} ${road}`
+    }
+    // Include suburb for context if available
+    if (suburb) {
+      return `${road}, ${suburb}`
+    }
+    return road
   }
 
-  // If no street found, return generic message - never fall back to area names
+  // If no street found, use suburb/neighbourhood only
+  if (suburb) {
+    return suburb
+  }
+
+  // Last resort - return empty, let caller handle
   return ''
 }
 

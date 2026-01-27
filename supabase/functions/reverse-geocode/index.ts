@@ -22,7 +22,14 @@ function buildLocationString(address: Record<string, unknown>): string {
     return typeof v === 'string' ? v : undefined
   }
 
-  const road = get('road')
+  // Nominatim may return different keys for street-like features.
+  const road =
+    get('road') ||
+    get('pedestrian') ||
+    get('footway') ||
+    get('cycleway') ||
+    get('path') ||
+    get('street')
   const houseNumber = get('house_number')
   const rawSuburb = get('suburb') || get('neighbourhood') || get('residential')
   const suburb = cleanSuburb(rawSuburb)

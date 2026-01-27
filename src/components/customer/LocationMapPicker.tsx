@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { MapPin, Check, X, Loader2, Crosshair } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { MapPin, Check, X, Loader2, Crosshair, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -26,9 +27,18 @@ export function LocationMapPicker({
   const markerRef = useRef<L.Marker | null>(null);
   
   const [position, setPosition] = useState({ lat: initialLat, lng: initialLng });
-  const [address, setAddress] = useState<string>("");
+  const [streetAddress, setStreetAddress] = useState<string>("");
+  const [houseNumber, setHouseNumber] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRecentering, setIsRecentering] = useState(false);
+
+  // Build full address with optional house number
+  const getFullAddress = () => {
+    if (houseNumber.trim()) {
+      return `${houseNumber.trim()} ${streetAddress}`;
+    }
+    return streetAddress;
+  };
 
   // Reverse geocode the position
   const fetchAddress = async (lat: number, lng: number) => {
@@ -40,18 +50,18 @@ export function LocationMapPicker({
       
       // Prefer the short location format (street only), fall back to display_name if needed
       if (!error && data?.location && data.location !== '') {
-        setAddress(data.location);
+        setStreetAddress(data.location);
       } else if (!error && data?.display_name) {
         // Parse display_name to extract just the street/area, not full address
         const parts = data.display_name.split(',').map((p: string) => p.trim());
         // Take first 1-2 meaningful parts only
         const shortAddress = parts.slice(0, 2).join(', ');
-        setAddress(shortAddress);
+        setStreetAddress(shortAddress);
       } else {
-        setAddress("Location selected");
+        setStreetAddress("Location selected");
       }
     } catch {
-      setAddress("Location selected");
+      setStreetAddress("Location selected");
     } finally {
       setIsLoading(false);
     }
@@ -171,7 +181,7 @@ export function LocationMapPicker({
   };
 
   const handleConfirm = () => {
-    onConfirm(position.lat, position.lng, address);
+    onConfirm(position.lat, position.lng, getFullAddress());
     onOpenChange(false);
   };
 
@@ -214,6 +224,20 @@ export function LocationMapPicker({
 
         {/* Bottom panel */}
         <div className="absolute bottom-0 left-0 right-0 z-[1000] bg-card rounded-t-3xl shadow-xl p-4 pb-6 safe-area-bottom">
+          {/* House number input */}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted">
+              <Home className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <Input
+              placeholder="House/Unit number (optional)"
+              value={houseNumber}
+              onChange={(e) => setHouseNumber(e.target.value)}
+              className="flex-1"
+            />
+          </div>
+          
+          {/* Address display */}
           <div className="flex items-start gap-3 mb-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary">
               <MapPin className="h-5 w-5 text-primary-foreground" />
@@ -226,7 +250,7 @@ export function LocationMapPicker({
                   <span className="text-sm text-muted-foreground">Finding address...</span>
                 </div>
               ) : (
-                <p className="font-medium text-foreground line-clamp-2">{address || "Drag pin to adjust"}</p>
+                <p className="font-medium text-foreground line-clamp-2">{getFullAddress() || "Drag pin to adjust"}</p>
               )}
             </div>
           </div>

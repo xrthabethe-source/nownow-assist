@@ -8,6 +8,14 @@ type ReverseGeocodeRequest = {
   lon: number
 }
 
+function cleanSuburb(suburb: string | undefined): string | undefined {
+  if (!suburb) return undefined
+  // Remove Ward references (e.g., "Tshwane Ward 77" -> "Tshwane" or skip entirely)
+  const wardPattern = /\s*Ward\s*\d+/i
+  const cleaned = suburb.replace(wardPattern, '').trim()
+  return cleaned.length > 0 ? cleaned : undefined
+}
+
 function buildLocationString(address: Record<string, unknown>): string {
   const get = (k: string) => {
     const v = address[k]
@@ -16,7 +24,8 @@ function buildLocationString(address: Record<string, unknown>): string {
 
   const road = get('road')
   const houseNumber = get('house_number')
-  const suburb = get('suburb') || get('neighbourhood') || get('residential')
+  const rawSuburb = get('suburb') || get('neighbourhood') || get('residential')
+  const suburb = cleanSuburb(rawSuburb)
 
   // Build a clean, Uber-style short address
   // Priority: house_number + road, or just road, then suburb as last resort
@@ -24,14 +33,14 @@ function buildLocationString(address: Record<string, unknown>): string {
     if (houseNumber) {
       return `${houseNumber} ${road}`
     }
-    // Include suburb for context if available
+    // Include suburb for context if available (without Ward)
     if (suburb) {
       return `${road}, ${suburb}`
     }
     return road
   }
 
-  // If no street found, use suburb/neighbourhood only
+  // If no street found, use suburb/neighbourhood only (without Ward)
   if (suburb) {
     return suburb
   }

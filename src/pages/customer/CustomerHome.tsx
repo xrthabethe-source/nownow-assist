@@ -52,29 +52,50 @@ export const CustomerHome = () => {
   const navigate = useNavigate();
   const { data: savedLocations, isLoading: isLoadingSavedLocations } = useSavedLocations();
 
+  // Debug toggle: set to false once we've diagnosed the issue
+  const DEBUG_LOCATION = true;
+  const debug = (...args: unknown[]) => {
+    if (!DEBUG_LOCATION) return;
+    // eslint-disable-next-line no-console
+    console.log(`[location][${new Date().toISOString()}]`, ...args);
+  };
+
   const reverseGeocode = async (
     lat: number,
     lon: number
   ): Promise<{ location: string | null; displayName: string | null }> => {
+    debug("reverseGeocode:start", { lat, lon });
     try {
       const { data, error } = await supabase.functions.invoke("reverse-geocode", {
         body: { lat, lon },
       });
+
+      debug("reverseGeocode:response", {
+        hasError: !!error,
+        error: error ? { message: (error as any)?.message, name: (error as any)?.name } : null,
+        data,
+      });
+
       if (error) {
         console.error("Reverse geocode error:", error);
         return { location: null, displayName: null };
       }
       const location = data?.location && data.location.length > 0 ? data.location : null;
       const displayName = data?.display_name || null;
+
+      debug("reverseGeocode:parsed", { location, displayName });
       return { location, displayName };
     } catch (err) {
       console.error("Reverse geocode exception:", err);
+      debug("reverseGeocode:exception", err);
       return { location: null, displayName: null };
     }
   };
 
   const fetchLocation = () => {
+    debug("fetchLocation:called");
     if (!navigator.geolocation) {
+      debug("fetchLocation:no-geolocation-api");
       setLocation("");
       setIsLocating(false);
       setLocationError("GPS not supported. Enter your street.");
@@ -87,19 +108,43 @@ export const CustomerHome = () => {
     setIsFromSaved(false);
     setIsEditing(false);
 
+    debug("fetchLocation:requesting-geolocation", {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0,
+    });
+
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
+
+        debug("fetchLocation:geolocation:success", {
+          coords: {
+            latitude,
+            longitude,
+            accuracy: position.coords.accuracy,
+            altitude: position.coords.altitude,
+            altitudeAccuracy: position.coords.altitudeAccuracy,
+            heading: position.coords.heading,
+            speed: position.coords.speed,
+          },
+          timestamp: position.timestamp,
+        });
+
         setCoordinates({ lat: latitude, lng: longitude });
 
         const { location: streetName, displayName } = await reverseGeocode(latitude, longitude);
 
+        debug("fetchLocation:reverseGeocode:result", { streetName, displayName });
+
         if (streetName) {
+          debug("fetchLocation:state:update", { action: "setLocation", value: streetName });
           setLocation(streetName);
           setIsLocating(false);
         } else {
           // No street found - this area isn't mapped with streets in OpenStreetMap
           // Show manual entry with helpful hint from display_name
+          debug("fetchLocation:no-street-found", { displayName });
           setLocation("");
           const areaHint = displayName 
             ? `No street mapped for this area. Enter your street.`
@@ -110,6 +155,10 @@ export const CustomerHome = () => {
         }
       },
       (error) => {
+        debug("fetchLocation:geolocation:error", {
+          code: error.code,
+          message: error.message,
+        });
         setIsLocating(false);
         setIsEditing(true);
         switch (error.code) {
@@ -137,17 +186,29 @@ export const CustomerHome = () => {
   // Load default saved location or detect GPS - only run once after saved locations load
   useEffect(() => {
     // Wait for saved locations query to complete before initializing
+    debug("init:effect", {
+      isLoadingSavedLocations,
+      hasInitialized,
+      savedLocationsCount: savedLocations?.length ?? null,
+    });
+
     if (isLoadingSavedLocations || hasInitialized) return;
     
     setHasInitialized(true);
     
     const defaultLocation = savedLocations?.find((loc) => loc.is_default);
     if (defaultLocation) {
+      debug("init:defaultLocation:found", {
+        id: defaultLocation.id,
+        name: defaultLocation.name,
+        is_default: defaultLocation.is_default,
+      });
       setLocation(defaultLocation.address);
       setCoordinates({ lat: Number(defaultLocation.latitude), lng: Number(defaultLocation.longitude) });
       setIsLocating(false);
       setIsFromSaved(true);
     } else {
+      debug("init:defaultLocation:none", { savedLocationsCount: savedLocations?.length ?? 0 });
       fetchLocation();
     }
   }, [savedLocations, isLoadingSavedLocations, hasInitialized]);

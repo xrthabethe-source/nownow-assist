@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import logoImage from "@/assets/logo.png";
 
 interface LogoProps {
   className?: string;
@@ -15,13 +16,6 @@ const sizeClasses = {
   xl: "h-16",
 };
 
-const textSizeClasses = {
-  sm: "text-lg",
-  md: "text-xl",
-  lg: "text-2xl",
-  xl: "text-3xl",
-};
-
 export const Logo = ({
   className,
   size = "md",
@@ -30,67 +24,29 @@ export const Logo = ({
 }: LogoProps) => {
   return (
     <motion.div
-      className={cn("flex items-center gap-2", className)}
+      className={cn("flex items-center", className)}
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div
+      <img
+        src={logoImage}
+        alt="Now-Now Assist"
         className={cn(
-          "relative flex items-center justify-center rounded-xl bg-gradient-amber",
-          sizeClasses[size],
-          size === "sm" && "w-8",
-          size === "md" && "w-10",
-          size === "lg" && "w-12",
-          size === "xl" && "w-16"
+          "object-contain",
+          showText ? sizeClasses[size] : sizeClasses[size],
+          // Adjust width based on whether we show the full logo or just icon
+          showText && size === "sm" && "h-10 w-auto",
+          showText && size === "md" && "h-12 w-auto",
+          showText && size === "lg" && "h-14 w-auto",
+          showText && size === "xl" && "h-20 w-auto",
+          !showText && size === "sm" && "h-8 w-8",
+          !showText && size === "md" && "h-10 w-10",
+          !showText && size === "lg" && "h-12 w-12",
+          !showText && size === "xl" && "h-16 w-16",
+          !showText && "object-cover object-left"
         )}
-      >
-        <motion.div
-          className="absolute inset-0 rounded-xl bg-gradient-amber opacity-50 blur-md"
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-        <span
-          className={cn(
-            "relative font-extrabold text-primary-foreground",
-            size === "sm" && "text-sm",
-            size === "md" && "text-base",
-            size === "lg" && "text-lg",
-            size === "xl" && "text-2xl"
-          )}
-        >
-          NN
-        </span>
-      </div>
-      {showText && (
-        <div className="flex flex-col">
-          <span
-            className={cn(
-              "font-extrabold leading-none tracking-tight",
-              textSizeClasses[size],
-              variant === "default" && "text-foreground",
-              variant === "dark" && "text-brand-dark",
-              variant === "light" && "text-brand-white"
-            )}
-          >
-            Now-Now
-          </span>
-          <span
-            className={cn(
-              "font-medium leading-none",
-              size === "sm" && "text-xs",
-              size === "md" && "text-sm",
-              size === "lg" && "text-base",
-              size === "xl" && "text-lg",
-              variant === "default" && "text-primary",
-              variant === "dark" && "text-primary",
-              variant === "light" && "text-primary"
-            )}
-          >
-            Assist
-          </span>
-        </div>
-      )}
+      />
     </motion.div>
   );
 };

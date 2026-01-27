@@ -137,19 +137,21 @@ export const CustomerHome = () => {
 
         debug("fetchLocation:reverseGeocode:result", { streetName, displayName });
 
-        if (streetName) {
+        // Use the full display_name from Nominatim for complete address
+        if (displayName) {
+          debug("fetchLocation:state:update", { action: "setLocation", value: displayName });
+          setLocation(displayName);
+          setIsLocating(false);
+        } else if (streetName) {
+          // Fallback to street name if display_name not available
           debug("fetchLocation:state:update", { action: "setLocation", value: streetName });
           setLocation(streetName);
           setIsLocating(false);
         } else {
-          // No street found - this area isn't mapped with streets in OpenStreetMap
-          // Show manual entry with helpful hint from display_name
-          debug("fetchLocation:no-street-found", { displayName });
+          // No address found at all
+          debug("fetchLocation:no-address-found", { displayName, streetName });
           setLocation("");
-          const areaHint = displayName 
-            ? `No street mapped for this area. Enter your street.`
-            : "Street not found. Enter it manually.";
-          setLocationError(areaHint);
+          setLocationError("Location not found. Enter your street.");
           setIsEditing(true);
           setIsLocating(false);
         }

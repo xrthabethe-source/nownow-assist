@@ -48,8 +48,9 @@ export const CustomerHome = () => {
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [isFromSaved, setIsFromSaved] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const navigate = useNavigate();
-  const { data: savedLocations } = useSavedLocations();
+  const { data: savedLocations, isLoading: isLoadingSavedLocations } = useSavedLocations();
 
   const reverseGeocode = async (
     lat: number,
@@ -133,8 +134,13 @@ export const CustomerHome = () => {
     );
   };
 
-  // Load default saved location or detect GPS
+  // Load default saved location or detect GPS - only run once after saved locations load
   useEffect(() => {
+    // Wait for saved locations query to complete before initializing
+    if (isLoadingSavedLocations || hasInitialized) return;
+    
+    setHasInitialized(true);
+    
     const defaultLocation = savedLocations?.find((loc) => loc.is_default);
     if (defaultLocation) {
       setLocation(defaultLocation.address);
@@ -144,7 +150,7 @@ export const CustomerHome = () => {
     } else {
       fetchLocation();
     }
-  }, [savedLocations]);
+  }, [savedLocations, isLoadingSavedLocations, hasInitialized]);
 
   const handleSavedLocationSelect = (savedLoc: SavedLocation) => {
     setLocation(savedLoc.address);

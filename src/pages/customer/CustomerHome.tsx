@@ -95,6 +95,20 @@ export const CustomerHome = () => {
     }
   };
 
+  const toShortPinnedAddress = (value: string) => {
+    // Keep it Uber-style short: remove ward/municipality/postcode/country noise.
+    const parts = value
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .filter((p) => !/\bward\b/i.test(p))
+      .filter((p) => !/\bmunicipality\b/i.test(p))
+      .filter((p) => !/\bmetropolitan\b/i.test(p))
+      .filter((p) => !/^\d{4,6}$/.test(p));
+
+    return parts.slice(0, 2).join(", ");
+  };
+
   const fetchLocation = () => {
     debug("fetchLocation:called");
     if (!navigator.geolocation) {
@@ -140,15 +154,15 @@ export const CustomerHome = () => {
 
         debug("fetchLocation:reverseGeocode:result", { streetName, displayName });
 
-        // Use the full display_name from Nominatim for complete address
-        if (displayName) {
-          debug("fetchLocation:state:update", { action: "setLocation", value: displayName });
-          setLocation(displayName);
-          setIsLocating(false);
-        } else if (streetName) {
-          // Fallback to street name if display_name not available
+        // Prefer our short backend `location` (street-ish). Only use display_name as a short fallback.
+        if (streetName) {
           debug("fetchLocation:state:update", { action: "setLocation", value: streetName });
           setLocation(streetName);
+          setIsLocating(false);
+        } else if (displayName) {
+          const short = toShortPinnedAddress(displayName);
+          debug("fetchLocation:state:update", { action: "setLocation", value: short });
+          setLocation(short);
           setIsLocating(false);
         } else {
           // No address found at all

@@ -51,24 +51,24 @@ export const CustomerHome = () => {
   const navigate = useNavigate();
   const { data: savedLocations } = useSavedLocations();
 
-  const MAX_RETRIES = 3;
-  const RETRY_DELAY = 3000; // 3 seconds between retries
-
-  const attemptReverseGeocode = async (
+  const reverseGeocode = async (
     lat: number,
-    lon: number,
-    attempt: number
-  ): Promise<string | null> => {
+    lon: number
+  ): Promise<{ location: string | null; displayName: string | null }> => {
     try {
-      const { data } = await supabase.functions.invoke("reverse-geocode", {
+      const { data, error } = await supabase.functions.invoke("reverse-geocode", {
         body: { lat, lon },
       });
-      if (data?.location && data.location.length > 0) {
-        return data.location;
+      if (error) {
+        console.error("Reverse geocode error:", error);
+        return { location: null, displayName: null };
       }
-      return null;
-    } catch {
-      return null;
+      const location = data?.location && data.location.length > 0 ? data.location : null;
+      const displayName = data?.display_name || null;
+      return { location, displayName };
+    } catch (err) {
+      console.error("Reverse geocode exception:", err);
+      return { location: null, displayName: null };
     }
   };
 
@@ -91,23 +91,19 @@ export const CustomerHome = () => {
         const { latitude, longitude } = position.coords;
         setCoordinates({ lat: latitude, lng: longitude });
 
-        // Try up to MAX_RETRIES times with delay between attempts
-        let streetName: string | null = null;
-        for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-          streetName = await attemptReverseGeocode(latitude, longitude, attempt);
-          if (streetName) break;
-          if (attempt < MAX_RETRIES) {
-            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-          }
-        }
+        const { location: streetName, displayName } = await reverseGeocode(latitude, longitude);
 
         if (streetName) {
           setLocation(streetName);
           setIsLocating(false);
         } else {
-          // All retries failed - open manual entry
+          // No street found - this area isn't mapped with streets in OpenStreetMap
+          // Show manual entry with helpful hint from display_name
           setLocation("");
-          setLocationError("Street not found. Enter it manually.");
+          const areaHint = displayName 
+            ? `No street mapped for this area. Enter your street.`
+            : "Street not found. Enter it manually.";
+          setLocationError(areaHint);
           setIsEditing(true);
           setIsLocating(false);
         }

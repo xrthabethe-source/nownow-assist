@@ -8,10 +8,12 @@ import { BottomNav } from "@/components/shared/BottomNav";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { SaveLocationDialog } from "@/components/customer/SaveLocationDialog";
 import { LocationSelector } from "@/components/customer/LocationSelector";
+import { LocationMapPreview } from "@/components/customer/LocationMapPreview";
+import { LocationMapPicker } from "@/components/customer/LocationMapPicker";
 import { useSavedLocations, SavedLocation } from "@/hooks/useSavedLocations";
 import { supabase } from "@/integrations/supabase/client";
 import { validateStreetInput } from "@/lib/streetValidation";
-import { MapPin, Clock, Phone, Loader2, RefreshCw, Bookmark, BookmarkPlus, Edit2, Check, X } from "lucide-react";
+import { MapPin, Clock, Loader2, RefreshCw, Bookmark, BookmarkPlus, Edit2, Check, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -47,6 +49,7 @@ export const CustomerHome = () => {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
   const [isFromSaved, setIsFromSaved] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const navigate = useNavigate();
@@ -270,6 +273,14 @@ export const CustomerHome = () => {
     setInputError(null);
   };
 
+  const handleMapPickerConfirm = (lat: number, lng: number, address: string) => {
+    setCoordinates({ lat, lng });
+    setLocation(address);
+    setLocationError(null);
+    setInputError(null);
+    setIsFromSaved(false);
+  };
+
   const canSaveLocation = coordinates && !isLocating && !locationError && !isFromSaved && location;
 
   return (
@@ -335,57 +346,86 @@ export const CustomerHome = () => {
                   </div>
                 </div>
               ) : (
-                // Display mode
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-                    {isLocating ? (
-                      <Loader2 className="h-6 w-6 text-primary-foreground animate-spin" />
-                    ) : isFromSaved ? (
-                      <Bookmark className="h-6 w-6 text-primary-foreground fill-primary-foreground" />
-                    ) : (
-                      <MapPin className="h-6 w-6 text-primary-foreground" />
-                    )}
+                // Display mode with map preview
+                <div className="space-y-3">
+                  {/* Map preview - only show when we have coordinates */}
+                  {coordinates && !isLocating && (
+                    <LocationMapPreview
+                      lat={coordinates.lat}
+                      lng={coordinates.lng}
+                      onClick={() => setShowMapPicker(true)}
+                    />
+                  )}
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shrink-0">
+                      {isLocating ? (
+                        <Loader2 className="h-6 w-6 text-primary-foreground animate-spin" />
+                      ) : isFromSaved ? (
+                        <Bookmark className="h-6 w-6 text-primary-foreground fill-primary-foreground" />
+                      ) : (
+                        <MapPin className="h-6 w-6 text-primary-foreground" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-muted-foreground">Your Location</p>
+                      <p className="font-semibold text-foreground line-clamp-2">
+                        {location || "Enter your street name"}
+                      </p>
+                      {locationError && (
+                        <p className="text-xs text-destructive">{locationError}</p>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-muted-foreground">Your Location</p>
-                    <p className="font-semibold text-foreground truncate">
-                      {location || "Enter your street name"}
-                    </p>
-                    {locationError && (
-                      <p className="text-xs text-destructive">{locationError}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    {!isLocating && location && (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={handleEditClick}
-                        title="Edit location"
-                      >
-                        <Edit2 className="h-5 w-5 text-primary" />
-                      </Button>
-                    )}
-                    <LocationSelector onSelect={handleSavedLocationSelect} />
-                    {canSaveLocation && (
+                  
+                  {/* Action buttons */}
+                  <div className="flex items-center justify-between pt-1">
+                    <div className="flex items-center gap-1">
+                      {coordinates && !isLocating && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowMapPicker(true)}
+                          className="gap-1.5"
+                        >
+                          <MapPin className="h-4 w-4" />
+                          Adjust Pin
+                        </Button>
+                      )}
+                      {!isLocating && location && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleEditClick}
+                          className="gap-1.5"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                          Edit
+                        </Button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <LocationSelector onSelect={handleSavedLocationSelect} />
+                      {canSaveLocation && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon-sm" 
+                          onClick={() => setShowSaveDialog(true)}
+                          title="Save this location"
+                        >
+                          <BookmarkPlus className="h-5 w-5 text-primary" />
+                        </Button>
+                      )}
                       <Button 
                         variant="ghost" 
                         size="icon-sm" 
-                        onClick={() => setShowSaveDialog(true)}
-                        title="Save this location"
+                        onClick={fetchLocation}
+                        disabled={isLocating}
+                        title="Detect via GPS"
                       >
-                        <BookmarkPlus className="h-5 w-5 text-primary" />
+                        <RefreshCw className={`h-5 w-5 text-primary ${isLocating ? 'animate-spin' : ''}`} />
                       </Button>
-                    )}
-                    <Button 
-                      variant="ghost" 
-                      size="icon-sm" 
-                      onClick={fetchLocation}
-                      disabled={isLocating}
-                      title="Detect via GPS"
-                    >
-                      <RefreshCw className={`h-5 w-5 text-primary ${isLocating ? 'animate-spin' : ''}`} />
-                    </Button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -402,6 +442,17 @@ export const CustomerHome = () => {
           address={location}
           latitude={coordinates.lat}
           longitude={coordinates.lng}
+        />
+      )}
+
+      {/* Full-screen Map Picker */}
+      {coordinates && (
+        <LocationMapPicker
+          open={showMapPicker}
+          onOpenChange={setShowMapPicker}
+          initialLat={coordinates.lat}
+          initialLng={coordinates.lng}
+          onConfirm={handleMapPickerConfirm}
         />
       )}
 

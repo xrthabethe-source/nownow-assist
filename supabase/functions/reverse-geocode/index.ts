@@ -1,3 +1,5 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -62,6 +64,30 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Validate authentication
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    )
+
+    const token = authHeader.replace('Bearer ', '')
+    const { data: authData, error: authError } = await supabase.auth.getUser(token)
+    if (authError || !authData?.user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     if (req.method !== 'POST') {
       return new Response(JSON.stringify({ error: 'Method not allowed' }), {
         status: 405,
@@ -102,15 +128,15 @@ Deno.serve(async (req) => {
       )
     }
 
-    const data = (await nominatimRes.json()) as {
+    const geoData = (await nominatimRes.json()) as {
       address?: Record<string, unknown>
       display_name?: string
     }
 
-    const location = data.address ? buildLocationString(data.address) : 'Current location detected'
+    const location = geoData.address ? buildLocationString(geoData.address) : 'Current location detected'
 
     return new Response(
-      JSON.stringify({ location, address: data.address ?? null, display_name: data.display_name ?? null }),
+      JSON.stringify({ location, address: geoData.address ?? null, display_name: geoData.display_name ?? null }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {

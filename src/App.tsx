@@ -60,6 +60,12 @@ const App = () => (
                 <CustomerHome />
               </ProtectedRoute>
             } />
+            {/* Redirect /customer to / for cleaner URLs */}
+            <Route path="/customer" element={
+              <ProtectedRoute allowedRoles={['customer', 'admin']}>
+                <CustomerHome />
+              </ProtectedRoute>
+            } />
             <Route path="/customer/history" element={
               <ProtectedRoute allowedRoles={['customer', 'admin']}>
                 <CustomerHistory />

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { User, Car, CreditCard, Bell, Shield, LogOut, ChevronRight, Camera, FileText, Clock } from "lucide-react";
+import { User, Car, CreditCard, Bell, Shield, LogOut, ChevronRight, Camera, FileText, Clock, Settings2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,7 +27,7 @@ interface Profile {
 }
 
 export const CustomerProfile = () => {
-  const { signOut, user } = useAuth();
+  const { signOut, user, role } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -307,6 +307,22 @@ export const CustomerProfile = () => {
         >
           <Card variant="default">
             <CardContent className="p-0">
+              {/* Admin Panel Link - Only visible to admins */}
+              {role === 'admin' && (
+                <>
+                  <button 
+                    onClick={() => navigate("/admin")}
+                    className="flex w-full items-center justify-between p-4 transition-colors hover:bg-muted/50 bg-primary/5"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Settings2 className="h-5 w-5 text-primary" />
+                      <span className="font-medium text-primary">Admin Panel</span>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-primary" />
+                  </button>
+                  <div className="border-t border-border" />
+                </>
+              )}
               <button 
                 onClick={() => setNotificationsDialogOpen(true)}
                 className="flex w-full items-center justify-between p-4 transition-colors hover:bg-muted/50"

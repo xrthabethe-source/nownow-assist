@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/Logo";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { RoleSwitcher } from "@/components/shared/RoleSwitcher";
 import { useAuth } from "@/hooks/useAuth";
 import { NotificationBell } from "./NotificationBell";
 import {
@@ -446,6 +447,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
             {/* Right side */}
             <div className="flex items-center gap-3">
+              <RoleSwitcher />
               <NotificationBell />
 
               <DropdownMenu>

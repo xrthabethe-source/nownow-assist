@@ -6,6 +6,7 @@ import { Logo } from "@/components/shared/Logo";
 import { TyreIcon, BatteryIcon, FuelIcon, MechanicIcon } from "@/components/icons/ServiceIcons";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { RoleSwitcher } from "@/components/shared/RoleSwitcher";
 import { SaveLocationDialog } from "@/components/customer/SaveLocationDialog";
 import { LocationSelector } from "@/components/customer/LocationSelector";
 import { LocationMapPreview } from "@/components/customer/LocationMapPreview";
@@ -301,8 +302,9 @@ export const CustomerHome = () => {
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-xl">
-        <div className="container flex items-center justify-center py-4">
+        <div className="container flex items-center justify-between py-4">
           <Logo size="sm" />
+          <RoleSwitcher variant="compact" />
         </div>
       </header>
 

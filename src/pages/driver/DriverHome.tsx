@@ -5,6 +5,7 @@ import { Logo } from "@/components/shared/Logo";
 import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, WrenchIcon } from "@/components/icons/ServiceIcons";
 import { BottomNav } from "@/components/shared/BottomNav";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { RoleSwitcher } from "@/components/shared/RoleSwitcher";
 import { MapPin, Clock, Zap, Star, TrendingUp, Bell, Settings, ChevronRight, Navigation, Loader2, Volume2, VolumeX } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
@@ -109,7 +110,8 @@ export const DriverHome = () => {
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-xl">
         <div className="container flex items-center justify-between py-4">
           <Logo size="sm" />
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <RoleSwitcher variant="compact" />
             <Button variant="ghost" size="icon-sm" className="rounded-full">
               <Bell className="h-5 w-5" />
             </Button>

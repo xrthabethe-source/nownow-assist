@@ -77,7 +77,8 @@ export function LocationMapPreview({ lat, lng, onClick }: LocationMapPreviewProp
   return (
     <div 
       ref={mapRef} 
-      className="h-24 w-full rounded-xl overflow-hidden cursor-pointer ring-1 ring-border hover:ring-primary transition-all"
+      className="h-24 w-full rounded-xl overflow-hidden cursor-pointer ring-1 ring-border hover:ring-primary transition-all relative"
+      style={{ zIndex: 0 }}
       onClick={onClick}
       role="button"
       aria-label="Tap to adjust pin location"

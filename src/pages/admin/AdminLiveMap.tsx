@@ -461,8 +461,33 @@ export default function AdminLiveMap() {
   const [showDirections, setShowDirections] = useState(true);
   const [routeProgress, setRouteProgress] = useState(0); // 0 to 1 progress along route
   const [animatedDriverPos, setAnimatedDriverPos] = useState<[number, number] | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   const animationRef = useRef<number | null>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const simulationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup on unmount to prevent map glitches
+  useEffect(() => {
+    return () => {
+      // Cancel any running animation
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+      // Clear simulation interval
+      if (simulationIntervalRef.current) {
+        clearInterval(simulationIntervalRef.current);
+        simulationIntervalRef.current = null;
+      }
+      // Properly invalidate and remove the map
+      if (mapRef.current) {
+        mapRef.current.off();
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      setMapReady(false);
+    };
+  }, []);
 
   const { data: drivers, refetch } = useQuery({
     queryKey: ["admin-live-map-drivers"],
@@ -726,7 +751,12 @@ export default function AdminLiveMap() {
 
   // Simulate random movement for non-selected drivers
   useEffect(() => {
-    const interval = setInterval(() => {
+    // Clear previous interval if it exists
+    if (simulationIntervalRef.current) {
+      clearInterval(simulationIntervalRef.current);
+    }
+
+    simulationIntervalRef.current = setInterval(() => {
       setSimulatedPositions(prev => {
         const newPositions: Record<string, { lat: number; lng: number }> = { ...prev };
         drivers?.forEach(driver => {
@@ -750,7 +780,12 @@ export default function AdminLiveMap() {
       });
     }, 3000);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (simulationIntervalRef.current) {
+        clearInterval(simulationIntervalRef.current);
+        simulationIntervalRef.current = null;
+      }
+    };
   }, [drivers, selectedDriver?.id]);
 
   const handleRefresh = async () => {
@@ -760,14 +795,15 @@ export default function AdminLiveMap() {
   };
 
   const handleLocateDrivers = () => {
-    if (mapRef.current && drivers && drivers.length > 0) {
+    if (mapRef.current && mapReady && drivers && drivers.length > 0) {
+      const validDrivers = drivers.filter(d => d.current_location_lat && d.current_location_lng);
+      if (validDrivers.length === 0) return;
+      
       const bounds = L.latLngBounds(
-        drivers
-          .filter(d => d.current_location_lat && d.current_location_lng)
-          .map(d => [
-            simulatedPositions[d.id]?.lat || d.current_location_lat!,
-            simulatedPositions[d.id]?.lng || d.current_location_lng!,
-          ] as [number, number])
+        validDrivers.map(d => [
+          simulatedPositions[d.id]?.lat || d.current_location_lat!,
+          simulatedPositions[d.id]?.lng || d.current_location_lng!,
+        ] as [number, number])
       );
       mapRef.current.fitBounds(bounds, { padding: [50, 50] });
     }
@@ -881,8 +917,14 @@ export default function AdminLiveMap() {
                   center={[-26.11, 28.06]}
                   zoom={12}
                   className="h-full w-full"
-                  ref={mapRef}
+                  ref={(map) => {
+                    if (map) {
+                      mapRef.current = map;
+                      setMapReady(true);
+                    }
+                  }}
                   zoomControl={false}
+                  key="admin-live-map" // Stable key to prevent recreation
                 >
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

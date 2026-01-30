@@ -10,10 +10,10 @@ interface LogoProps {
 }
 
 const sizeClasses = {
-  sm: "h-8",
-  md: "h-10",
-  lg: "h-12",
-  xl: "h-16",
+  sm: "h-12",
+  md: "h-16",
+  lg: "h-20",
+  xl: "h-28",
 };
 
 export const Logo = ({
@@ -33,18 +33,16 @@ export const Logo = ({
         src={logoImage}
         alt="Now-Now Assist"
         className={cn(
-          "object-contain",
-          showText ? sizeClasses[size] : sizeClasses[size],
-          // Adjust width based on whether we show the full logo or just icon
-          showText && size === "sm" && "h-10 w-auto",
-          showText && size === "md" && "h-12 w-auto",
-          showText && size === "lg" && "h-14 w-auto",
-          showText && size === "xl" && "h-20 w-auto",
-          !showText && size === "sm" && "h-8 w-8",
-          !showText && size === "md" && "h-10 w-10",
-          !showText && size === "lg" && "h-12 w-12",
-          !showText && size === "xl" && "h-16 w-16",
-          !showText && "object-cover object-left"
+          "object-contain drop-shadow-lg",
+          showText && size === "sm" && "h-14 w-auto",
+          showText && size === "md" && "h-18 w-auto",
+          showText && size === "lg" && "h-24 w-auto",
+          showText && size === "xl" && "h-32 w-auto",
+          !showText && size === "sm" && "h-12 w-12",
+          !showText && size === "md" && "h-16 w-16",
+          !showText && size === "lg" && "h-20 w-20",
+          !showText && size === "xl" && "h-28 w-28",
+          !showText && "object-cover object-center"
         )}
       />
     </motion.div>

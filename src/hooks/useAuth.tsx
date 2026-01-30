@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -8,8 +8,10 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   role: AppRole | null;
+  allRoles: AppRole[];
   loading: boolean;
   roleLoading: boolean;
+  setActiveRole: (role: AppRole) => void;
   signUp: (email: string, password: string, fullName?: string, accountType?: 'customer' | 'driver') => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -21,44 +23,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
+  const [allRoles, setAllRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [roleLoading, setRoleLoading] = useState(false);
 
-  const fetchUserRole = async (userId: string): Promise<AppRole | null> => {
+  const fetchUserRoles = async (userId: string): Promise<AppRole[]> => {
     try {
-      // Fetch all roles for the user and prioritize admin > driver > customer
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId);
 
       if (error) {
-        console.error('Error fetching user role:', error);
-        return null;
+        console.error('Error fetching user roles:', error);
+        return [];
       }
 
       if (!data || data.length === 0) {
-        return null;
+        return [];
       }
 
-      // Prioritize roles: admin > driver > customer
-      const roles = data.map((d) => d.role as AppRole);
-      if (roles.includes('admin')) return 'admin';
-      if (roles.includes('driver')) return 'driver';
-      return 'customer';
+      return data.map((d) => d.role as AppRole);
     } catch (error) {
-      console.error('Error fetching user role:', error);
-      return null;
+      console.error('Error fetching user roles:', error);
+      return [];
     }
   };
 
+  const getPriorityRole = (roles: AppRole[]): AppRole | null => {
+    if (roles.includes('admin')) return 'admin';
+    if (roles.includes('driver')) return 'driver';
+    if (roles.includes('customer')) return 'customer';
+    return null;
+  };
+
+  // Allow manually setting active role (for role switching)
+  const setActiveRole = useCallback((newRole: AppRole) => {
+    if (allRoles.includes(newRole)) {
+      setRole(newRole);
+    }
+  }, [allRoles]);
+
   useEffect(() => {
-    const loadRoleForUser = (userId: string) => {
+    const loadRolesForUser = (userId: string) => {
       setRoleLoading(true);
       // Defer role fetching to avoid auth state change deadlocks
       setTimeout(() => {
-        fetchUserRole(userId)
-          .then(setRole)
+        fetchUserRoles(userId)
+          .then((roles) => {
+            setAllRoles(roles);
+            // Set highest priority role as default
+            setRole(getPriorityRole(roles));
+          })
           .finally(() => setRoleLoading(false));
       }, 0);
     };
@@ -70,9 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          loadRoleForUser(session.user.id);
+          loadRolesForUser(session.user.id);
         } else {
           setRole(null);
+          setAllRoles([]);
           setRoleLoading(false);
         }
 
@@ -86,9 +103,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        loadRoleForUser(session.user.id);
+        loadRolesForUser(session.user.id);
       } else {
         setRole(null);
+        setAllRoles([]);
         setRoleLoading(false);
       }
 
@@ -130,11 +148,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setSession(null);
     setRole(null);
+    setAllRoles([]);
     setRoleLoading(false);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, role, loading, roleLoading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, role, allRoles, loading, roleLoading, setActiveRole, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

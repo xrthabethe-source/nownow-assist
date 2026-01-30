@@ -10,7 +10,6 @@ import {
   Camera,
   Check,
   MapPin,
-  Clock,
   User,
   AlertTriangle,
   ChevronRight,
@@ -20,15 +19,23 @@ import {
   X,
   CheckCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { isValidCoordinate } from "@/lib/validations";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { SecureChatDialog } from "@/components/shared/SecureChatDialog";
+import { SecureCallDialog } from "@/components/shared/SecureCallDialog";
+import { ReportAbuseDialog } from "@/components/shared/ReportAbuseDialog";
+import { useSecureMessaging } from "@/hooks/useSecureMessaging";
 
+// Mock job data - in production this would come from real job data
 const mockJob = {
-  id: "JOB-001",
+  id: "job-uuid-123",
+  jobNumber: "JOB-001",
   service: "Tyre Change",
   customer: {
+    id: "customer-user-id",
     name: "John M.",
     phone: "+27 82 123 4567",
     rating: 4.8,
@@ -74,14 +81,37 @@ const securityPhotos = [
 
 export const ActiveJob = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [currentStage, setCurrentStage] = useState(1);
   const [showNavPicker, setShowNavPicker] = useState(false);
   const [preferredNav, setPreferredNav] = useState<string | null>(null);
   const [showSecurityPhotos, setShowSecurityPhotos] = useState(false);
   const [uploadedPhotos, setUploadedPhotos] = useState<Record<string, boolean>>({});
   const [showPhotoCapture, setShowPhotoCapture] = useState<string | null>(null);
+  const [showChatDialog, setShowChatDialog] = useState(false);
+  const [showCallDialog, setShowCallDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   const allSecurityPhotosUploaded = securityPhotos.every((photo) => uploadedPhotos[photo.id]);
+
+  // Secure messaging hook
+  const {
+    messages,
+    unreadCount,
+    sending,
+    rateLimited,
+    sendMessage,
+    setChatOpen,
+    blockUser,
+  } = useSecureMessaging({
+    jobId: mockJob.id,
+    otherPartyName: mockJob.customer.name,
+  });
+
+  // Track chat open state
+  useEffect(() => {
+    setChatOpen(showChatDialog);
+  }, [showChatDialog, setChatOpen]);
 
   const handleNavigation = (appId: string) => {
     setPreferredNav(appId);
@@ -320,11 +350,24 @@ export const ActiveJob = () => {
               </div>
 
               <div className="flex gap-3">
-                <Button variant="outline" className="flex-1">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 relative"
+                  onClick={() => setShowChatDialog(true)}
+                >
                   <MessageCircle className="mr-2 h-4 w-4" />
                   Message
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
                 </Button>
-                <Button variant="outline" className="flex-1">
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setShowCallDialog(true)}
+                >
                   <Phone className="mr-2 h-4 w-4" />
                   Call
                 </Button>
@@ -494,6 +537,50 @@ export const ActiveJob = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Secure Chat Dialog */}
+      <SecureChatDialog
+        open={showChatDialog}
+        onOpenChange={setShowChatDialog}
+        otherPartyName={mockJob.customer.name}
+        otherPartyId={mockJob.customer.id}
+        otherPartyType="customer"
+        messages={messages}
+        sending={sending}
+        rateLimited={rateLimited}
+        onSendMessage={sendMessage}
+        onCallClick={() => {
+          setShowChatDialog(false);
+          setShowCallDialog(true);
+        }}
+        onReportClick={() => {
+          setShowChatDialog(false);
+          setShowReportDialog(true);
+        }}
+        onBlockClick={() => blockUser(mockJob.customer.id)}
+        currentUserId={user?.id}
+      />
+
+      {/* Secure Call Dialog */}
+      <SecureCallDialog
+        open={showCallDialog}
+        onOpenChange={setShowCallDialog}
+        jobId={mockJob.id}
+        receiverId={mockJob.customer.id}
+        receiverType="customer"
+        receiverName={mockJob.customer.name}
+        receiverPhone={mockJob.customer.phone}
+      />
+
+      {/* Report Abuse Dialog */}
+      <ReportAbuseDialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        jobId={mockJob.id}
+        reportedId={mockJob.customer.id}
+        reportedType="customer"
+        reportedName={mockJob.customer.name}
+      />
     </div>
   );
 };

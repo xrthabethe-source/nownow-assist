@@ -17,11 +17,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { InAppChatDialog } from "@/components/customer/InAppChatDialog";
-import { InAppCallDialog } from "@/components/customer/InAppCallDialog";
-import { useJobMessages } from "@/hooks/useJobMessages";
+import { useAuth } from "@/hooks/useAuth";
+import { SecureChatDialog } from "@/components/shared/SecureChatDialog";
+import { SecureCallDialog } from "@/components/shared/SecureCallDialog";
+import { ReportAbuseDialog } from "@/components/shared/ReportAbuseDialog";
+import { useSecureMessaging } from "@/hooks/useSecureMessaging";
 
+// Mock driver data - in production this would come from the job data
 const mockDriver = {
+  id: "driver-123",
+  userId: "user-456",
   name: "Samuel K.",
   rating: 4.9,
   vehicle: "Toyota Hilux",
@@ -60,6 +65,7 @@ export const LiveTracking = () => {
   const { serviceId } = useParams();
   const location = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   const [currentStatus, setCurrentStatus] = useState(0);
   const [eta, setEta] = useState(mockDriver.eta);
@@ -67,6 +73,7 @@ export const LiveTracking = () => {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showChatDialog, setShowChatDialog] = useState(false);
   const [showCallDialog, setShowCallDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
 
   // Get address from navigation state or use fallback
   const pickupAddress = (location.state as { address?: string })?.address || "Your current location";
@@ -74,8 +81,19 @@ export const LiveTracking = () => {
   // Get job ID from navigation state (would be real in production)
   const jobId = (location.state as { jobId?: string })?.jobId || null;
 
-  // Subscribe to job messages for push notifications
-  const { messages, unreadCount, sendMessage, setChatOpen } = useJobMessages(jobId, mockDriver.name);
+  // Subscribe to secure messaging
+  const {
+    messages,
+    unreadCount,
+    sending,
+    rateLimited,
+    sendMessage,
+    setChatOpen,
+    blockUser,
+  } = useSecureMessaging({
+    jobId,
+    otherPartyName: mockDriver.name,
+  });
 
   // Track chat open state for notification suppression
   useEffect(() => {
@@ -402,26 +420,50 @@ export const LiveTracking = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* In-App Chat Dialog */}
-      <InAppChatDialog
+      {/* Secure Chat Dialog */}
+      <SecureChatDialog
         open={showChatDialog}
         onOpenChange={setShowChatDialog}
-        driverName={mockDriver.name}
-        driverPhone={mockDriver.phone}
+        otherPartyName={mockDriver.name}
+        otherPartyId={mockDriver.userId}
+        otherPartyType="driver"
         messages={messages}
+        sending={sending}
+        rateLimited={rateLimited}
         onSendMessage={sendMessage}
         onCallClick={() => {
           setShowChatDialog(false);
           setShowCallDialog(true);
         }}
+        onReportClick={() => {
+          setShowChatDialog(false);
+          setShowReportDialog(true);
+        }}
+        onBlockClick={() => blockUser(mockDriver.userId)}
+        currentUserId={user?.id}
       />
 
-      {/* In-App Call Dialog */}
-      <InAppCallDialog
-        open={showCallDialog}
-        onOpenChange={setShowCallDialog}
-        driverName={mockDriver.name}
-        driverPhone={mockDriver.phone}
+      {/* Secure Call Dialog */}
+      {jobId && (
+        <SecureCallDialog
+          open={showCallDialog}
+          onOpenChange={setShowCallDialog}
+          jobId={jobId}
+          receiverId={mockDriver.userId}
+          receiverType="driver"
+          receiverName={mockDriver.name}
+          receiverPhone={mockDriver.phone}
+        />
+      )}
+
+      {/* Report Abuse Dialog */}
+      <ReportAbuseDialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        jobId={jobId || undefined}
+        reportedId={mockDriver.userId}
+        reportedType="driver"
+        reportedName={mockDriver.name}
       />
     </div>
   );

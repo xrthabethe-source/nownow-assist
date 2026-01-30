@@ -14,6 +14,68 @@ export type Database = {
   }
   public: {
     Tables: {
+      abuse_reports: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          evidence_urls: string[] | null
+          id: string
+          job_id: string | null
+          report_type: string
+          reported_id: string
+          reported_type: string
+          reporter_id: string
+          reporter_type: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          job_id?: string | null
+          report_type: string
+          reported_id: string
+          reported_type: string
+          reporter_id: string
+          reporter_type: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          job_id?: string | null
+          report_type?: string
+          reported_id?: string
+          reported_type?: string
+          reporter_id?: string
+          reporter_type?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "abuse_reports_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_notifications: {
         Row: {
           created_at: string
@@ -128,6 +190,101 @@ export type Database = {
           user_email?: string | null
           user_id?: string | null
           user_role?: Database["public"]["Enums"]["app_role"] | null
+        }
+        Relationships: []
+      }
+      call_logs: {
+        Row: {
+          answered_at: string | null
+          call_sid: string | null
+          caller_id: string
+          caller_type: string
+          created_at: string | null
+          duration_seconds: number | null
+          end_reason: string | null
+          ended_at: string | null
+          id: string
+          initiated_at: string | null
+          is_recorded: boolean | null
+          job_id: string | null
+          metadata: Json | null
+          receiver_id: string
+          receiver_type: string
+          recording_url: string | null
+          status: string | null
+        }
+        Insert: {
+          answered_at?: string | null
+          call_sid?: string | null
+          caller_id: string
+          caller_type: string
+          created_at?: string | null
+          duration_seconds?: number | null
+          end_reason?: string | null
+          ended_at?: string | null
+          id?: string
+          initiated_at?: string | null
+          is_recorded?: boolean | null
+          job_id?: string | null
+          metadata?: Json | null
+          receiver_id: string
+          receiver_type: string
+          recording_url?: string | null
+          status?: string | null
+        }
+        Update: {
+          answered_at?: string | null
+          call_sid?: string | null
+          caller_id?: string
+          caller_type?: string
+          created_at?: string | null
+          duration_seconds?: number | null
+          end_reason?: string | null
+          ended_at?: string | null
+          id?: string
+          initiated_at?: string | null
+          is_recorded?: boolean | null
+          job_id?: string | null
+          metadata?: Json | null
+          receiver_id?: string
+          receiver_type?: string
+          recording_url?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_logs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communication_rate_limits: {
+        Row: {
+          action_type: string
+          count: number | null
+          created_at: string | null
+          id: string
+          user_id: string
+          window_start: string | null
+        }
+        Insert: {
+          action_type: string
+          count?: number | null
+          created_at?: string | null
+          id?: string
+          user_id: string
+          window_start?: string | null
+        }
+        Update: {
+          action_type?: string
+          count?: number | null
+          created_at?: string | null
+          id?: string
+          user_id?: string
+          window_start?: string | null
         }
         Relationships: []
       }
@@ -304,30 +461,48 @@ export type Database = {
       job_messages: {
         Row: {
           created_at: string
+          delivered_at: string | null
+          expires_at: string | null
           id: string
           is_read: boolean | null
+          is_system_message: boolean | null
           job_id: string | null
           message: string
+          metadata: Json | null
+          read_at: string | null
           sender_id: string
           sender_type: string
+          status: string | null
         }
         Insert: {
           created_at?: string
+          delivered_at?: string | null
+          expires_at?: string | null
           id?: string
           is_read?: boolean | null
+          is_system_message?: boolean | null
           job_id?: string | null
           message: string
+          metadata?: Json | null
+          read_at?: string | null
           sender_id: string
           sender_type: string
+          status?: string | null
         }
         Update: {
           created_at?: string
+          delivered_at?: string | null
+          expires_at?: string | null
           id?: string
           is_read?: boolean | null
+          is_system_message?: boolean | null
           job_id?: string | null
           message?: string
+          metadata?: Json | null
+          read_at?: string | null
           sender_id?: string
           sender_type?: string
+          status?: string | null
         }
         Relationships: [
           {
@@ -459,6 +634,30 @@ export type Database = {
           ip_address?: unknown
           success?: boolean
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      message_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string | null
+          id: string
+          reason: string | null
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string | null
+          id?: string
+          reason?: string | null
         }
         Relationships: []
       }
@@ -812,6 +1011,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_message_rate_limit: {
+        Args: { p_job_id: string; p_user_id: string }
+        Returns: boolean
+      }
       get_failed_attempt_count: {
         Args: { check_email: string; check_ip: unknown }
         Returns: number
@@ -828,6 +1031,10 @@ export type Database = {
         Returns: boolean
       }
       is_account_locked: { Args: { check_email: string }; Returns: boolean }
+      is_user_blocked: {
+        Args: { p_receiver_id: string; p_sender_id: string }
+        Returns: boolean
+      }
       log_audit_event:
         | {
             Args: {

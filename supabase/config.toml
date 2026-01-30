@@ -17,3 +17,12 @@ verify_jwt = false
 
 [functions.twilio-token]
 verify_jwt = false
+
+[functions.secure-call]
+verify_jwt = false
+
+[functions.secure-message]
+verify_jwt = false
+
+[functions.report-abuse]
+verify_jwt = false

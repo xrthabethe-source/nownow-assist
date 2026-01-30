@@ -216,3 +216,19 @@
 .animate-slide-up {
   animation: slide-up 0.5s ease-out;
 }
+
+/* Leaflet map z-index override - ensure maps don't overlap dropdowns/modals */
+.leaflet-container {
+  z-index: 0 !important;
+}
+
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: inherit !important;
+}
+
+/* Only allow map controls to have modest z-index within the map */
+.leaflet-control {
+  z-index: 10 !important;
+}

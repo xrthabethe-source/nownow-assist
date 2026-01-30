@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +8,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Check, ChevronDown, Shield, Car, User } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -50,53 +48,19 @@ interface RoleSwitcherProps {
 }
 
 export function RoleSwitcher({ variant = "default", className }: RoleSwitcherProps) {
-  const { user, role: activeRole } = useAuth();
+  const { role: activeRole, allRoles, roleLoading, setActiveRole } = useAuth();
   const navigate = useNavigate();
-  const [allRoles, setAllRoles] = useState<AppRole[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch all roles for the current user
-  useEffect(() => {
-    const fetchAllRoles = async () => {
-      if (!user?.id) {
-        setAllRoles([]);
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id);
-
-        if (error) {
-          console.error("Error fetching user roles:", error);
-          setAllRoles(activeRole ? [activeRole] : []);
-        } else {
-          const roles = data?.map((d) => d.role as AppRole) || [];
-          // Sort by priority: admin > driver > customer
-          const sortedRoles = roles.sort((a, b) => {
-            const priority: Record<AppRole, number> = { admin: 0, driver: 1, customer: 2 };
-            return priority[a] - priority[b];
-          });
-          setAllRoles(sortedRoles);
-        }
-      } catch (error) {
-        console.error("Error fetching user roles:", error);
-        setAllRoles(activeRole ? [activeRole] : []);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchAllRoles();
-  }, [user?.id, activeRole]);
-
-  // Don't render if user has only one role or no roles
-  if (isLoading || allRoles.length <= 1) {
+  // Don't render if still loading roles or user has only one role or no roles
+  if (roleLoading || allRoles.length <= 1) {
     return null;
   }
+
+  // Sort roles by priority: admin > driver > customer
+  const sortedRoles = [...allRoles].sort((a, b) => {
+    const priority: Record<AppRole, number> = { admin: 0, driver: 1, customer: 2 };
+    return priority[a] - priority[b];
+  });
 
   const currentRoleConfig = activeRole ? roleConfigs[activeRole] : null;
   const CurrentIcon = currentRoleConfig?.icon || User;
@@ -104,6 +68,10 @@ export function RoleSwitcher({ variant = "default", className }: RoleSwitcherPro
   const handleRoleSwitch = (targetRole: AppRole) => {
     if (targetRole === activeRole) return;
     
+    // Update the active role in auth context FIRST
+    setActiveRole(targetRole);
+    
+    // Then navigate to the new dashboard
     const config = roleConfigs[targetRole];
     navigate(config.path);
   };
@@ -126,7 +94,7 @@ export function RoleSwitcher({ variant = "default", className }: RoleSwitcherPro
             Switch Role
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {allRoles.map((role) => {
+          {sortedRoles.map((role) => {
             const config = roleConfigs[role];
             const Icon = config.icon;
             const isActive = role === activeRole;
@@ -166,7 +134,7 @@ export function RoleSwitcher({ variant = "default", className }: RoleSwitcherPro
           Switch Dashboard
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {allRoles.map((role) => {
+        {sortedRoles.map((role) => {
           const config = roleConfigs[role];
           const Icon = config.icon;
           const isActive = role === activeRole;

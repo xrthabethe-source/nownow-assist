@@ -171,9 +171,9 @@ export const LandingPage = () => {
         <div className="container flex items-center justify-between h-16 md:h-[72px]">
           <Logo size="lg" />
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#services" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Services</a>
-            <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">How It Works</a>
-            <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Reviews</a>
+            <a href="#services" onClick={(e) => { e.preventDefault(); document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">Services</a>
+            <a href="#how-it-works" onClick={(e) => { e.preventDefault(); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">How It Works</a>
+            <a href="#testimonials" onClick={(e) => { e.preventDefault(); document.getElementById('testimonials')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">Reviews</a>
           </nav>
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" className="font-medium" onClick={() => navigate("/auth")}>
@@ -417,7 +417,7 @@ export const LandingPage = () => {
       </section>
 
       {/* Services */}
-      <section className="py-16 md:py-24">
+      <section id="services" className="py-16 md:py-24">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -444,7 +444,8 @@ export const LandingPage = () => {
               <motion.div key={service.name} variants={item}>
                 <Card 
                   variant={service.popular ? "interactive" : "default"} 
-                  className={`h-full relative ${service.popular ? 'ring-2 ring-primary' : ''}`}
+                  className={`h-full relative cursor-pointer hover:shadow-lg transition-shadow ${service.popular ? 'ring-2 ring-primary' : ''}`}
+                  onClick={() => navigate("/auth")}
                 >
                   {service.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -468,7 +469,7 @@ export const LandingPage = () => {
       </section>
 
       {/* How It Works */}
-      <section className="bg-muted/30 py-16 md:py-24">
+      <section id="how-it-works" className="bg-muted/30 py-16 md:py-24">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -518,7 +519,7 @@ export const LandingPage = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-16 md:py-24">
+      <section id="testimonials" className="py-16 md:py-24">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

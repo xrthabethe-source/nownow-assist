@@ -169,7 +169,7 @@ export const LandingPage = () => {
       {/* Sticky Header - Clean Uber-style */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
         <div className="container flex items-center justify-between h-16 md:h-[72px]">
-          <Logo size="md" />
+          <Logo size="sm" />
           <nav className="hidden md:flex items-center gap-8">
             <a href="#services" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Services</a>
             <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">How It Works</a>

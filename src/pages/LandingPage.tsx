@@ -166,20 +166,24 @@ export const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-xl">
-        <div className="container flex items-center justify-between py-3 md:py-4">
+      {/* Sticky Header - Clean Uber-style */}
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
+        <div className="container flex items-center justify-between h-16 md:h-[72px]">
           <Logo size="md" />
-          <div className="flex items-center gap-2 md:gap-3">
-            <Button variant="ghost" size="sm" className="hidden sm:flex" onClick={() => navigate("/auth")}>
-              Sign In
+          <nav className="hidden md:flex items-center gap-8">
+            <a href="#services" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Services</a>
+            <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">How It Works</a>
+            <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Reviews</a>
+          </nav>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" className="font-medium" onClick={() => navigate("/auth")}>
+              Log in
             </Button>
-            <Button variant="outline" size="sm" className="hidden md:flex" onClick={() => navigate("/auth")}>
-              Drive & Earn
+            <Button variant="outline" size="sm" className="hidden sm:flex font-medium" onClick={() => navigate("/auth")}>
+              Drive with us
             </Button>
-            <Button variant="amber" size="sm" onClick={() => navigate("/auth")}>
-              Get Help Now
-              <ArrowRight className="ml-1 h-4 w-4" />
+            <Button variant="amber" size="sm" className="font-medium" onClick={() => navigate("/auth")}>
+              Get help
             </Button>
           </div>
         </div>

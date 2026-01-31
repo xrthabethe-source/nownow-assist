@@ -36,7 +36,7 @@ export const Logo = ({
           "object-contain",
           showText && size === "sm" && "h-8 w-auto",
           showText && size === "md" && "h-10 w-auto",
-          showText && size === "lg" && "h-10 w-auto",
+          showText && size === "lg" && "h-9 w-auto",
           showText && size === "xl" && "h-14 w-auto",
           !showText && size === "sm" && "h-8 w-8",
           !showText && size === "md" && "h-10 w-10",

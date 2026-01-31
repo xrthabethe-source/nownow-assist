@@ -51,17 +51,17 @@ const App = () => (
         <AuthProvider>
           <Routes>
             {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
             <Route path="/welcome" element={<LandingPage />} />
             <Route path="/auth" element={<Auth />} />
             
             {/* Customer Routes - Protected for customers */}
-            <Route path="/" element={
+            <Route path="/customer" element={
               <ProtectedRoute allowedRoles={['customer', 'admin']}>
                 <CustomerHome />
               </ProtectedRoute>
             } />
-            {/* Redirect /customer to / for cleaner URLs */}
-            <Route path="/customer" element={
+            <Route path="/customer/home" element={
               <ProtectedRoute allowedRoles={['customer', 'admin']}>
                 <CustomerHome />
               </ProtectedRoute>

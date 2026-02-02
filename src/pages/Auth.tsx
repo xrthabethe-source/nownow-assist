@@ -190,7 +190,7 @@ export default function Auth() {
         className="w-full max-w-md"
       >
         <div className="mb-8 text-center">
-          <Logo className="mx-auto mb-4" />
+          <Logo size="lg" className="mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>

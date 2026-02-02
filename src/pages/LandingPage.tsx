@@ -179,11 +179,8 @@ export const LandingPage = () => {
             <Button variant="ghost" size="sm" className="font-medium text-white" onClick={() => navigate("/auth")}>
               Log in
             </Button>
-            <Button variant="outline" size="sm" className="hidden sm:flex font-medium" onClick={() => navigate("/auth")}>
+            <Button variant="amber" size="sm" className="hidden sm:flex font-medium" onClick={() => navigate("/auth")}>
               Drive with us
-            </Button>
-            <Button variant="amber" size="sm" className="font-medium" onClick={() => navigate("/auth")}>
-              Get help
             </Button>
           </div>
         </div>

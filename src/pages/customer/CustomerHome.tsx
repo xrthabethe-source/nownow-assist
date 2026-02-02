@@ -494,24 +494,24 @@ export const CustomerHome = () => {
             <motion.div key={service.id} variants={item}>
               <Card
                 variant="default"
-                className={`h-full cursor-pointer hover:border-accent/50 transition-all ${service.featured ? 'ring-2 ring-accent' : ''}`}
+                className={`h-full cursor-pointer hover:border-primary/50 transition-all ${service.featured ? 'ring-2 ring-primary' : ''}`}
                 onClick={() => handleServiceSelect(service.id)}
               >
                 <CardContent className="flex flex-col items-center p-4 text-center">
                   {service.featured && (
-                    <span className="mb-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-white">
+                    <span className="mb-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white">
                       MOST POPULAR
                     </span>
                   )}
-                  <div className={`mb-3 flex h-14 w-14 items-center justify-center rounded-2xl ${service.isMechanic ? 'bg-muted' : 'bg-accent/20'}`}>
-                    <service.icon className={`h-7 w-7 ${service.isMechanic ? 'text-muted-foreground' : 'text-accent'}`} />
+                  <div className={`mb-3 flex h-14 w-14 items-center justify-center rounded-2xl ${service.isMechanic ? 'bg-muted' : 'bg-primary/20'}`}>
+                    <service.icon className={`h-7 w-7 ${service.isMechanic ? 'text-white' : 'text-white'}`} />
                   </div>
                   <h3 className="mb-1 font-semibold text-foreground">{service.name}</h3>
-                  <p className="text-lg font-bold text-accent">{service.price}</p>
+                  <p className="text-lg font-bold text-primary-foreground">{service.price}</p>
                   {service.isMechanic && (
                     <p className="mt-1 text-[10px] text-muted-foreground">Connection fee only</p>
                   )}
-                  <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                  <div className="mt-2 flex items-center gap-1 text-xs text-white/70">
                     <Clock className="h-3 w-3" />
                     <span>{service.eta}</span>
                   </div>
@@ -526,19 +526,19 @@ export const CustomerHome = () => {
       <div className="container py-4">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-semibold text-white">Recent Activity</h3>
-          <Button variant="ghost" size="sm" className="text-accent" onClick={() => navigate('/customer/history')}>
+          <Button variant="ghost" size="sm" className="text-white" onClick={() => navigate('/customer/history')}>
             View All
           </Button>
         </div>
         <Card 
           variant="default" 
-          className="cursor-pointer hover:border-accent/50 transition-all"
+          className="cursor-pointer hover:border-primary/50 transition-all"
           onClick={() => navigate('/customer/history')}
         >
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success/20">
-                <TyreIcon className="h-5 w-5 text-success" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20">
+                <TyreIcon className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1">
                 <p className="font-medium text-foreground">Tyre Change</p>
@@ -552,10 +552,10 @@ export const CustomerHome = () => {
 
       {/* Safety Card */}
       <div className="container py-4">
-        <Card variant="amber" className="border-l-4 border-l-accent">
+        <Card variant="amber" className="border-l-4 border-l-primary">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/30">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/30">
                 <span className="text-xl">⚠️</span>
               </div>
               <div>

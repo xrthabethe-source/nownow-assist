@@ -4,7 +4,7 @@ import logoImage from "@/assets/logo-new.png";
 
 interface LogoProps {
   className?: string;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "2xl" | "hero";
   variant?: "default" | "dark" | "light";
   showText?: boolean;
 }
@@ -14,6 +14,8 @@ const sizeClasses = {
   md: "h-14",
   lg: "h-20",
   xl: "h-24",
+  "2xl": "h-32",
+  hero: "h-40",
 };
 
 export const Logo = ({

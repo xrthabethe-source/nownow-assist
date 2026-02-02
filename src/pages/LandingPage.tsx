@@ -287,8 +287,8 @@ export const LandingPage = () => {
         </motion.div>
       </section>
 
-      {/* Social Proof Stats - Soft Grey Panel */}
-      <section className="border-y border-border bg-secondary py-8 md:py-12">
+      {/* Social Proof Stats - Orange Accent Panel */}
+      <section className="border-y border-accent/30 bg-accent py-8 md:py-12">
         <div className="container">
           <motion.div
             variants={container}
@@ -299,11 +299,11 @@ export const LandingPage = () => {
           >
             {stats.map((stat) => (
               <motion.div key={stat.label} variants={item} className="text-center">
-                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-accent/20">
-                  <stat.icon className="h-5 w-5 text-accent" />
+                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+                  <stat.icon className="h-5 w-5 text-white" />
                 </div>
-                <p className="text-2xl font-extrabold text-brand-charcoal md:text-3xl">{stat.value}</p>
-                <p className="text-sm text-brand-charcoal/70">{stat.label}</p>
+                <p className="text-2xl font-extrabold text-white md:text-3xl">{stat.value}</p>
+                <p className="text-sm text-white/80">{stat.label}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -690,48 +690,48 @@ export const LandingPage = () => {
         </div>
       </section>
 
-      {/* Footer - Soft Grey */}
-      <footer className="border-t border-border bg-secondary py-12">
+      {/* Footer - Orange Accent */}
+      <footer className="border-t border-accent/30 bg-accent py-12">
         <div className="container">
           <div className="grid gap-8 md:grid-cols-4">
             <div className="md:col-span-2">
               <Logo size="md" className="mb-4" />
-              <p className="mb-4 max-w-sm text-brand-charcoal/70">
+              <p className="mb-4 max-w-sm text-white/80">
                 South Africa's fastest-growing roadside assistance platform. 
                 Help when you need it, where you need it.
               </p>
               <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-success" />
-                <span className="text-sm text-brand-charcoal/70">Verified & Trusted</span>
+                <Shield className="h-5 w-5 text-white" />
+                <span className="text-sm text-white/80">Verified & Trusted</span>
               </div>
             </div>
             
             <div>
-              <h4 className="mb-4 font-semibold text-brand-charcoal">Quick Links</h4>
-              <ul className="space-y-2 text-sm text-brand-charcoal/70">
-                <li><button onClick={() => navigate("/auth")} className="hover:text-accent transition-colors">Get Help</button></li>
-                <li><button onClick={() => navigate("/auth")} className="hover:text-accent transition-colors">Become a Responder</button></li>
-                <li><button className="hover:text-accent transition-colors">About Us</button></li>
-                <li><button className="hover:text-accent transition-colors">Contact</button></li>
+              <h4 className="mb-4 font-semibold text-white">Quick Links</h4>
+              <ul className="space-y-2 text-sm text-white/80">
+                <li><button onClick={() => navigate("/auth")} className="hover:text-white transition-colors">Get Help</button></li>
+                <li><button onClick={() => navigate("/auth")} className="hover:text-white transition-colors">Become a Responder</button></li>
+                <li><button className="hover:text-white transition-colors">About Us</button></li>
+                <li><button className="hover:text-white transition-colors">Contact</button></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="mb-4 font-semibold text-brand-charcoal">Legal</h4>
-              <ul className="space-y-2 text-sm text-brand-charcoal/70">
-                <li><button className="hover:text-accent transition-colors">Privacy Policy</button></li>
-                <li><button className="hover:text-accent transition-colors">Terms of Service</button></li>
-                <li><button className="hover:text-accent transition-colors">Cookie Policy</button></li>
+              <h4 className="mb-4 font-semibold text-white">Legal</h4>
+              <ul className="space-y-2 text-sm text-white/80">
+                <li><button className="hover:text-white transition-colors">Privacy Policy</button></li>
+                <li><button className="hover:text-white transition-colors">Terms of Service</button></li>
+                <li><button className="hover:text-white transition-colors">Cookie Policy</button></li>
               </ul>
             </div>
           </div>
           
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
-            <p className="text-sm text-brand-charcoal/70">
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/20 pt-8 md:flex-row">
+            <p className="text-sm text-white/80">
               © 2025 Now-Now Assist. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-brand-charcoal/70">🇿🇦 Made in South Africa</span>
+              <span className="text-sm text-white/80">🇿🇦 Made in South Africa</span>
             </div>
           </div>
         </div>

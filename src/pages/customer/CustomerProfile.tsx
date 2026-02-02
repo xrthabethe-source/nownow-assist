@@ -2,11 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BottomNav } from "@/components/shared/BottomNav";
+import { RoleSwitcher } from "@/components/shared/RoleSwitcher";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Car, CreditCard, Bell, Shield, LogOut, ChevronRight, Camera, FileText, Clock, Settings2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useProfilePhoto } from "@/hooks/useProfilePhoto";
@@ -29,6 +30,8 @@ interface Profile {
 export const CustomerProfile = () => {
   const { signOut, user, role } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isDriverProfile = location.pathname.startsWith("/driver");
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadPhoto, uploading } = useProfilePhoto();
@@ -65,7 +68,7 @@ export const CustomerProfile = () => {
         setProfile(data);
         setFormData({
           full_name: data.full_name || "",
-          email: data.email || user.email || "",
+          email: user.email || data.email || "",
           phone: data.phone || "",
         });
       } catch (error) {
@@ -149,6 +152,12 @@ export const CustomerProfile = () => {
       {/* Header */}
       <header className="relative overflow-hidden bg-gradient-amber pb-16 pt-8">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/10" />
+        
+        {/* Role Switcher in top right */}
+        <div className="absolute top-4 right-4 z-10">
+          <RoleSwitcher variant="default" className="bg-white/20 border-white/30 text-white hover:bg-white/30" />
+        </div>
+        
         <div className="container relative text-center">
           <div className="relative mx-auto mb-4 inline-block">
             <div className="h-24 w-24 rounded-3xl bg-card shadow-lg overflow-hidden">
@@ -180,7 +189,7 @@ export const CustomerProfile = () => {
             {profile?.full_name || "Your Name"}
           </h1>
           <p className="text-sm text-primary-foreground/80">
-            {profile?.phone || user?.email}
+            {user?.email || profile?.phone}
           </p>
         </div>
       </header>
@@ -335,12 +344,12 @@ export const CustomerProfile = () => {
               </button>
               <div className="border-t border-border" />
               <button 
-                onClick={() => navigate("/customer/history")}
+                onClick={() => navigate(isDriverProfile ? "/driver/earnings" : "/customer/history")}
                 className="flex w-full items-center justify-between p-4 transition-colors hover:bg-muted/50"
               >
                 <div className="flex items-center gap-3">
                   <Clock className="h-5 w-5 text-muted-foreground" />
-                  <span>Previous Assists</span>
+                  <span>{isDriverProfile ? "Job History" : "Previous Assists"}</span>
                 </div>
                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </button>
@@ -421,7 +430,7 @@ export const CustomerProfile = () => {
         onOpenChange={setLegalDialogOpen} 
       />
 
-      <BottomNav type="customer" />
+      <BottomNav type={isDriverProfile ? "driver" : "customer"} />
     </div>
   );
 };

@@ -6,6 +6,7 @@ import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, WrenchIcon } from "@/compone
 import { BottomNav } from "@/components/shared/BottomNav";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { RoleSwitcher } from "@/components/shared/RoleSwitcher";
+import { DriverNotificationsDialog } from "@/components/driver/DriverNotificationsDialog";
 import { MapPin, Clock, Zap, Star, TrendingUp, Bell, Settings, ChevronRight, Navigation, Loader2, Volume2, VolumeX } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
@@ -16,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAvailableJobs, useAcceptJob } from "@/hooks/useJobs";
 import { useJobAlert } from "@/hooks/useJobAlert";
+import { Badge } from "@/components/ui/badge";
 
 const mockStats = {
   todayEarnings: "R1,250",
@@ -36,6 +38,7 @@ const serviceIcons: Record<string, React.ComponentType<{ className?: string }>> 
 export const DriverHome = () => {
   const [isOnline, setIsOnline] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -112,10 +115,23 @@ export const DriverHome = () => {
           <Logo size="lg" />
           <div className="flex items-center gap-2">
             <RoleSwitcher variant="compact" />
-            <Button variant="ghost" size="icon-sm" className="rounded-full text-white">
+            <Button 
+              variant="ghost" 
+              size="icon-sm" 
+              className="rounded-full text-white relative"
+              onClick={() => setNotificationsOpen(true)}
+            >
               <Bell className="h-5 w-5" />
+              <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-accent text-white">
+                2
+              </Badge>
             </Button>
-            <Button variant="ghost" size="icon-sm" className="rounded-full text-white">
+            <Button 
+              variant="ghost" 
+              size="icon-sm" 
+              className="rounded-full text-white"
+              onClick={() => navigate("/driver/profile")}
+            >
               <Settings className="h-5 w-5" />
             </Button>
           </div>
@@ -371,6 +387,12 @@ export const DriverHome = () => {
       </div>
 
       <BottomNav type="driver" />
+      
+      {/* Notifications Dialog */}
+      <DriverNotificationsDialog 
+        open={notificationsOpen} 
+        onOpenChange={setNotificationsOpen} 
+      />
     </div>
   );
 };

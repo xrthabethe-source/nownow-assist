@@ -17,9 +17,9 @@
     --card: 216 25% 96%;
     --card-foreground: 210 24% 16%;
 
-    /* Popover: Deep Trust Blue */
-    --popover: 201 71% 14%;
-    --popover-foreground: 0 0% 100%;
+    /* Popover: Soft Grey for dropdowns/menus (light bg with dark text) */
+    --popover: 216 25% 96%;
+    --popover-foreground: 210 24% 16%;
 
     /* Primary: Deep Trust Blue #0B2A3D */
     --primary: 201 71% 14%;

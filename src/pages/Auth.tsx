@@ -242,11 +242,11 @@ export default function Auth() {
                         />
                         <Label
                           htmlFor="customer"
-                          className="flex flex-col items-center justify-between rounded-md border-2 border-border bg-white p-4 hover:bg-secondary peer-data-[state=checked]:border-accent [&:has([data-state=checked])]:border-accent cursor-pointer text-brand-charcoal"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-border bg-green-800 p-4 hover:bg-green-700 peer-data-[state=checked]:border-accent [&:has([data-state=checked])]:border-accent cursor-pointer text-white"
                         >
                           <Users className="mb-2 h-6 w-6" />
                           <span className="font-medium">Customer</span>
-                          <span className="text-xs text-muted-foreground">Request services</span>
+                          <span className="text-xs text-white/70">Request services</span>
                         </Label>
                       </div>
                       <div>
@@ -257,11 +257,11 @@ export default function Auth() {
                         />
                         <Label
                           htmlFor="driver"
-                          className="flex flex-col items-center justify-between rounded-md border-2 border-border bg-white p-4 hover:bg-secondary peer-data-[state=checked]:border-accent [&:has([data-state=checked])]:border-accent cursor-pointer text-brand-charcoal"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-border bg-green-800 p-4 hover:bg-green-700 peer-data-[state=checked]:border-accent [&:has([data-state=checked])]:border-accent cursor-pointer text-white"
                         >
                           <Car className="mb-2 h-6 w-6" />
                           <span className="font-medium">Driver</span>
-                          <span className="text-xs text-muted-foreground">Provide services</span>
+                          <span className="text-xs text-white/70">Provide services</span>
                         </Label>
                       </div>
                     </RadioGroup>
@@ -280,7 +280,7 @@ export default function Auth() {
                           setFullName(e.target.value);
                           setFieldErrors((prev) => ({ ...prev, fullName: '' }));
                         }}
-                        className="pl-10 bg-white text-brand-charcoal"
+                        className="pl-10 bg-green-800 text-white placeholder:text-white/50 border-green-700"
                         maxLength={100}
                       />
                     </div>
@@ -306,7 +306,7 @@ export default function Auth() {
                       setIsLocked(false);
                       setLockoutMessage(null);
                     }}
-                    className="pl-10 bg-white text-brand-charcoal"
+                    className="pl-10 bg-green-800 text-white placeholder:text-white/50 border-green-700"
                     autoComplete="email"
                   />
                 </div>
@@ -328,7 +328,7 @@ export default function Auth() {
                       setPassword(e.target.value);
                       setFieldErrors((prev) => ({ ...prev, password: '' }));
                     }}
-                    className="pl-10 bg-white text-brand-charcoal"
+                    className="pl-10 bg-green-800 text-white placeholder:text-white/50 border-green-700"
                     autoComplete={isLogin ? 'current-password' : 'new-password'}
                   />
                 </div>

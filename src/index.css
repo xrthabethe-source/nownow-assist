@@ -13,21 +13,21 @@
     /* Primary Foreground: White #FFFFFF */
     --foreground: 0 0% 100%;
 
-    /* Card: Soft Grey #F2F4F7 - for secondary panels only */
-    --card: 216 25% 96%;
-    --card-foreground: 210 24% 16%;
+    /* Card: Dark Green #166534 - for secondary panels */
+    --card: 142 64% 24%;
+    --card-foreground: 0 0% 100%;
 
-    /* Popover: Soft Grey for dropdowns/menus (light bg with dark text) */
-    --popover: 216 25% 96%;
-    --popover-foreground: 210 24% 16%;
+    /* Popover: Dark Green for dropdowns/menus */
+    --popover: 142 64% 24%;
+    --popover-foreground: 0 0% 100%;
 
     /* Primary: Deep Trust Blue #0B2A3D */
     --primary: 201 71% 14%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Soft Grey #F2F4F7 */
-    --secondary: 216 25% 96%;
-    --secondary-foreground: 210 24% 16%;
+    /* Secondary: Dark Orange #C2410C */
+    --secondary: 24 91% 40%;
+    --secondary-foreground: 0 0% 100%;
 
     /* Muted: Darker blue variation for contrast on blue backgrounds */
     --muted: 201 50% 20%;
@@ -60,8 +60,9 @@
     --brand-primary: 201 71% 14%;
     --brand-accent: 32 93% 54%;
     --brand-white: 0 0% 100%;
-    --brand-grey: 216 25% 96%;
-    --brand-charcoal: 210 24% 16%;
+    /* Brand green and orange */
+    --brand-grey: 142 64% 24%;
+    --brand-charcoal: 0 0% 100%;
 
     /* Legacy naming for compatibility */
     --brand-amber: 32 93% 54%;
@@ -132,13 +133,13 @@
     --sidebar-ring: 32 93% 54%;
   }
 
-  /* Light panel mode - for cards and overlays that need light backgrounds */
+  /* Light panel mode - now uses green instead of white */
   .light-panel {
-    --background: 0 0% 100%;
-    --foreground: 210 24% 16%;
-    --muted: 216 25% 96%;
-    --muted-foreground: 210 24% 40%;
-    --border: 216 20% 90%;
+    --background: 142 64% 24%;
+    --foreground: 0 0% 100%;
+    --muted: 142 64% 30%;
+    --muted-foreground: 0 0% 85%;
+    --border: 142 64% 30%;
   }
 }
 
@@ -192,20 +193,20 @@
   }
 
   .bg-brand-grey {
-    background-color: hsl(216 25% 96%);
+    background-color: hsl(142 64% 24%);
   }
 
   .bg-brand-white {
-    background-color: hsl(0 0% 100%);
+    background-color: hsl(142 64% 24%);
   }
 
-  /* Light surface utilities - for when you need a light panel on dark bg */
+  /* Light surface utilities - now use green */
   .surface-light {
-    @apply bg-brand-grey text-brand-charcoal;
+    @apply bg-green-800 text-white;
   }
 
   .surface-white {
-    @apply bg-brand-white text-brand-charcoal;
+    @apply bg-green-800 text-white;
   }
 
   /* Dark surface utilities */

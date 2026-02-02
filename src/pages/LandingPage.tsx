@@ -236,7 +236,7 @@ export const LandingPage = () => {
                   className="w-full sm:w-auto px-8 md:px-12 shadow-amber animate-pulse-amber"
                 >
                   <Zap className="mr-2 h-5 w-5" />
-                  Request Help Now — It's Free
+                  Sign Up for Free and Get Help Now
                 </Button>
                 <Button
                   variant="outline"

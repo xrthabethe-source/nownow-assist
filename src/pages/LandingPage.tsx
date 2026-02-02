@@ -341,13 +341,13 @@ export const LandingPage = () => {
               <motion.div
                 key={index}
                 variants={item}
-                className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 md:p-6"
+                className="flex items-center gap-4 rounded-2xl border border-orange-700/30 bg-orange-800 p-4 md:p-6"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10">
-                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-600">
+                  <AlertTriangle className="h-5 w-5 text-white" />
                 </div>
-                <p className="text-lg font-medium text-foreground md:text-xl">{point}</p>
-                <ChevronRight className="ml-auto h-5 w-5 text-muted-foreground" />
+                <p className="text-lg font-medium text-white md:text-xl">{point}</p>
+                <ChevronRight className="ml-auto h-5 w-5 text-white/60" />
               </motion.div>
             ))}
           </motion.div>
@@ -392,24 +392,22 @@ export const LandingPage = () => {
           >
             {solutions.map((solution) => (
               <motion.div key={solution.title} variants={item}>
-                <Card variant="interactive" className="h-full overflow-hidden group">
-                  <CardContent className="p-6 md:p-8">
-                    <div className="flex items-start gap-4">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition-colors group-hover:bg-primary/20">
-                        <solution.icon className="h-7 w-7 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="mb-2 flex items-center gap-2">
-                          <h3 className="text-xl font-bold text-foreground">{solution.title}</h3>
-                          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                            {solution.highlight}
-                          </span>
-                        </div>
-                        <p className="text-muted-foreground">{solution.description}</p>
-                      </div>
+                <div className="h-full overflow-hidden rounded-2xl border border-green-700/30 bg-green-800 p-6 md:p-8 transition-all hover:bg-green-700 group">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-green-600 transition-colors group-hover:bg-green-500">
+                      <solution.icon className="h-7 w-7 text-white" />
                     </div>
-                  </CardContent>
-                </Card>
+                    <div className="flex-1">
+                      <div className="mb-2 flex items-center gap-2">
+                        <h3 className="text-xl font-bold text-white">{solution.title}</h3>
+                        <span className="rounded-full bg-green-600 px-2 py-0.5 text-xs font-semibold text-white">
+                          {solution.highlight}
+                        </span>
+                      </div>
+                      <p className="text-white/80">{solution.description}</p>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -442,26 +440,25 @@ export const LandingPage = () => {
           >
             {services.map((service) => (
               <motion.div key={service.name} variants={item}>
-                <Card 
-                  variant={service.popular ? "interactive" : "default"} 
-                  className={`h-full relative cursor-pointer hover:shadow-lg transition-shadow ${service.popular ? 'ring-2 ring-primary' : ''}`}
+                <div 
+                  className={`h-full relative cursor-pointer rounded-2xl border transition-all hover:scale-105 ${service.popular ? 'border-orange-500 ring-2 ring-orange-500 bg-orange-700' : 'border-orange-700/30 bg-orange-800 hover:bg-orange-700'}`}
                   onClick={() => navigate("/auth")}
                 >
                   {service.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                      <span className="rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white">
                         Popular
                       </span>
                     </div>
                   )}
-                  <CardContent className="p-6 text-center">
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                      <service.icon className="h-8 w-8 text-primary" />
+                  <div className="p-6 text-center">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-600">
+                      <service.icon className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="mb-2 text-lg font-bold text-foreground">{service.name}</h3>
-                    <p className="text-sm text-muted-foreground">{service.description}</p>
-                  </CardContent>
-                </Card>
+                    <h3 className="mb-2 text-lg font-bold text-white">{service.name}</h3>
+                    <p className="text-sm text-white/70">{service.description}</p>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -506,9 +503,9 @@ export const LandingPage = () => {
                     <div className="relative z-10 flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-primary-foreground shadow-lg">
                       {step.step}
                     </div>
-                    <div className="flex-1 rounded-2xl border border-border bg-card p-6">
-                      <h3 className="mb-2 text-xl font-bold text-foreground">{step.title}</h3>
-                      <p className="text-muted-foreground">{step.description}</p>
+                    <div className="flex-1 rounded-2xl border border-green-700/30 bg-green-800 p-6">
+                      <h3 className="mb-2 text-xl font-bold text-white">{step.title}</h3>
+                      <p className="text-white/80">{step.description}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -544,26 +541,24 @@ export const LandingPage = () => {
           >
             {testimonials.map((testimonial) => (
               <motion.div key={testimonial.name} variants={item}>
-                <Card variant="default" className="h-full">
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex items-center gap-1">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-5 w-5 fill-primary text-primary" />
-                      ))}
+                <div className="h-full rounded-2xl border border-green-700/30 bg-green-800 p-6">
+                  <div className="mb-4 flex items-center gap-1">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-5 w-5 fill-orange-400 text-orange-400" />
+                    ))}
+                  </div>
+                  <Quote className="mb-3 h-8 w-8 text-white/30" />
+                  <p className="mb-6 text-white">{testimonial.text}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-600 font-bold text-white">
+                      {testimonial.avatar}
                     </div>
-                    <Quote className="mb-3 h-8 w-8 text-muted-foreground/30" />
-                    <p className="mb-6 text-foreground">{testimonial.text}</p>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
-                        {testimonial.avatar}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground">{testimonial.name}</p>
-                        <p className="text-sm text-muted-foreground">{testimonial.location}</p>
-                      </div>
+                    <div>
+                      <p className="font-semibold text-white">{testimonial.name}</p>
+                      <p className="text-sm text-white/70">{testimonial.location}</p>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -571,58 +566,56 @@ export const LandingPage = () => {
       </section>
 
       {/* Driver CTA */}
-      <section className="bg-muted/30 py-16 md:py-24">
+      <section className="py-16 md:py-24">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
           >
-            <Card variant="default" className="border-2 border-primary/20 overflow-hidden">
-              <CardContent className="p-8 md:p-12">
-                <div className="grid gap-8 md:grid-cols-2 md:items-center">
-                  <div>
-                    <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-success/10 px-4 py-1.5">
-                      <Wallet className="h-4 w-4 text-success" />
-                      <span className="text-sm font-medium text-success">Earn Extra Income</span>
-                    </div>
-                    <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
-                      Have a vehicle & want to earn?
-                    </h2>
-                    <p className="mb-6 text-muted-foreground md:text-lg">
-                      Join our network of 500+ responders. Flexible hours, competitive pay, and the satisfaction of helping drivers in need. 
-                      Earn up to <strong className="text-foreground">R8,000+/month</strong> part-time.
-                    </p>
-                    <ul className="mb-6 space-y-2">
-                      {[
-                        "Set your own schedule",
-                        "Weekly payouts",
-                        "Free training & certification",
-                        "Dedicated support team",
-                      ].map((benefit) => (
-                        <li key={benefit} className="flex items-center gap-2 text-foreground">
-                          <CheckCircle2 className="h-5 w-5 text-success" />
-                          {benefit}
-                        </li>
-                      ))}
-                    </ul>
-                    <Button variant="outline" size="lg" onClick={() => navigate("/auth")}>
-                      Apply to Drive
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+            <div className="rounded-3xl border-2 border-green-600/30 bg-green-800 overflow-hidden p-8 md:p-12">
+              <div className="grid gap-8 md:grid-cols-2 md:items-center">
+                <div>
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-1.5">
+                    <Wallet className="h-4 w-4 text-white" />
+                    <span className="text-sm font-medium text-white">Earn Extra Income</span>
                   </div>
-                  <div className="relative hidden md:block">
-                    <div className="aspect-square rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 p-8">
-                      <div className="flex h-full flex-col items-center justify-center text-center">
-                        <div className="mb-4 text-6xl font-extrabold text-primary">R8K+</div>
-                        <p className="text-lg font-medium text-foreground">Monthly Earnings</p>
-                        <p className="text-sm text-muted-foreground">For active part-time responders</p>
-                      </div>
+                  <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl">
+                    Have a vehicle & want to earn?
+                  </h2>
+                  <p className="mb-6 text-white/80 md:text-lg">
+                    Join our network of 500+ responders. Flexible hours, competitive pay, and the satisfaction of helping drivers in need. 
+                    Earn up to <strong className="text-orange-400">R8,000+/month</strong> part-time.
+                  </p>
+                  <ul className="mb-6 space-y-2">
+                    {[
+                      "Set your own schedule",
+                      "Weekly payouts",
+                      "Free training & certification",
+                      "Dedicated support team",
+                    ].map((benefit) => (
+                      <li key={benefit} className="flex items-center gap-2 text-white">
+                        <CheckCircle2 className="h-5 w-5 text-green-400" />
+                        {benefit}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button variant="amber" size="lg" onClick={() => navigate("/auth")}>
+                    Apply to Drive
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="relative hidden md:block">
+                  <div className="aspect-square rounded-3xl bg-gradient-to-br from-green-600/50 to-green-700/30 p-8">
+                    <div className="flex h-full flex-col items-center justify-center text-center">
+                      <div className="mb-4 text-6xl font-extrabold text-orange-400">R8K+</div>
+                      <p className="text-lg font-medium text-white">Monthly Earnings</p>
+                      <p className="text-sm text-white/70">For active part-time responders</p>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>

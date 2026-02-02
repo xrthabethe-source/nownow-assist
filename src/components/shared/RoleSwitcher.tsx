@@ -51,8 +51,8 @@ export function RoleSwitcher({ variant = "default", className }: RoleSwitcherPro
   const { role: activeRole, allRoles, roleLoading, setActiveRole } = useAuth();
   const navigate = useNavigate();
 
-  // Don't render if still loading roles or user has only one role or no roles
-  if (roleLoading || allRoles.length <= 1) {
+  // Don't render if still loading roles or user has no roles
+  if (roleLoading || allRoles.length === 0) {
     return null;
   }
 

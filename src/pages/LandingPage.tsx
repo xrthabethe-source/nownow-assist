@@ -334,7 +334,6 @@ export const LandingPage = () => {
                   <AlertTriangle className="h-5 w-5 text-white" />
                 </div>
                 <p className="text-lg font-medium text-white md:text-xl">{point}</p>
-                <ChevronRight className="ml-auto h-5 w-5 text-white/60" />
               </motion.div>
             ))}
           </motion.div>

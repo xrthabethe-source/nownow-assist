@@ -236,7 +236,7 @@ export const LandingPage = () => {
                   className="w-full sm:w-auto px-8 md:px-12 shadow-amber animate-pulse-amber"
                 >
                   <Zap className="mr-2 h-5 w-5" />
-                  Sign Up for Free and Get Help Now
+                  Sign Up for Free
                 </Button>
                 <Button
                   variant="outline"
@@ -245,7 +245,7 @@ export const LandingPage = () => {
                   className="w-full sm:w-auto"
                 >
                   <Play className="mr-2 h-4 w-4" />
-                  See How It Works
+                  Get Help Now
                 </Button>
               </motion.div>
 

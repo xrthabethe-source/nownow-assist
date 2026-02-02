@@ -168,7 +168,7 @@ export const LandingPage = () => {
     <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Sticky Header - Deep Trust Blue */}
       <header className="sticky top-0 z-50 bg-primary/95 backdrop-blur-md border-b border-border/50">
-        <div className="container flex items-center justify-between h-16 md:h-[72px]">
+        <div className="container flex items-center justify-between py-3 md:py-4">
           <Logo size="hero" />
           <nav className="hidden md:flex items-center gap-8">
             <a href="#services" onClick={(e) => { e.preventDefault(); document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer">Services</a>

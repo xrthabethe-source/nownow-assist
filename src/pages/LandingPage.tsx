@@ -219,9 +219,9 @@ export const LandingPage = () => {
                 transition={{ delay: 0.1 }}
                 className="mb-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl"
               >
-                Stranded on the road?
+                Stuck on the road?
                 <br />
-                <span className="text-accent">We'll be there in 15 minutes.</span>
+                <span className="text-accent">We'll be there, now-now.</span>
               </motion.h1>
 
               {/* Subheadline */}

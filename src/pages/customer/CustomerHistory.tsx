@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { BottomNav } from "@/components/shared/BottomNav";
-import { TyreIcon, BatteryIcon, FuelIcon } from "@/components/icons/ServiceIcons";
+import { TyreIcon, BatteryIcon, FuelIcon, MechanicIcon } from "@/components/icons/ServiceIcons";
 import { 
   Clock, 
   Star, 
@@ -13,8 +13,8 @@ import {
   User, 
   Car, 
   Timer,
-  Phone,
-  ChevronRight
+  ChevronRight,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,9 +26,14 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { jsPDF } from "jspdf";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { format } from "date-fns";
 
 interface JobHistory {
   id: string;
+  job_number: string;
   service: string;
   icon: React.ComponentType<{ className?: string }>;
   date: string;
@@ -54,86 +59,13 @@ interface JobHistory {
   status: string;
 }
 
-const mockHistory: JobHistory[] = [
-  {
-    id: "JOB-156",
-    service: "Tyre Change",
-    icon: TyreIcon,
-    date: "Dec 10, 2025",
-    time: "14:32",
-    location: "Sandton, JHB",
-    fullAddress: "123 Rivonia Road, Sandton, Johannesburg, 2196",
-    driver: "Samuel Khumalo",
-    driverPhone: "••• ••• 4521",
-    vehicleReg: "GP 123 ABC",
-    vehicleMake: "Toyota Hilux",
-    rating: 5,
-    price: "R350",
-    priceBreakdown: {
-      basePrice: "R250.00",
-      calloutFee: "R50.00",
-      vat: "R50.00",
-      total: "R350.00",
-    },
-    paymentMethod: "Visa",
-    cardLast4: "4829",
-    paymentDate: "Dec 10, 2025 at 15:45",
-    duration: "32 minutes",
-    status: "completed",
-  },
-  {
-    id: "JOB-142",
-    service: "Jump Start",
-    icon: BatteryIcon,
-    date: "Dec 5, 2025",
-    time: "09:15",
-    location: "Rosebank, JHB",
-    fullAddress: "45 Oxford Road, Rosebank, Johannesburg, 2196",
-    driver: "David Okonkwo",
-    driverPhone: "••• ••• 7832",
-    vehicleReg: "GP 456 DEF",
-    vehicleMake: "Ford Ranger",
-    rating: 5,
-    price: "R250",
-    priceBreakdown: {
-      basePrice: "R180.00",
-      calloutFee: "R40.00",
-      vat: "R30.00",
-      total: "R250.00",
-    },
-    paymentMethod: "Mastercard",
-    cardLast4: "1234",
-    paymentDate: "Dec 5, 2025 at 09:58",
-    duration: "18 minutes",
-    status: "completed",
-  },
-  {
-    id: "JOB-128",
-    service: "Fuel Delivery",
-    icon: FuelIcon,
-    date: "Nov 28, 2025",
-    time: "18:45",
-    location: "Fourways, JHB",
-    fullAddress: "Monte Casino Boulevard, Fourways, Johannesburg, 2055",
-    driver: "Michael Thabo",
-    driverPhone: "••• ••• 9156",
-    vehicleReg: "GP 789 GHI",
-    vehicleMake: "VW Amarok",
-    rating: 4,
-    price: "R180",
-    priceBreakdown: {
-      basePrice: "R120.00",
-      calloutFee: "R35.00",
-      vat: "R25.00",
-      total: "R180.00",
-    },
-    paymentMethod: "Visa",
-    cardLast4: "5678",
-    paymentDate: "Nov 28, 2025 at 19:22",
-    duration: "25 minutes",
-    status: "completed",
-  },
-];
+const serviceIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  "Tyre Change": TyreIcon,
+  "Jump-Start Rescue": BatteryIcon,
+  "Jump-Start": BatteryIcon,
+  "Fuel Rescue": FuelIcon,
+  "Call a Mechanic": MechanicIcon,
+};
 
 const generateReceipt = (job: JobHistory) => {
   try {
@@ -170,7 +102,7 @@ const generateReceipt = (job: JobHistory) => {
     // Receipt title
     doc.setFontSize(11);
     doc.text("OFFICIAL RECEIPT", pageWidth - 20, 25, { align: "right" });
-    doc.text(`#${job.id}`, pageWidth - 20, 33, { align: "right" });
+    doc.text(`#${job.job_number}`, pageWidth - 20, 33, { align: "right" });
 
     // Company details section
     doc.setTextColor(...lightGray);
@@ -217,7 +149,7 @@ const generateReceipt = (job: JobHistory) => {
     doc.setTextColor(...lightGray);
     doc.text("Location:", 30, y);
     doc.setTextColor(...darkGray);
-    doc.text(job.fullAddress, 80, y);
+    doc.text(job.fullAddress || job.location, 80, y);
 
     // Responder details box
     y = 150;
@@ -314,7 +246,7 @@ const generateReceipt = (job: JobHistory) => {
     doc.text("For queries: support@nownowassist.co.za | 0800 NOW NOW", pageWidth / 2, footerY + 12, { align: "center" });
 
     // Save the PDF
-    doc.save(`NowNow_Receipt_${job.id}.pdf`);
+    doc.save(`NowNow_Receipt_${job.job_number}.pdf`);
     toast.success("Receipt downloaded successfully");
   } catch (error) {
     console.error("Error generating receipt:", error);
@@ -324,6 +256,94 @@ const generateReceipt = (job: JobHistory) => {
 
 export const CustomerHistory = () => {
   const [selectedJob, setSelectedJob] = useState<JobHistory | null>(null);
+  const { user } = useAuth();
+
+  const { data: jobHistory, isLoading } = useQuery({
+    queryKey: ["customer-job-history", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      const { data: jobs, error } = await supabase
+        .from("jobs")
+        .select(`
+          id,
+          job_number,
+          pickup_address,
+          completed_at,
+          started_at,
+          final_price,
+          estimated_price,
+          rating,
+          status,
+          services:service_id (name, base_price),
+          drivers:driver_id (
+            vehicle_make,
+            vehicle_plate,
+            rating,
+            profiles:user_id (full_name, phone)
+          )
+        `)
+        .eq("customer_id", user.id)
+        .eq("status", "completed")
+        .order("completed_at", { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch payment info for each job
+      const jobsWithPayments = await Promise.all(
+        (jobs || []).map(async (job) => {
+          const { data: payment } = await supabase
+            .from("payments")
+            .select("payment_method, created_at")
+            .eq("job_id", job.id)
+            .single();
+
+          const price = job.final_price || job.estimated_price || 0;
+          const basePrice = (job.services as any)?.base_price || price * 0.7;
+          const calloutFee = price * 0.15;
+          const vat = price * 0.15;
+          
+          const completedAt = job.completed_at ? new Date(job.completed_at) : new Date();
+          const startedAt = job.started_at ? new Date(job.started_at) : completedAt;
+          const durationMs = completedAt.getTime() - startedAt.getTime();
+          const durationMins = Math.round(durationMs / 60000);
+
+          return {
+            id: job.id,
+            job_number: job.job_number,
+            service: (job.services as any)?.name || "Service",
+            icon: serviceIcons[(job.services as any)?.name] || TyreIcon,
+            date: format(completedAt, "MMM d, yyyy"),
+            time: format(completedAt, "HH:mm"),
+            location: job.pickup_address?.split(",")[0] || "Location",
+            fullAddress: job.pickup_address || "Address not available",
+            driver: (job.drivers as any)?.profiles?.full_name || "Driver",
+            driverPhone: "••• ••• ••••",
+            vehicleReg: (job.drivers as any)?.vehicle_plate || "N/A",
+            vehicleMake: (job.drivers as any)?.vehicle_make || "Vehicle",
+            rating: job.rating || (job.drivers as any)?.rating || 5,
+            price: `R${Math.round(price)}`,
+            priceBreakdown: {
+              basePrice: `R${basePrice.toFixed(2)}`,
+              calloutFee: `R${calloutFee.toFixed(2)}`,
+              vat: `R${vat.toFixed(2)}`,
+              total: `R${price.toFixed(2)}`,
+            },
+            paymentMethod: payment?.payment_method || "Card",
+            cardLast4: "••••",
+            paymentDate: payment?.created_at 
+              ? format(new Date(payment.created_at), "MMM d, yyyy 'at' HH:mm")
+              : format(completedAt, "MMM d, yyyy 'at' HH:mm"),
+            duration: `${durationMins} minutes`,
+            status: job.status,
+          };
+        })
+      );
+
+      return jobsWithPayments;
+    },
+    enabled: !!user?.id,
+  });
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -336,78 +356,90 @@ export const CustomerHistory = () => {
       </header>
 
       <div className="container py-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="space-y-4"
-        >
-          {mockHistory.map((job, index) => (
-            <motion.div
-              key={job.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card 
-                variant="default" 
-                className="cursor-pointer transition-all hover:shadow-md hover:border-primary/30"
-                onClick={() => setSelectedJob(job)}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : !jobHistory || jobHistory.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+            <Clock className="h-12 w-12 mb-4 opacity-50" />
+            <p className="font-medium">No service history yet</p>
+            <p className="text-sm text-center mt-2">Your completed assists will appear here</p>
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-4"
+          >
+            {jobHistory.map((job, index) => (
+              <motion.div
+                key={job.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
               >
-                <CardContent className="p-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                        <job.icon className="h-6 w-6 text-primary" />
+                <Card 
+                  variant="default" 
+                  className="cursor-pointer transition-all hover:shadow-md hover:border-primary/30"
+                  onClick={() => setSelectedJob(job)}
+                >
+                  <CardContent className="p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                          <job.icon className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-foreground">{job.service}</p>
+                          <p className="text-sm text-muted-foreground">{job.date} • {job.time}</p>
+                        </div>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge variant="success">Completed</StatusBadge>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    </div>
+
+                    <div className="mb-3 space-y-2 text-sm">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        <span>{job.location}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <User className="h-4 w-4" />
+                        <span>{job.driver}</span>
+                        <div className="flex items-center gap-1 ml-2">
+                          {Array.from({ length: Math.min(job.rating, 5) }).map((_, i) => (
+                            <Star key={i} className="h-3 w-3 fill-primary text-primary" />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-border pt-3">
                       <div>
-                        <p className="font-semibold text-foreground">{job.service}</p>
-                        <p className="text-sm text-muted-foreground">{job.date} • {job.time}</p>
+                        <span className="text-sm text-muted-foreground">Total Paid</span>
+                        <p className="text-lg font-bold text-foreground">{job.price}</p>
                       </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          generateReceipt(job);
+                        }}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Receipt
+                      </Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <StatusBadge variant="success">Completed</StatusBadge>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    </div>
-                  </div>
-
-                  <div className="mb-3 space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      <span>{job.location}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <User className="h-4 w-4" />
-                      <span>{job.driver}</span>
-                      <div className="flex items-center gap-1 ml-2">
-                        {Array.from({ length: job.rating }).map((_, i) => (
-                          <Star key={i} className="h-3 w-3 fill-primary text-primary" />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-border pt-3">
-                    <div>
-                      <span className="text-sm text-muted-foreground">Total Paid</span>
-                      <p className="text-lg font-bold text-foreground">{job.price}</p>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        generateReceipt(job);
-                      }}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Receipt
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
 
       {/* Job Details Dialog */}
@@ -422,7 +454,7 @@ export const CustomerHistory = () => {
                   </div>
                   <div>
                     <DialogTitle className="text-left">{selectedJob.service}</DialogTitle>
-                    <p className="text-sm text-muted-foreground">{selectedJob.id}</p>
+                    <p className="text-sm text-muted-foreground">{selectedJob.job_number}</p>
                   </div>
                 </div>
               </DialogHeader>

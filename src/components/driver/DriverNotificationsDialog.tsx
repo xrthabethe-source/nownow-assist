@@ -6,16 +6,20 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Bell, 
-  DollarSign, 
   MessageSquare, 
   CreditCard, 
   TrendingUp,
   CheckCircle,
   Clock,
-  ChevronRight
+  ChevronRight,
+  Loader2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { formatDistanceToNow } from "date-fns";
 
 interface DriverNotificationsDialogProps {
   open: boolean;
@@ -34,67 +38,6 @@ interface Notification {
   route?: string;
   amount?: string;
 }
-
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "earning",
-    title: "Job Completed",
-    description: "You earned R180 for Tyre Change service",
-    time: "10 min ago",
-    isRead: false,
-    route: "/driver/earnings",
-    amount: "R180",
-  },
-  {
-    id: "2",
-    type: "message",
-    title: "Message from Admin",
-    description: "Your documents have been approved. You can now accept jobs.",
-    time: "1 hour ago",
-    isRead: false,
-    route: "/driver/profile",
-  },
-  {
-    id: "3",
-    type: "payment",
-    title: "Payout Processed",
-    description: "R2,450 has been transferred to your bank account",
-    time: "2 hours ago",
-    isRead: true,
-    route: "/driver/earnings",
-    amount: "R2,450",
-  },
-  {
-    id: "4",
-    type: "earning",
-    title: "Weekly Bonus",
-    description: "You earned a R500 bonus for completing 20 jobs this week!",
-    time: "1 day ago",
-    isRead: true,
-    route: "/driver/earnings",
-    amount: "R500",
-  },
-  {
-    id: "5",
-    type: "message",
-    title: "Reminder from Admin",
-    description: "Please update your vehicle registration document before it expires.",
-    time: "2 days ago",
-    isRead: true,
-    route: "/driver/profile",
-  },
-  {
-    id: "6",
-    type: "payment",
-    title: "Payment Pending",
-    description: "R890 pending clearance - will be available tomorrow",
-    time: "3 days ago",
-    isRead: true,
-    route: "/driver/earnings",
-    amount: "R890",
-  },
-];
 
 const getNotificationIcon = (type: Notification["type"]) => {
   switch (type) {
@@ -121,8 +64,117 @@ const getNotificationBadge = (type: Notification["type"]) => {
 export const DriverNotificationsDialog = ({ open, onOpenChange }: DriverNotificationsDialogProps) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<NotificationType>("all");
+  const { user } = useAuth();
 
-  const filteredNotifications = mockNotifications.filter((n) => {
+  const { data: driverRecord } = useQuery({
+    queryKey: ["driver-record", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("drivers")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+      return data;
+    },
+    enabled: !!user?.id && open,
+  });
+
+  // Fetch completed jobs as earnings notifications
+  const { data: recentJobs, isLoading: jobsLoading } = useQuery({
+    queryKey: ["driver-recent-jobs", driverRecord?.id],
+    queryFn: async () => {
+      if (!driverRecord?.id) return [];
+      const { data } = await supabase
+        .from("jobs")
+        .select(`
+          id,
+          job_number,
+          completed_at,
+          final_price,
+          estimated_price,
+          services:service_id (name)
+        `)
+        .eq("driver_id", driverRecord.id)
+        .eq("status", "completed")
+        .order("completed_at", { ascending: false })
+        .limit(10);
+      return data || [];
+    },
+    enabled: !!driverRecord?.id && open,
+  });
+
+  // Fetch payments as payment notifications
+  const { data: recentPayments, isLoading: paymentsLoading } = useQuery({
+    queryKey: ["driver-recent-payments", driverRecord?.id],
+    queryFn: async () => {
+      if (!driverRecord?.id) return [];
+      const { data } = await supabase
+        .from("payments")
+        .select("id, amount, driver_payout, status, created_at")
+        .eq("driver_id", driverRecord.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      return data || [];
+    },
+    enabled: !!driverRecord?.id && open,
+  });
+
+  // Fetch admin messages
+  const { data: adminMessages, isLoading: messagesLoading } = useQuery({
+    queryKey: ["driver-admin-messages", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data } = await supabase
+        .from("messages")
+        .select("id, subject, content, created_at, is_read")
+        .eq("recipient_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      return data || [];
+    },
+    enabled: !!user?.id && open,
+  });
+
+  // Transform data into notifications
+  const notifications: Notification[] = [
+    ...(recentJobs?.map((job) => ({
+      id: `earning-${job.id}`,
+      type: "earning" as const,
+      title: "Job Completed",
+      description: `You earned R${Math.round(((job.final_price || job.estimated_price || 0) * 0.8))} for ${(job.services as any)?.name || "service"}`,
+      time: job.completed_at ? formatDistanceToNow(new Date(job.completed_at), { addSuffix: true }) : "Recently",
+      isRead: true,
+      route: "/driver/earnings",
+      amount: `R${Math.round(((job.final_price || job.estimated_price || 0) * 0.8))}`,
+    })) || []),
+    ...(recentPayments?.map((payment) => ({
+      id: `payment-${payment.id}`,
+      type: "payment" as const,
+      title: payment.status === "completed" ? "Payout Processed" : "Payment Pending",
+      description: `R${Math.round(payment.driver_payout || payment.amount * 0.8)} ${payment.status === "completed" ? "transferred to your account" : "pending clearance"}`,
+      time: payment.created_at ? formatDistanceToNow(new Date(payment.created_at), { addSuffix: true }) : "Recently",
+      isRead: true,
+      route: "/driver/earnings",
+      amount: `R${Math.round(payment.driver_payout || payment.amount * 0.8)}`,
+    })) || []),
+    ...(adminMessages?.map((msg) => ({
+      id: `message-${msg.id}`,
+      type: "message" as const,
+      title: msg.subject || "Message from Admin",
+      description: msg.content?.substring(0, 100) || "",
+      time: msg.created_at ? formatDistanceToNow(new Date(msg.created_at), { addSuffix: true }) : "Recently",
+      isRead: msg.is_read,
+      route: "/driver/profile",
+    })) || []),
+  ].sort((a, b) => {
+    // Sort by most recent - we just use the order they came in since they're already sorted
+    return 0;
+  });
+
+  const isLoading = jobsLoading || paymentsLoading || messagesLoading;
+
+  const filteredNotifications = notifications.filter((n) => {
     if (activeTab === "all") return true;
     if (activeTab === "earnings") return n.type === "earning";
     if (activeTab === "messages") return n.type === "message";
@@ -130,7 +182,7 @@ export const DriverNotificationsDialog = ({ open, onOpenChange }: DriverNotifica
     return true;
   });
 
-  const unreadCount = mockNotifications.filter((n) => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const handleNotificationClick = (notification: Notification) => {
     if (notification.route) {
@@ -189,7 +241,11 @@ export const DriverNotificationsDialog = ({ open, onOpenChange }: DriverNotifica
 
           <TabsContent value={activeTab} className="m-0">
             <ScrollArea className="h-[400px]">
-              {filteredNotifications.length === 0 ? (
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : filteredNotifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                   <Bell className="h-12 w-12 mb-4 opacity-50" />
                   <p>No notifications</p>
@@ -252,7 +308,7 @@ export const DriverNotificationsDialog = ({ open, onOpenChange }: DriverNotifica
             }}
           >
             <CheckCircle className="h-4 w-4 mr-2" />
-            Mark all as read
+            View All Earnings
           </Button>
         </div>
       </DialogContent>

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { TyreIcon, FuelIcon, BatteryIcon, MechanicIcon } from "@/components/icons/ServiceIcons";
-import { Phone, MessageCircle, AlertTriangle, Star, Car, Check, X, MapPin } from "lucide-react";
+import { Phone, MessageCircle, AlertTriangle, Star, Car, Check, X, MapPin, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
@@ -22,19 +22,8 @@ import { SecureChatDialog } from "@/components/shared/SecureChatDialog";
 import { SecureCallDialog } from "@/components/shared/SecureCallDialog";
 import { ReportAbuseDialog } from "@/components/shared/ReportAbuseDialog";
 import { useSecureMessaging } from "@/hooks/useSecureMessaging";
-
-// Mock driver data - in production this would come from the job data
-const mockDriver = {
-  id: "driver-123",
-  userId: "user-456",
-  name: "Samuel K.",
-  rating: 4.9,
-  vehicle: "Toyota Hilux",
-  plate: "CA 123-456",
-  phone: "+27821234567",
-  photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-  eta: 12,
-};
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const statuses = [
   { key: "finding", label: "Finding a responder...", icon: "🔍" },
@@ -67,19 +56,97 @@ export const LiveTracking = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   
-  const [currentStatus, setCurrentStatus] = useState(0);
-  const [eta, setEta] = useState(mockDriver.eta);
   const [showSOSDialog, setShowSOSDialog] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showChatDialog, setShowChatDialog] = useState(false);
   const [showCallDialog, setShowCallDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
 
-  // Get address from navigation state or use fallback
+  // Get address and job ID from navigation state
   const pickupAddress = (location.state as { address?: string })?.address || "Your current location";
-  
-  // Get job ID from navigation state (would be real in production)
   const jobId = (location.state as { jobId?: string })?.jobId || null;
+
+  // Fetch active job details
+  const { data: activeJob, isLoading: jobLoading } = useQuery({
+    queryKey: ["active-job", jobId, user?.id],
+    queryFn: async () => {
+      if (jobId) {
+        const { data } = await supabase
+          .from("jobs")
+          .select(`
+            id,
+            status,
+            eta_minutes,
+            pickup_address,
+            drivers:driver_id (
+              id,
+              user_id,
+              rating,
+              vehicle_make,
+              vehicle_plate,
+              profiles:user_id (full_name, phone, avatar_url)
+            )
+          `)
+          .eq("id", jobId)
+          .single();
+        return data;
+      }
+      
+      // If no jobId, try to find most recent active job for user
+      if (user?.id) {
+        const { data } = await supabase
+          .from("jobs")
+          .select(`
+            id,
+            status,
+            eta_minutes,
+            pickup_address,
+            drivers:driver_id (
+              id,
+              user_id,
+              rating,
+              vehicle_make,
+              vehicle_plate,
+              profiles:user_id (full_name, phone, avatar_url)
+            )
+          `)
+          .eq("customer_id", user.id)
+          .in("status", ["pending", "accepted", "dispatched", "in_progress"])
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+        return data;
+      }
+      return null;
+    },
+    enabled: !!jobId || !!user?.id,
+    refetchInterval: 5000, // Poll for updates
+  });
+
+  const driver = activeJob?.drivers as any;
+  const driverProfile = driver?.profiles;
+  const driverName = driverProfile?.full_name || "Driver";
+  const driverUserId = driver?.user_id || "";
+  const driverPhone = driverProfile?.phone || "";
+  const driverRating = driver?.rating || 0;
+  const driverVehicle = driver?.vehicle_make || "Vehicle";
+  const driverPlate = driver?.vehicle_plate || "---";
+  const driverPhoto = driverProfile?.avatar_url || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face";
+  const eta = activeJob?.eta_minutes || 15;
+  const actualJobId = activeJob?.id || jobId;
+
+  // Calculate status based on job status
+  const getStatusIndex = () => {
+    switch (activeJob?.status) {
+      case "pending": return 0;
+      case "accepted": return 1;
+      case "dispatched": return 2;
+      case "in_progress": return 3;
+      case "completed": return 4;
+      default: return 0;
+    }
+  };
+  const currentStatus = getStatusIndex();
 
   // Subscribe to secure messaging
   const {
@@ -91,8 +158,8 @@ export const LiveTracking = () => {
     setChatOpen,
     blockUser,
   } = useSecureMessaging({
-    jobId,
-    otherPartyName: mockDriver.name,
+    jobId: actualJobId,
+    otherPartyName: driverName,
   });
 
   // Track chat open state for notification suppression
@@ -103,23 +170,6 @@ export const LiveTracking = () => {
   // Get the correct service icon and name
   const ServiceIcon = serviceIcons[serviceId || "tyre"] || TyreIcon;
   const serviceName = serviceNames[serviceId || "tyre"] || "Service Request";
-
-  useEffect(() => {
-    // Simulate status progression
-    const timer1 = setTimeout(() => setCurrentStatus(1), 2000);
-    const timer2 = setTimeout(() => setCurrentStatus(2), 4000);
-
-    // Simulate ETA countdown
-    const etaInterval = setInterval(() => {
-      setEta((prev) => Math.max(0, prev - 1));
-    }, 5000);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearInterval(etaInterval);
-    };
-  }, []);
 
   const handleCallDriver = () => {
     setShowCallDialog(true);
@@ -147,7 +197,13 @@ export const LiveTracking = () => {
     setShowCancelDialog(true);
   };
 
-  const confirmCancel = () => {
+  const confirmCancel = async () => {
+    if (actualJobId) {
+      await supabase
+        .from("jobs")
+        .update({ status: "cancelled", cancellation_reason: "Customer cancelled" })
+        .eq("id", actualJobId);
+    }
     setShowCancelDialog(false);
     toast({
       title: "Request cancelled",
@@ -155,6 +211,14 @@ export const LiveTracking = () => {
     });
     navigate("/");
   };
+
+  if (jobLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -177,29 +241,33 @@ export const LiveTracking = () => {
             </motion.div>
 
             {/* Driver location */}
-            <motion.div
-              className="absolute left-16 top-8"
-              animate={{ x: [-10, 0], y: [5, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-lg border-2 border-primary">
-                <Car className="h-5 w-5 text-primary" />
-              </div>
-            </motion.div>
+            {currentStatus >= 1 && (
+              <motion.div
+                className="absolute left-16 top-8"
+                animate={{ x: [-10, 0], y: [5, 0] }}
+                transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-card shadow-lg border-2 border-primary">
+                  <Car className="h-5 w-5 text-primary" />
+                </div>
+              </motion.div>
+            )}
 
             {/* Path */}
-            <svg className="absolute -left-16 -top-6" width="120" height="60">
-              <motion.path
-                d="M 10 40 Q 60 10 100 30"
-                stroke="hsl(var(--primary))"
-                strokeWidth="3"
-                strokeDasharray="8 4"
-                fill="none"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 2 }}
-              />
-            </svg>
+            {currentStatus >= 1 && (
+              <svg className="absolute -left-16 -top-6" width="120" height="60">
+                <motion.path
+                  d="M 10 40 Q 60 10 100 30"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth="3"
+                  strokeDasharray="8 4"
+                  fill="none"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 2 }}
+                />
+              </svg>
+            )}
           </div>
         </div>
 
@@ -253,7 +321,7 @@ export const LiveTracking = () => {
         </motion.div>
 
         {/* Driver Card */}
-        {currentStatus >= 1 && (
+        {currentStatus >= 1 && driver && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -264,8 +332,8 @@ export const LiveTracking = () => {
                 <div className="mb-4 flex items-center gap-4">
                   <div className="relative">
                     <img
-                      src={mockDriver.photo}
-                      alt={mockDriver.name}
+                      src={driverPhoto}
+                      alt={driverName}
                       className="h-16 w-16 rounded-2xl object-cover"
                     />
                     <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-success text-success-foreground">
@@ -273,13 +341,13 @@ export const LiveTracking = () => {
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{mockDriver.name}</h3>
+                    <h3 className="font-semibold text-foreground">{driverName}</h3>
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Star className="h-4 w-4 fill-primary text-primary" />
-                      <span>{mockDriver.rating}</span>
+                      <span>{driverRating > 0 ? driverRating.toFixed(1) : "New"}</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {mockDriver.vehicle} • {mockDriver.plate}
+                      {driverVehicle} • {driverPlate}
                     </p>
                   </div>
                 </div>
@@ -321,7 +389,7 @@ export const LiveTracking = () => {
                   <p className="font-semibold text-foreground">{serviceName}</p>
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <MapPin className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{pickupAddress}</span>
+                    <span className="truncate">{activeJob?.pickup_address || pickupAddress}</span>
                   </div>
                 </div>
               </div>
@@ -421,50 +489,54 @@ export const LiveTracking = () => {
       </AlertDialog>
 
       {/* Secure Chat Dialog */}
-      <SecureChatDialog
-        open={showChatDialog}
-        onOpenChange={setShowChatDialog}
-        otherPartyName={mockDriver.name}
-        otherPartyId={mockDriver.userId}
-        otherPartyType="driver"
-        messages={messages}
-        sending={sending}
-        rateLimited={rateLimited}
-        onSendMessage={sendMessage}
-        onCallClick={() => {
-          setShowChatDialog(false);
-          setShowCallDialog(true);
-        }}
-        onReportClick={() => {
-          setShowChatDialog(false);
-          setShowReportDialog(true);
-        }}
-        onBlockClick={() => blockUser(mockDriver.userId)}
-        currentUserId={user?.id}
-      />
+      {driver && (
+        <SecureChatDialog
+          open={showChatDialog}
+          onOpenChange={setShowChatDialog}
+          otherPartyName={driverName}
+          otherPartyId={driverUserId}
+          otherPartyType="driver"
+          messages={messages}
+          sending={sending}
+          rateLimited={rateLimited}
+          onSendMessage={sendMessage}
+          onCallClick={() => {
+            setShowChatDialog(false);
+            setShowCallDialog(true);
+          }}
+          onReportClick={() => {
+            setShowChatDialog(false);
+            setShowReportDialog(true);
+          }}
+          onBlockClick={() => blockUser(driverUserId)}
+          currentUserId={user?.id}
+        />
+      )}
 
       {/* Secure Call Dialog */}
-      {jobId && (
+      {actualJobId && driver && (
         <SecureCallDialog
           open={showCallDialog}
           onOpenChange={setShowCallDialog}
-          jobId={jobId}
-          receiverId={mockDriver.userId}
+          jobId={actualJobId}
+          receiverId={driverUserId}
           receiverType="driver"
-          receiverName={mockDriver.name}
-          receiverPhone={mockDriver.phone}
+          receiverName={driverName}
+          receiverPhone={driverPhone}
         />
       )}
 
       {/* Report Abuse Dialog */}
-      <ReportAbuseDialog
-        open={showReportDialog}
-        onOpenChange={setShowReportDialog}
-        jobId={jobId || undefined}
-        reportedId={mockDriver.userId}
-        reportedType="driver"
-        reportedName={mockDriver.name}
-      />
+      {driver && (
+        <ReportAbuseDialog
+          open={showReportDialog}
+          onOpenChange={setShowReportDialog}
+          jobId={actualJobId || undefined}
+          reportedId={driverUserId}
+          reportedType="driver"
+          reportedName={driverName}
+        />
+      )}
     </div>
   );
 };

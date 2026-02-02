@@ -18,14 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAvailableJobs, useAcceptJob } from "@/hooks/useJobs";
 import { useJobAlert } from "@/hooks/useJobAlert";
 import { Badge } from "@/components/ui/badge";
-
-const mockStats = {
-  todayEarnings: "R1,250",
-  weekEarnings: "R8,450",
-  completedJobs: 12,
-  rating: 4.9,
-  acceptanceRate: 95,
-};
+import { startOfToday, startOfWeek } from "date-fns";
 
 const serviceIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   "Tyre Change": TyreIcon,
@@ -49,12 +42,61 @@ export const DriverHome = () => {
       if (!user?.id) return null;
       const { data } = await supabase
         .from("drivers")
-        .select("id")
+        .select("id, rating, total_jobs")
         .eq("user_id", user.id)
         .single();
       return data;
     },
     enabled: !!user?.id,
+  });
+
+  // Fetch today's earnings
+  const { data: todayStats } = useQuery({
+    queryKey: ["driver-today-stats", driverRecord?.id],
+    queryFn: async () => {
+      if (!driverRecord?.id) return { earnings: 0, jobCount: 0 };
+      const today = startOfToday();
+      
+      const { data } = await supabase
+        .from("jobs")
+        .select("final_price, estimated_price")
+        .eq("driver_id", driverRecord.id)
+        .eq("status", "completed")
+        .gte("completed_at", today.toISOString());
+
+      const earnings = (data || []).reduce((sum, job) => {
+        return sum + ((job.final_price || job.estimated_price || 0) * 0.8);
+      }, 0);
+
+      return {
+        earnings: Math.round(earnings),
+        jobCount: data?.length || 0,
+      };
+    },
+    enabled: !!driverRecord?.id,
+  });
+
+  // Fetch this week's earnings
+  const { data: weekStats } = useQuery({
+    queryKey: ["driver-week-stats", driverRecord?.id],
+    queryFn: async () => {
+      if (!driverRecord?.id) return { earnings: 0 };
+      const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+      
+      const { data } = await supabase
+        .from("jobs")
+        .select("final_price, estimated_price")
+        .eq("driver_id", driverRecord.id)
+        .eq("status", "completed")
+        .gte("completed_at", weekStart.toISOString());
+
+      const earnings = (data || []).reduce((sum, job) => {
+        return sum + ((job.final_price || job.estimated_price || 0) * 0.8);
+      }, 0);
+
+      return { earnings: Math.round(earnings) };
+    },
+    enabled: !!driverRecord?.id,
   });
 
   // Fetch available jobs from database
@@ -107,6 +149,14 @@ export const DriverHome = () => {
     }
   };
 
+  const stats = {
+    todayEarnings: `R${(todayStats?.earnings || 0).toLocaleString()}`,
+    weekEarnings: `R${(weekStats?.earnings || 0).toLocaleString()}`,
+    completedJobs: todayStats?.jobCount || 0,
+    rating: driverRecord?.rating || 0,
+    acceptanceRate: 0, // Would need to track accepts/declines to calculate
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header - Deep Trust Blue */}
@@ -122,9 +172,6 @@ export const DriverHome = () => {
               onClick={() => setNotificationsOpen(true)}
             >
               <Bell className="h-5 w-5" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-accent text-white">
-                2
-              </Badge>
             </Button>
             <Button 
               variant="ghost" 
@@ -316,7 +363,7 @@ export const DriverHome = () => {
                   <TrendingUp className="h-4 w-4" />
                   <span className="text-sm">Earnings</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{mockStats.todayEarnings}</p>
+                <p className="text-2xl font-bold text-foreground">{stats.todayEarnings}</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -332,7 +379,7 @@ export const DriverHome = () => {
                   <Clock className="h-4 w-4" />
                   <span className="text-sm">Jobs</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{mockStats.completedJobs}</p>
+                <p className="text-2xl font-bold text-foreground">{stats.completedJobs}</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -348,7 +395,7 @@ export const DriverHome = () => {
                   <Star className="h-4 w-4" />
                   <span className="text-sm">Rating</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{mockStats.rating}</p>
+                <p className="text-2xl font-bold text-foreground">{stats.rating > 0 ? stats.rating.toFixed(1) : "—"}</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -362,9 +409,9 @@ export const DriverHome = () => {
               <CardContent className="p-4">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                   <Zap className="h-4 w-4" />
-                  <span className="text-sm">Accept Rate</span>
+                  <span className="text-sm">Total Jobs</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{mockStats.acceptanceRate}%</p>
+                <p className="text-2xl font-bold text-foreground">{driverRecord?.total_jobs || 0}</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -378,7 +425,7 @@ export const DriverHome = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-white/70">This Week</p>
-                <p className="text-3xl font-bold text-white">{mockStats.weekEarnings}</p>
+                <p className="text-3xl font-bold text-white">{stats.weekEarnings}</p>
               </div>
               <ChevronRight className="h-6 w-6 text-white/70" />
             </div>

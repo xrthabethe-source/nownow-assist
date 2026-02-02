@@ -258,15 +258,15 @@ export const LandingPage = () => {
               >
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success" />
-                  <span>No signup fees</span>
+                  <span>No insurance</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success" />
-                  <span>Pay only when you use</span>
+                  <span>No membership fee</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success" />
-                  <span>Cancel anytime</span>
+                  <span>Pay only when you need us</span>
                 </div>
               </motion.div>
             </div>

@@ -300,8 +300,8 @@ export const CustomerHome = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-xl">
+      {/* Header - Deep Trust Blue */}
+      <header className="sticky top-0 z-40 border-b border-border bg-primary/95 backdrop-blur-xl">
         <div className="container flex items-center justify-between py-4">
           <Logo size="sm" />
           <RoleSwitcher variant="compact" />
@@ -480,8 +480,8 @@ export const CustomerHome = () => {
           transition={{ delay: 0.2 }}
           className="mb-4"
         >
-          <h2 className="text-2xl font-bold text-foreground">How can we help?</h2>
-          <p className="text-muted-foreground">Select a service to get started</p>
+          <h2 className="text-2xl font-bold text-white">How can we help?</h2>
+          <p className="text-white/70">Select a service to get started</p>
         </motion.div>
 
         <motion.div
@@ -493,21 +493,21 @@ export const CustomerHome = () => {
           {services.map((service) => (
             <motion.div key={service.id} variants={item}>
               <Card
-                variant="interactive"
-                className={`h-full ${service.featured ? 'ring-2 ring-primary' : ''} ${service.isMechanic ? 'bg-muted/50' : ''}`}
+                variant="default"
+                className={`h-full cursor-pointer hover:border-accent/50 transition-all ${service.featured ? 'ring-2 ring-accent' : ''}`}
                 onClick={() => handleServiceSelect(service.id)}
               >
                 <CardContent className="flex flex-col items-center p-4 text-center">
                   {service.featured && (
-                    <span className="mb-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                    <span className="mb-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-white">
                       MOST POPULAR
                     </span>
                   )}
-                  <div className={`mb-3 flex h-14 w-14 items-center justify-center rounded-2xl ${service.isMechanic ? 'bg-secondary/20' : 'bg-primary/10'}`}>
-                    <service.icon className={`h-7 w-7 ${service.isMechanic ? 'text-secondary-foreground' : 'text-primary'}`} />
+                  <div className={`mb-3 flex h-14 w-14 items-center justify-center rounded-2xl ${service.isMechanic ? 'bg-muted' : 'bg-accent/20'}`}>
+                    <service.icon className={`h-7 w-7 ${service.isMechanic ? 'text-muted-foreground' : 'text-accent'}`} />
                   </div>
                   <h3 className="mb-1 font-semibold text-foreground">{service.name}</h3>
-                  <p className="text-lg font-bold text-primary">{service.price}</p>
+                  <p className="text-lg font-bold text-accent">{service.price}</p>
                   {service.isMechanic && (
                     <p className="mt-1 text-[10px] text-muted-foreground">Connection fee only</p>
                   )}
@@ -525,19 +525,19 @@ export const CustomerHome = () => {
       {/* Recent Activity */}
       <div className="container py-4">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-semibold text-foreground">Recent Activity</h3>
-          <Button variant="link" size="sm" className="text-primary" onClick={() => navigate('/customer/history')}>
+          <h3 className="font-semibold text-white">Recent Activity</h3>
+          <Button variant="ghost" size="sm" className="text-accent" onClick={() => navigate('/customer/history')}>
             View All
           </Button>
         </div>
         <Card 
-          variant="interactive" 
-          className="cursor-pointer hover:shadow-md transition-shadow"
+          variant="default" 
+          className="cursor-pointer hover:border-accent/50 transition-all"
           onClick={() => navigate('/customer/history')}
         >
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success/10">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success/20">
                 <TyreIcon className="h-5 w-5 text-success" />
               </div>
               <div className="flex-1">
@@ -552,15 +552,15 @@ export const CustomerHome = () => {
 
       {/* Safety Card */}
       <div className="container py-4">
-        <Card variant="warning" className="border-l-4 border-l-warning">
+        <Card variant="amber" className="border-l-4 border-l-accent">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-warning/20">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/30">
                 <span className="text-xl">⚠️</span>
               </div>
               <div>
-                <h4 className="font-semibold text-foreground">Stay Safe</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="font-semibold text-white">Stay Safe</h4>
+                <p className="text-sm text-white/70">
                   If stranded, stay in your vehicle with hazards on. Our responder will find you.
                 </p>
               </div>

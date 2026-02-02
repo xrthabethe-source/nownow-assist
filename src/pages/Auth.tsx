@@ -177,7 +177,7 @@ export default function Auth() {
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
       </div>
     );
   }
@@ -191,17 +191,18 @@ export default function Auth() {
       >
         <div className="mb-8 text-center">
           <Logo className="mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="text-2xl font-bold text-white">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-white/70">
             {isLogin ? 'Sign in to continue' : 'Sign up to get started'}
           </p>
         </div>
 
-        <Card>
+        {/* Card with Soft Grey background for readability */}
+        <Card variant="default">
           <CardHeader className="pb-4">
-            <CardTitle>{isLogin ? 'Sign In' : 'Sign Up'}</CardTitle>
+            <CardTitle className="text-foreground">{isLogin ? 'Sign In' : 'Sign Up'}</CardTitle>
             <CardDescription>
               {isLogin 
                 ? 'Enter your credentials to access your account' 
@@ -227,7 +228,7 @@ export default function Auth() {
               {!isLogin && (
                 <>
                   <div className="space-y-3">
-                    <Label>I want to sign up as a</Label>
+                    <Label className="text-foreground">I want to sign up as a</Label>
                     <RadioGroup
                       value={accountType}
                       onValueChange={(value) => setAccountType(value as 'customer' | 'driver')}
@@ -241,7 +242,7 @@ export default function Auth() {
                         />
                         <Label
                           htmlFor="customer"
-                          className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-border bg-white p-4 hover:bg-secondary peer-data-[state=checked]:border-accent [&:has([data-state=checked])]:border-accent cursor-pointer text-brand-charcoal"
                         >
                           <Users className="mb-2 h-6 w-6" />
                           <span className="font-medium">Customer</span>
@@ -256,7 +257,7 @@ export default function Auth() {
                         />
                         <Label
                           htmlFor="driver"
-                          className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-border bg-white p-4 hover:bg-secondary peer-data-[state=checked]:border-accent [&:has([data-state=checked])]:border-accent cursor-pointer text-brand-charcoal"
                         >
                           <Car className="mb-2 h-6 w-6" />
                           <span className="font-medium">Driver</span>
@@ -267,7 +268,7 @@ export default function Auth() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
+                    <Label htmlFor="fullName" className="text-foreground">Full Name</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
@@ -279,7 +280,7 @@ export default function Auth() {
                           setFullName(e.target.value);
                           setFieldErrors((prev) => ({ ...prev, fullName: '' }));
                         }}
-                        className="pl-10"
+                        className="pl-10 bg-white text-brand-charcoal"
                         maxLength={100}
                       />
                     </div>
@@ -291,7 +292,7 @@ export default function Auth() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-foreground">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -305,7 +306,7 @@ export default function Auth() {
                       setIsLocked(false);
                       setLockoutMessage(null);
                     }}
-                    className="pl-10"
+                    className="pl-10 bg-white text-brand-charcoal"
                     autoComplete="email"
                   />
                 </div>
@@ -315,7 +316,7 @@ export default function Auth() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-foreground">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -327,7 +328,7 @@ export default function Auth() {
                       setPassword(e.target.value);
                       setFieldErrors((prev) => ({ ...prev, password: '' }));
                     }}
-                    className="pl-10"
+                    className="pl-10 bg-white text-brand-charcoal"
                     autoComplete={isLogin ? 'current-password' : 'new-password'}
                   />
                 </div>
@@ -349,11 +350,11 @@ export default function Auth() {
                       ].map(({ check, label }) => (
                         <div key={label} className="flex items-center gap-1 text-xs">
                           {check ? (
-                            <CheckCircle2 className="h-3 w-3 text-green-500" />
+                            <CheckCircle2 className="h-3 w-3 text-success" />
                           ) : (
                             <XCircle className="h-3 w-3 text-muted-foreground" />
                           )}
-                          <span className={check ? 'text-green-600' : 'text-muted-foreground'}>
+                          <span className={check ? 'text-success' : 'text-muted-foreground'}>
                             {label}
                           </span>
                         </div>
@@ -400,7 +401,7 @@ export default function Auth() {
                   setLockoutMessage(null);
                   setRetryCountdown(0);
                 }}
-                className="text-sm text-primary hover:underline"
+                className="text-sm text-accent hover:underline"
               >
                 {isLogin
                   ? "Don't have an account? Sign up"
@@ -411,7 +412,7 @@ export default function Auth() {
         </Card>
 
         {/* Security notice */}
-        <p className="mt-4 text-center text-xs text-muted-foreground">
+        <p className="mt-4 text-center text-xs text-white/50">
           Protected by enterprise-grade security. Your data is encrypted and secure.
         </p>
       </motion.div>

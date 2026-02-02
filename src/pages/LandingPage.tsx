@@ -341,9 +341,9 @@ export const LandingPage = () => {
               <motion.div
                 key={index}
                 variants={item}
-                className="flex items-center gap-4 rounded-2xl border border-orange-700/30 bg-orange-800 p-4 md:p-6"
+                className="flex items-center gap-4 rounded-2xl border border-green-700/30 bg-green-800 p-4 md:p-6"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-600">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-600">
                   <AlertTriangle className="h-5 w-5 text-white" />
                 </div>
                 <p className="text-lg font-medium text-white md:text-xl">{point}</p>
@@ -441,18 +441,18 @@ export const LandingPage = () => {
             {services.map((service) => (
               <motion.div key={service.name} variants={item}>
                 <div 
-                  className={`h-full relative cursor-pointer rounded-2xl border transition-all hover:scale-105 ${service.popular ? 'border-orange-500 ring-2 ring-orange-500 bg-orange-700' : 'border-orange-700/30 bg-orange-800 hover:bg-orange-700'}`}
+                  className={`h-full relative cursor-pointer rounded-2xl border transition-all hover:scale-105 ${service.popular ? 'border-green-500 ring-2 ring-green-500 bg-green-700' : 'border-green-700/30 bg-green-800 hover:bg-green-700'}`}
                   onClick={() => navigate("/auth")}
                 >
                   {service.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white">
+                      <span className="rounded-full bg-orange-600 px-3 py-1 text-xs font-semibold text-white">
                         Popular
                       </span>
                     </div>
                   )}
                   <div className="p-6 text-center">
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-600">
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-green-600">
                       <service.icon className="h-8 w-8 text-white" />
                     </div>
                     <h3 className="mb-2 text-lg font-bold text-white">{service.name}</h3>
@@ -566,14 +566,14 @@ export const LandingPage = () => {
       </section>
 
       {/* Driver CTA */}
-      <section className="py-16 md:py-24">
+      <section className="bg-green-800 py-16 md:py-24">
         <div className="container">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
           >
-            <div className="rounded-3xl border-2 border-green-600/30 bg-green-800 overflow-hidden p-8 md:p-12">
+            <div className="rounded-3xl border-2 border-green-600/30 bg-green-700 overflow-hidden p-8 md:p-12">
               <div className="grid gap-8 md:grid-cols-2 md:items-center">
                 <div>
                   <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-1.5">
@@ -606,7 +606,7 @@ export const LandingPage = () => {
                   </Button>
                 </div>
                 <div className="relative hidden md:block">
-                  <div className="aspect-square rounded-3xl bg-gradient-to-br from-green-600/50 to-green-700/30 p-8">
+                  <div className="aspect-square rounded-3xl bg-gradient-to-br from-green-600/50 to-green-500/30 p-8">
                     <div className="flex h-full flex-col items-center justify-center text-center">
                       <div className="mb-4 text-6xl font-extrabold text-orange-400">R8K+</div>
                       <p className="text-lg font-medium text-white">Monthly Earnings</p>
@@ -683,8 +683,8 @@ export const LandingPage = () => {
         </div>
       </section>
 
-      {/* Footer - Orange Accent */}
-      <footer className="border-t border-accent/30 bg-accent py-12">
+      {/* Footer - Green */}
+      <footer className="border-t border-green-700/30 bg-green-800 py-12">
         <div className="container">
           <div className="grid gap-8 md:grid-cols-4">
             <div className="md:col-span-2">

@@ -166,17 +166,17 @@ export const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      {/* Sticky Header - Clean Uber-style */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
+      {/* Sticky Header - Deep Trust Blue */}
+      <header className="sticky top-0 z-50 bg-primary/95 backdrop-blur-md border-b border-border/50">
         <div className="container flex items-center justify-between h-16 md:h-[72px]">
           <Logo size="lg" />
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#services" onClick={(e) => { e.preventDefault(); document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">Services</a>
-            <a href="#how-it-works" onClick={(e) => { e.preventDefault(); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">How It Works</a>
-            <a href="#testimonials" onClick={(e) => { e.preventDefault(); document.getElementById('testimonials')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer">Reviews</a>
+            <a href="#services" onClick={(e) => { e.preventDefault(); document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer">Services</a>
+            <a href="#how-it-works" onClick={(e) => { e.preventDefault(); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer">How It Works</a>
+            <a href="#testimonials" onClick={(e) => { e.preventDefault(); document.getElementById('testimonials')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer">Reviews</a>
           </nav>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="font-medium" onClick={() => navigate("/auth")}>
+            <Button variant="ghost" size="sm" className="font-medium text-white" onClick={() => navigate("/auth")}>
               Log in
             </Button>
             <Button variant="outline" size="sm" className="hidden sm:flex font-medium" onClick={() => navigate("/auth")}>
@@ -189,13 +189,13 @@ export const LandingPage = () => {
         </div>
       </header>
 
-      {/* Hero Section - Urgency & Problem */}
+      {/* Hero Section - Deep Trust Blue Background */}
       <section ref={heroRef} className="relative overflow-hidden">
         <motion.div style={{ opacity: heroOpacity, scale: heroScale }}>
-          {/* Background Effects */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent" />
-          <div className="absolute top-20 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-50" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary/10 rounded-full blur-3xl opacity-40" />
+          {/* Background Effects - Subtle on dark */}
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-transparent" />
+          <div className="absolute top-20 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl opacity-50" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent/5 rounded-full blur-3xl opacity-40" />
           
           <div className="container relative py-16 md:py-24 lg:py-32">
             <div className="mx-auto max-w-4xl text-center">
@@ -217,11 +217,11 @@ export const LandingPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="mb-6 text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl"
+                className="mb-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl"
               >
                 Stranded on the road?
                 <br />
-                <span className="text-gradient-amber">We'll be there in 15 minutes.</span>
+                <span className="text-accent">We'll be there in 15 minutes.</span>
               </motion.h1>
 
               {/* Subheadline */}
@@ -229,9 +229,9 @@ export const LandingPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground md:text-xl"
+                className="mx-auto mb-8 max-w-2xl text-lg text-white/70 md:text-xl"
               >
-                Flat tyre? Dead battery? Out of fuel? Get instant help from <strong className="text-foreground">500+ verified responders</strong> across South Africa. 
+                Flat tyre? Dead battery? Out of fuel? Get instant help from <strong className="text-white">500+ verified responders</strong> across South Africa. 
                 No membership fees. Pay only when you need us.
               </motion.p>
 
@@ -267,7 +267,7 @@ export const LandingPage = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground"
+                className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-white/70"
               >
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-success" />
@@ -287,8 +287,8 @@ export const LandingPage = () => {
         </motion.div>
       </section>
 
-      {/* Social Proof Stats */}
-      <section className="border-y border-border bg-card py-8 md:py-12">
+      {/* Social Proof Stats - Soft Grey Panel */}
+      <section className="border-y border-border bg-secondary py-8 md:py-12">
         <div className="container">
           <motion.div
             variants={container}
@@ -299,11 +299,11 @@ export const LandingPage = () => {
           >
             {stats.map((stat) => (
               <motion.div key={stat.label} variants={item} className="text-center">
-                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                  <stat.icon className="h-5 w-5 text-primary" />
+                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-accent/20">
+                  <stat.icon className="h-5 w-5 text-accent" />
                 </div>
-                <p className="text-2xl font-extrabold text-foreground md:text-3xl">{stat.value}</p>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
+                <p className="text-2xl font-extrabold text-brand-charcoal md:text-3xl">{stat.value}</p>
+                <p className="text-sm text-brand-charcoal/70">{stat.label}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -690,48 +690,48 @@ export const LandingPage = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border bg-card py-12">
+      {/* Footer - Soft Grey */}
+      <footer className="border-t border-border bg-secondary py-12">
         <div className="container">
           <div className="grid gap-8 md:grid-cols-4">
             <div className="md:col-span-2">
               <Logo size="md" className="mb-4" />
-              <p className="mb-4 max-w-sm text-muted-foreground">
+              <p className="mb-4 max-w-sm text-brand-charcoal/70">
                 South Africa's fastest-growing roadside assistance platform. 
                 Help when you need it, where you need it.
               </p>
               <div className="flex items-center gap-2">
                 <Shield className="h-5 w-5 text-success" />
-                <span className="text-sm text-muted-foreground">Verified & Trusted</span>
+                <span className="text-sm text-brand-charcoal/70">Verified & Trusted</span>
               </div>
             </div>
             
             <div>
-              <h4 className="mb-4 font-semibold text-foreground">Quick Links</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><button onClick={() => navigate("/auth")} className="hover:text-primary transition-colors">Get Help</button></li>
-                <li><button onClick={() => navigate("/auth")} className="hover:text-primary transition-colors">Become a Responder</button></li>
-                <li><button className="hover:text-primary transition-colors">About Us</button></li>
-                <li><button className="hover:text-primary transition-colors">Contact</button></li>
+              <h4 className="mb-4 font-semibold text-brand-charcoal">Quick Links</h4>
+              <ul className="space-y-2 text-sm text-brand-charcoal/70">
+                <li><button onClick={() => navigate("/auth")} className="hover:text-accent transition-colors">Get Help</button></li>
+                <li><button onClick={() => navigate("/auth")} className="hover:text-accent transition-colors">Become a Responder</button></li>
+                <li><button className="hover:text-accent transition-colors">About Us</button></li>
+                <li><button className="hover:text-accent transition-colors">Contact</button></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="mb-4 font-semibold text-foreground">Legal</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><button className="hover:text-primary transition-colors">Privacy Policy</button></li>
-                <li><button className="hover:text-primary transition-colors">Terms of Service</button></li>
-                <li><button className="hover:text-primary transition-colors">Cookie Policy</button></li>
+              <h4 className="mb-4 font-semibold text-brand-charcoal">Legal</h4>
+              <ul className="space-y-2 text-sm text-brand-charcoal/70">
+                <li><button className="hover:text-accent transition-colors">Privacy Policy</button></li>
+                <li><button className="hover:text-accent transition-colors">Terms of Service</button></li>
+                <li><button className="hover:text-accent transition-colors">Cookie Policy</button></li>
               </ul>
             </div>
           </div>
           
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-brand-charcoal/70">
               © 2025 Now-Now Assist. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">🇿🇦 Made in South Africa</span>
+              <span className="text-sm text-brand-charcoal/70">🇿🇦 Made in South Africa</span>
             </div>
           </div>
         </div>

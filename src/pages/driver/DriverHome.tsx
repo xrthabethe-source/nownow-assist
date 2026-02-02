@@ -105,17 +105,17 @@ export const DriverHome = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24 dark">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-xl">
+    <div className="min-h-screen bg-background pb-24">
+      {/* Header - Deep Trust Blue */}
+      <header className="sticky top-0 z-40 border-b border-border bg-primary/95 backdrop-blur-xl">
         <div className="container flex items-center justify-between py-4">
           <Logo size="sm" />
           <div className="flex items-center gap-2">
             <RoleSwitcher variant="compact" />
-            <Button variant="ghost" size="icon-sm" className="rounded-full">
+            <Button variant="ghost" size="icon-sm" className="rounded-full text-white">
               <Bell className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon-sm" className="rounded-full">
+            <Button variant="ghost" size="icon-sm" className="rounded-full text-white">
               <Settings className="h-5 w-5" />
             </Button>
           </div>
@@ -128,22 +128,22 @@ export const DriverHome = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card variant={isOnline ? "amber" : "default"} className="overflow-hidden">
+          <Card variant={isOnline ? "amber" : "outline"} className="overflow-hidden">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div
                     className={`flex h-12 w-12 items-center justify-center rounded-xl ${
-                      isOnline ? "bg-primary" : "bg-muted"
+                      isOnline ? "bg-accent" : "bg-white/10"
                     }`}
                   >
-                    <Zap className={`h-6 w-6 ${isOnline ? "text-primary-foreground" : "text-muted-foreground"}`} />
+                    <Zap className={`h-6 w-6 ${isOnline ? "text-white" : "text-white/60"}`} />
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">
+                    <p className="font-semibold text-white">
                       {isOnline ? "You're Online" : "You're Offline"}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white/70">
                       {isOnline ? "Receiving job requests" : "Go online to receive jobs"}
                     </p>
                   </div>
@@ -151,7 +151,7 @@ export const DriverHome = () => {
                 <Switch
                   checked={isOnline}
                   onCheckedChange={setIsOnline}
-                  className="data-[state=checked]:bg-primary"
+                  className="data-[state=checked]:bg-accent"
                 />
               </div>
               
@@ -160,22 +160,22 @@ export const DriverHome = () => {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  className="mt-3 pt-3 border-t border-border"
+                  className="mt-3 pt-3 border-t border-white/20"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={`relative flex items-center justify-center`}>
-                        <Navigation className={`h-4 w-4 ${isTracking ? "text-success" : "text-muted-foreground"}`} />
+                        <Navigation className={`h-4 w-4 ${isTracking ? "text-success" : "text-white/50"}`} />
                         {isTracking && (
                           <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-success animate-pulse" />
                         )}
                       </div>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-white/70">
                         {isTracking ? "GPS Active" : "GPS Off"}
                       </span>
                     </div>
                     {location && isTracking && (
-                      <span className="text-xs text-muted-foreground font-mono">
+                      <span className="text-xs text-white/50 font-mono">
                         {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
                       </span>
                     )}
@@ -188,7 +188,7 @@ export const DriverHome = () => {
                       variant="ghost"
                       size="sm"
                       onClick={toggleTracking}
-                      className="h-7 text-xs"
+                      className="h-7 text-xs text-white"
                     >
                       {isTracking ? "Stop" : "Start"} GPS
                     </Button>
@@ -207,10 +207,10 @@ export const DriverHome = () => {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           className="container py-2"
         >
-          <Card variant="interactive" className="border-2 border-primary overflow-hidden">
-            <div className="h-1.5 bg-muted overflow-hidden">
+          <Card variant="default" className="border-2 border-accent overflow-hidden">
+            <div className="h-1.5 bg-white/20 overflow-hidden">
               <motion.div
-                className="h-full bg-primary"
+                className="h-full bg-accent"
                 initial={{ width: "100%" }}
                 animate={{ width: "0%" }}
                 transition={{ duration: 60, ease: "linear" }}
@@ -219,7 +219,7 @@ export const DriverHome = () => {
             <CardContent className="p-4">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <StatusBadge variant="primary" pulse>New Request</StatusBadge>
+                  <StatusBadge variant="warning" pulse>New Request</StatusBadge>
                   <Button
                     variant="ghost"
                     size="icon-sm"
@@ -229,7 +229,7 @@ export const DriverHome = () => {
                     {isMuted ? (
                       <VolumeX className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <Volume2 className="h-4 w-4 text-primary" />
+                      <Volume2 className="h-4 w-4 text-accent" />
                     )}
                   </Button>
                 </div>
@@ -239,10 +239,10 @@ export const DriverHome = () => {
               </div>
 
               <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/20">
                   {(() => {
                     const IconComponent = serviceIcons[pendingJob.services?.name || ""] || TyreIcon;
-                    return <IconComponent className="h-6 w-6 text-primary" />;
+                    return <IconComponent className="h-6 w-6 text-accent" />;
                   })()}
                 </div>
                 <div className="flex-1">
@@ -250,7 +250,7 @@ export const DriverHome = () => {
                   <p className="text-sm text-muted-foreground">{(pendingJob as any).customer?.full_name || "Customer"}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-bold text-primary">R{Math.round((pendingJob.estimated_price || 0) * 0.8)}</p>
+                  <p className="text-xl font-bold text-accent">R{Math.round((pendingJob.estimated_price || 0) * 0.8)}</p>
                   <p className="text-sm text-muted-foreground">Payout</p>
                 </div>
               </div>
@@ -263,7 +263,7 @@ export const DriverHome = () => {
               <div className="flex gap-3">
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 border-border text-foreground"
                   disabled={acceptJobMutation.isPending}
                 >
                   Decline
@@ -285,7 +285,7 @@ export const DriverHome = () => {
       {/* Stats Grid */}
       <div className="container py-4">
         <div className="mb-3">
-          <h3 className="font-semibold text-foreground">Today's Summary</h3>
+          <h3 className="font-semibold text-white">Today's Summary</h3>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -294,7 +294,7 @@ export const DriverHome = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card variant="default" className="cursor-pointer transition-all hover:border-primary/50" onClick={() => navigate("/driver/earnings")}>
+            <Card variant="default" className="cursor-pointer transition-all hover:border-accent/50" onClick={() => navigate("/driver/earnings")}>
               <CardContent className="p-4">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                   <TrendingUp className="h-4 w-4" />
@@ -310,7 +310,7 @@ export const DriverHome = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
           >
-            <Card variant="default" className="cursor-pointer transition-all hover:border-primary/50" onClick={() => navigate("/driver/earnings")}>
+            <Card variant="default" className="cursor-pointer transition-all hover:border-accent/50" onClick={() => navigate("/driver/earnings")}>
               <CardContent className="p-4">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                   <Clock className="h-4 w-4" />
@@ -326,7 +326,7 @@ export const DriverHome = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card variant="default" className="cursor-pointer transition-all hover:border-primary/50" onClick={() => navigate("/driver/earnings")}>
+            <Card variant="default" className="cursor-pointer transition-all hover:border-accent/50" onClick={() => navigate("/driver/earnings")}>
               <CardContent className="p-4">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                   <Star className="h-4 w-4" />
@@ -342,7 +342,7 @@ export const DriverHome = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
           >
-            <Card variant="default" className="cursor-pointer transition-all hover:border-primary/50" onClick={() => navigate("/driver/earnings")}>
+            <Card variant="default" className="cursor-pointer transition-all hover:border-accent/50" onClick={() => navigate("/driver/earnings")}>
               <CardContent className="p-4">
                 <div className="mb-2 flex items-center gap-2 text-muted-foreground">
                   <Zap className="h-4 w-4" />
@@ -357,14 +357,14 @@ export const DriverHome = () => {
 
       {/* Weekly Earnings */}
       <div className="container py-4">
-        <Card variant="elevated" onClick={() => navigate("/driver/earnings")}>
+        <Card variant="amber" onClick={() => navigate("/driver/earnings")} className="cursor-pointer">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">This Week</p>
-                <p className="text-3xl font-bold text-foreground">{mockStats.weekEarnings}</p>
+                <p className="text-sm text-white/70">This Week</p>
+                <p className="text-3xl font-bold text-white">{mockStats.weekEarnings}</p>
               </div>
-              <ChevronRight className="h-6 w-6 text-muted-foreground" />
+              <ChevronRight className="h-6 w-6 text-white/70" />
             </div>
           </CardContent>
         </Card>

@@ -6,20 +6,20 @@
 
 @layer base {
   :root {
-    /* Corporate Identity Palette - No variations allowed */
+    /* Corporate Identity Palette - Colour-Led Design */
     
-    /* Background: Clean White #FFFFFF */
-    --background: 0 0% 100%;
-    /* Foreground: Charcoal #1F2933 */
-    --foreground: 210 24% 16%;
+    /* Primary Background: Deep Trust Blue #0B2A3D */
+    --background: 201 71% 14%;
+    /* Primary Foreground: White #FFFFFF */
+    --foreground: 0 0% 100%;
 
-    /* Card: Soft Grey #F2F4F7 */
+    /* Card: Soft Grey #F2F4F7 - for secondary panels only */
     --card: 216 25% 96%;
     --card-foreground: 210 24% 16%;
 
-    /* Popover: Clean White #FFFFFF */
-    --popover: 0 0% 100%;
-    --popover-foreground: 210 24% 16%;
+    /* Popover: Deep Trust Blue */
+    --popover: 201 71% 14%;
+    --popover-foreground: 0 0% 100%;
 
     /* Primary: Deep Trust Blue #0B2A3D */
     --primary: 201 71% 14%;
@@ -29,19 +29,19 @@
     --secondary: 216 25% 96%;
     --secondary-foreground: 210 24% 16%;
 
-    /* Muted: Soft Grey #F2F4F7 */
-    --muted: 216 25% 96%;
-    --muted-foreground: 210 24% 40%;
+    /* Muted: Darker blue variation for contrast on blue backgrounds */
+    --muted: 201 50% 20%;
+    --muted-foreground: 0 0% 80%;
 
     /* Accent: Warm Action Orange #F7931E */
     --accent: 32 93% 54%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 210 24% 16%;
 
     /* Destructive: Keep for errors */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Success: Use Deep Trust Blue variant */
+    /* Success: Green */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
@@ -49,10 +49,10 @@
     --warning: 32 93% 54%;
     --warning-foreground: 210 24% 16%;
 
-    /* Border: Soft Grey slightly darker */
-    --border: 216 20% 90%;
-    --input: 216 20% 90%;
-    --ring: 201 71% 14%;
+    /* Border: Lighter blue for visibility on dark backgrounds */
+    --border: 201 40% 25%;
+    --input: 201 40% 25%;
+    --ring: 32 93% 54%;
 
     --radius: 0.75rem;
 
@@ -67,27 +67,27 @@
     --brand-amber: 32 93% 54%;
     --brand-dark: 201 71% 14%;
 
-    /* Shadows - Neutral, no color tints */
-    --shadow-sm: 0 1px 2px 0 hsl(210 24% 16% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(210 24% 16% / 0.08), 0 2px 4px -2px hsl(210 24% 16% / 0.06);
-    --shadow-lg: 0 10px 15px -3px hsl(210 24% 16% / 0.08), 0 4px 6px -4px hsl(210 24% 16% / 0.06);
-    --shadow-xl: 0 20px 25px -5px hsl(210 24% 16% / 0.1), 0 8px 10px -6px hsl(210 24% 16% / 0.08);
-    --shadow-primary: 0 4px 14px -2px hsl(201 71% 14% / 0.25);
-    --shadow-accent: 0 4px 14px -2px hsl(32 93% 54% / 0.3);
+    /* Shadows - Neutral for dark backgrounds */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.25), 0 2px 4px -2px hsl(0 0% 0% / 0.15);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -4px hsl(0 0% 0% / 0.15);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.35), 0 8px 10px -6px hsl(0 0% 0% / 0.2);
+    --shadow-primary: 0 4px 14px -2px hsl(201 71% 10% / 0.5);
+    --shadow-accent: 0 4px 14px -2px hsl(32 93% 54% / 0.4);
 
-    /* Sidebar */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 210 24% 16%;
-    --sidebar-primary: 201 71% 14%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 216 25% 96%;
-    --sidebar-accent-foreground: 210 24% 16%;
-    --sidebar-border: 216 20% 90%;
-    --sidebar-ring: 201 71% 14%;
+    /* Sidebar - Deep Trust Blue based */
+    --sidebar-background: 201 71% 12%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 32 93% 54%;
+    --sidebar-primary-foreground: 210 24% 16%;
+    --sidebar-accent: 201 50% 20%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 201 40% 22%;
+    --sidebar-ring: 32 93% 54%;
   }
 
   .dark {
-    /* Dark mode uses same corporate palette with inverted hierarchy */
+    /* Dark mode maintains the same colour-forward approach */
     --background: 201 71% 10%;
     --foreground: 0 0% 98%;
 
@@ -97,14 +97,14 @@
     --popover: 201 71% 14%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 0 0% 100%;
-    --primary-foreground: 201 71% 14%;
+    --primary: 32 93% 54%;
+    --primary-foreground: 210 24% 16%;
 
     --secondary: 201 50% 20%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 201 50% 20%;
-    --muted-foreground: 216 20% 70%;
+    --muted: 201 50% 18%;
+    --muted-foreground: 0 0% 70%;
 
     --accent: 32 93% 54%;
     --accent-foreground: 210 24% 16%;
@@ -118,18 +118,27 @@
     --warning: 32 93% 54%;
     --warning-foreground: 210 24% 16%;
 
-    --border: 201 40% 25%;
-    --input: 201 40% 25%;
-    --ring: 0 0% 100%;
+    --border: 201 40% 22%;
+    --input: 201 40% 22%;
+    --ring: 32 93% 54%;
 
-    --sidebar-background: 201 71% 10%;
+    --sidebar-background: 201 71% 8%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 201 71% 14%;
-    --sidebar-accent: 201 50% 20%;
+    --sidebar-primary: 32 93% 54%;
+    --sidebar-primary-foreground: 210 24% 16%;
+    --sidebar-accent: 201 50% 18%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 201 40% 25%;
-    --sidebar-ring: 0 0% 100%;
+    --sidebar-border: 201 40% 20%;
+    --sidebar-ring: 32 93% 54%;
+  }
+
+  /* Light panel mode - for cards and overlays that need light backgrounds */
+  .light-panel {
+    --background: 0 0% 100%;
+    --foreground: 210 24% 16%;
+    --muted: 216 25% 96%;
+    --muted-foreground: 210 24% 40%;
+    --border: 216 20% 90%;
   }
 }
 
@@ -146,7 +155,7 @@
     @apply bg-background text-foreground antialiased;
   }
 
-  /* Typography hierarchy */
+  /* Typography on dark backgrounds - white text */
   h1, h2, h3, h4, h5, h6 {
     @apply text-foreground;
   }
@@ -170,6 +179,10 @@
     color: hsl(210 24% 16%);
   }
 
+  .text-brand-white {
+    color: hsl(0 0% 100%);
+  }
+
   .bg-brand-primary {
     background-color: hsl(201 71% 14%);
   }
@@ -186,6 +199,20 @@
     background-color: hsl(0 0% 100%);
   }
 
+  /* Light surface utilities - for when you need a light panel on dark bg */
+  .surface-light {
+    @apply bg-brand-grey text-brand-charcoal;
+  }
+
+  .surface-white {
+    @apply bg-brand-white text-brand-charcoal;
+  }
+
+  /* Dark surface utilities */
+  .surface-dark {
+    @apply bg-brand-primary text-brand-white;
+  }
+
   .shadow-primary {
     box-shadow: var(--shadow-primary);
   }
@@ -195,26 +222,26 @@
   }
 
   .glass {
-    @apply backdrop-blur-xl bg-card/90;
+    @apply backdrop-blur-xl bg-primary/80;
   }
 
-  .glass-dark {
-    @apply backdrop-blur-xl bg-background/90;
+  .glass-light {
+    @apply backdrop-blur-xl bg-white/90;
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - styled for dark backgrounds */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-muted rounded-full;
+  @apply bg-primary/20 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/50;
+  @apply bg-white/30 rounded-full hover:bg-white/50;
 }
 
 /* Animation keyframes - Subtle, professional */

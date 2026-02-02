@@ -195,7 +195,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           collapsed && !mobile && "justify-center"
         )}
       >
-        <Logo size="md" />
+        <Logo size="sm" />
         <AnimatePresence>
           {(!collapsed || mobile) && (
             <motion.div

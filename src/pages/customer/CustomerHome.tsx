@@ -303,7 +303,7 @@ export const CustomerHome = () => {
       {/* Header - Deep Trust Blue */}
       <header className="sticky top-0 z-40 border-b border-border bg-primary/95 backdrop-blur-xl">
         <div className="container flex items-center justify-between py-4">
-          <Logo size="sm" />
+          <Logo size="md" />
           <RoleSwitcher variant="compact" />
         </div>
       </header>

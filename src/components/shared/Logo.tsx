@@ -34,15 +34,8 @@ export const Logo = ({
         alt="Now-Now Assist"
         className={cn(
           "object-contain",
-          showText && size === "sm" && "h-8 w-auto",
-          showText && size === "md" && "h-10 w-auto",
-          showText && size === "lg" && "h-36 w-auto",
-          showText && size === "xl" && "h-14 w-auto",
-          !showText && size === "sm" && "h-8 w-8",
-          !showText && size === "md" && "h-10 w-10",
-          !showText && size === "lg" && "h-12 w-12",
-          !showText && size === "xl" && "h-14 w-14",
-          !showText && "object-cover object-center"
+          sizeClasses[size],
+          showText ? "w-auto" : "w-auto object-cover object-center"
         )}
       />
     </motion.div>

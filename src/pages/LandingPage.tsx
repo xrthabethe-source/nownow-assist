@@ -169,7 +169,7 @@ export const LandingPage = () => {
       {/* Sticky Header - Deep Trust Blue */}
       <header className="sticky top-0 z-50 bg-primary/95 backdrop-blur-md border-b border-border/50">
         <div className="container flex items-center justify-between h-16 md:h-[72px]">
-          <Logo size="lg" />
+          <Logo size="xl" />
           <nav className="hidden md:flex items-center gap-8">
             <a href="#services" onClick={(e) => { e.preventDefault(); document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer">Services</a>
             <a href="#how-it-works" onClick={(e) => { e.preventDefault(); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-sm font-medium text-white/70 hover:text-white transition-colors cursor-pointer">How It Works</a>

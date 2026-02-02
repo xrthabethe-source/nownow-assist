@@ -9,14 +9,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-amber",
+        // Primary: Deep Trust Blue #0B2A3D - for main actions
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        outline: "border-2 border-primary bg-background text-primary hover:bg-primary hover:text-primary-foreground",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        ghost: "hover:bg-secondary hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        amber: "bg-gradient-amber text-primary-foreground shadow-amber hover:shadow-glow",
-        dark: "bg-brand-dark text-brand-white hover:bg-brand-dark/90",
+        // Accent/CTA: Warm Action Orange #F7931E - for key CTAs only
+        amber: "bg-accent text-accent-foreground hover:bg-accent/90 shadow-accent",
+        // Dark variant uses Deep Trust Blue
+        dark: "bg-primary text-primary-foreground hover:bg-primary/90",
         glass: "bg-card/80 backdrop-blur-xl border border-border hover:bg-card/90",
         success: "bg-success text-success-foreground hover:bg-success/90",
         warning: "bg-warning text-warning-foreground hover:bg-warning/90",

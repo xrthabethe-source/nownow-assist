@@ -6,91 +6,108 @@
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
+    /* Corporate Identity Palette - No variations allowed */
+    
+    /* Background: Clean White #FFFFFF */
+    --background: 0 0% 100%;
+    /* Foreground: Charcoal #1F2933 */
+    --foreground: 210 24% 16%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    /* Card: Soft Grey #F2F4F7 */
+    --card: 216 25% 96%;
+    --card-foreground: 210 24% 16%;
 
+    /* Popover: Clean White #FFFFFF */
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover-foreground: 210 24% 16%;
 
-    --primary: 0 0% 10%;
+    /* Primary: Deep Trust Blue #0B2A3D */
+    --primary: 201 71% 14%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 10%;
+    /* Secondary: Soft Grey #F2F4F7 */
+    --secondary: 216 25% 96%;
+    --secondary-foreground: 210 24% 16%;
 
-    --muted: 0 0% 94%;
-    --muted-foreground: 0 0% 45%;
+    /* Muted: Soft Grey #F2F4F7 */
+    --muted: 216 25% 96%;
+    --muted-foreground: 210 24% 40%;
 
-    --accent: 0 0% 20%;
+    /* Accent: Warm Action Orange #F7931E */
+    --accent: 32 93% 54%;
     --accent-foreground: 0 0% 100%;
 
+    /* Destructive: Keep for errors */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
+    /* Success: Use Deep Trust Blue variant */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 10%;
+    /* Warning: Use Accent Orange */
+    --warning: 32 93% 54%;
+    --warning-foreground: 210 24% 16%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 0 0% 10%;
+    /* Border: Soft Grey slightly darker */
+    --border: 216 20% 90%;
+    --input: 216 20% 90%;
+    --ring: 201 71% 14%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    /* Custom brand colors */
-    --brand-amber: 0 0% 10%;
-    --brand-dark: 0 0% 10%;
+    /* Custom brand colors - Corporate Identity */
+    --brand-primary: 201 71% 14%;
+    --brand-accent: 32 93% 54%;
     --brand-white: 0 0% 100%;
+    --brand-grey: 216 25% 96%;
+    --brand-charcoal: 210 24% 16%;
 
-    /* Gradients */
-    --gradient-amber: linear-gradient(135deg, hsl(0 0% 15%) 0%, hsl(0 0% 5%) 100%);
-    --gradient-dark: linear-gradient(180deg, hsl(0 0% 12%) 0%, hsl(0 0% 8%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 100%);
+    /* Legacy naming for compatibility */
+    --brand-amber: 32 93% 54%;
+    --brand-dark: 201 71% 14%;
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.1);
-    --shadow-amber: 0 10px 40px -10px hsl(0 0% 0% / 0.3);
-    --shadow-glow: 0 0 40px hsl(0 0% 0% / 0.2);
+    /* Shadows - Neutral, no color tints */
+    --shadow-sm: 0 1px 2px 0 hsl(210 24% 16% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(210 24% 16% / 0.08), 0 2px 4px -2px hsl(210 24% 16% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(210 24% 16% / 0.08), 0 4px 6px -4px hsl(210 24% 16% / 0.06);
+    --shadow-xl: 0 20px 25px -5px hsl(210 24% 16% / 0.1), 0 8px 10px -6px hsl(210 24% 16% / 0.08);
+    --shadow-primary: 0 4px 14px -2px hsl(201 71% 14% / 0.25);
+    --shadow-accent: 0 4px 14px -2px hsl(32 93% 54% / 0.3);
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 10%;
-    --sidebar-primary: 0 0% 10%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 210 24% 16%;
+    --sidebar-primary: 201 71% 14%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 94%;
-    --sidebar-accent-foreground: 0 0% 10%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 0 0% 10%;
+    --sidebar-accent: 216 25% 96%;
+    --sidebar-accent-foreground: 210 24% 16%;
+    --sidebar-border: 216 20% 90%;
+    --sidebar-ring: 201 71% 14%;
   }
 
   .dark {
-    --background: 0 0% 8%;
+    /* Dark mode uses same corporate palette with inverted hierarchy */
+    --background: 201 71% 10%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 12%;
+    --card: 201 71% 14%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 12%;
+    --popover: 201 71% 14%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 0 0% 100%;
-    --primary-foreground: 0 0% 10%;
+    --primary-foreground: 201 71% 14%;
 
-    --secondary: 0 0% 16%;
+    --secondary: 201 50% 20%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 16%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 201 50% 20%;
+    --muted-foreground: 216 20% 70%;
 
-    --accent: 0 0% 25%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 32 93% 54%;
+    --accent-foreground: 210 24% 16%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
@@ -98,20 +115,20 @@
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 10%;
+    --warning: 32 93% 54%;
+    --warning-foreground: 210 24% 16%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
+    --border: 201 40% 25%;
+    --input: 201 40% 25%;
     --ring: 0 0% 100%;
 
-    --sidebar-background: 0 0% 10%;
+    --sidebar-background: 201 71% 10%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 0 0% 10%;
-    --sidebar-accent: 0 0% 16%;
+    --sidebar-primary-foreground: 201 71% 14%;
+    --sidebar-accent: 201 50% 20%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 20%;
+    --sidebar-border: 201 40% 25%;
     --sidebar-ring: 0 0% 100%;
   }
 }
@@ -128,36 +145,61 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
+
+  /* Typography hierarchy */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-foreground;
+  }
+
+  p, span, label {
+    @apply text-foreground;
+  }
 }
 
 @layer utilities {
-  .text-gradient-amber {
-    @apply bg-clip-text text-transparent;
-    background-image: var(--gradient-amber);
+  /* Utility classes for brand colors */
+  .text-brand-primary {
+    color: hsl(201 71% 14%);
   }
 
-  .bg-gradient-amber {
-    background-image: var(--gradient-amber);
+  .text-brand-accent {
+    color: hsl(32 93% 54%);
   }
 
-  .bg-gradient-dark {
-    background-image: var(--gradient-dark);
+  .text-brand-charcoal {
+    color: hsl(210 24% 16%);
   }
 
-  .shadow-amber {
-    box-shadow: var(--shadow-amber);
+  .bg-brand-primary {
+    background-color: hsl(201 71% 14%);
   }
 
-  .shadow-glow {
-    box-shadow: var(--shadow-glow);
+  .bg-brand-accent {
+    background-color: hsl(32 93% 54%);
+  }
+
+  .bg-brand-grey {
+    background-color: hsl(216 25% 96%);
+  }
+
+  .bg-brand-white {
+    background-color: hsl(0 0% 100%);
+  }
+
+  .shadow-primary {
+    box-shadow: var(--shadow-primary);
+  }
+
+  .shadow-accent {
+    box-shadow: var(--shadow-accent);
   }
 
   .glass {
-    @apply backdrop-blur-xl bg-card/80;
+    @apply backdrop-blur-xl bg-card/90;
   }
 
   .glass-dark {
-    @apply backdrop-blur-xl bg-background/80;
+    @apply backdrop-blur-xl bg-background/90;
   }
 }
 
@@ -175,13 +217,13 @@
   @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/50;
 }
 
-/* Animation keyframes */
-@keyframes pulse-amber {
+/* Animation keyframes - Subtle, professional */
+@keyframes pulse-action {
   0%, 100% {
-    box-shadow: 0 0 0 0 hsl(0 0% 10% / 0.4);
+    box-shadow: 0 0 0 0 hsl(32 93% 54% / 0.4);
   }
   50% {
-    box-shadow: 0 0 0 12px hsl(0 0% 10% / 0);
+    box-shadow: 0 0 0 8px hsl(32 93% 54% / 0);
   }
 }
 
@@ -190,14 +232,14 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-6px);
   }
 }
 
 @keyframes slide-up {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -206,7 +248,7 @@
 }
 
 .animate-pulse-amber {
-  animation: pulse-amber 2s ease-in-out infinite;
+  animation: pulse-action 2s ease-in-out infinite;
 }
 
 .animate-float {
@@ -214,7 +256,7 @@
 }
 
 .animate-slide-up {
-  animation: slide-up 0.5s ease-out;
+  animation: slide-up 0.4s ease-out;
 }
 
 /* Leaflet map z-index override - ensure maps don't overlap dropdowns/modals */

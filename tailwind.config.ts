@@ -59,9 +59,19 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         brand: {
+          /* Deep Trust Blue #0B2A3D */
+          primary: "hsl(201 71% 14%)",
+          /* Warm Action Orange #F7931E */
+          accent: "hsl(32 93% 54%)",
+          /* Clean White #FFFFFF */
+          white: "hsl(0 0% 100%)",
+          /* Soft Grey #F2F4F7 */
+          grey: "hsl(216 25% 96%)",
+          /* Charcoal #1F2933 */
+          charcoal: "hsl(210 24% 16%)",
+          /* Legacy naming for compatibility */
           amber: "hsl(var(--brand-amber))",
           dark: "hsl(var(--brand-dark))",
-          white: "hsl(var(--brand-white))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -83,8 +93,10 @@ export default {
         "3xl": "calc(var(--radius) + 16px)",
       },
       boxShadow: {
-        'amber': 'var(--shadow-amber)',
-        'glow': 'var(--shadow-glow)',
+        'primary': 'var(--shadow-primary)',
+        'accent': 'var(--shadow-accent)',
+        'amber': 'var(--shadow-primary)',
+        'glow': 'var(--shadow-accent)',
       },
       keyframes: {
         "accordion-down": {

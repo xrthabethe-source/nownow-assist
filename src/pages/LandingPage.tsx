@@ -219,8 +219,7 @@ export const LandingPage = () => {
                 transition={{ delay: 0.2 }}
                 className="mx-auto mb-8 max-w-2xl text-lg text-white/70 md:text-xl"
               >
-                Flat tyre? Dead battery? Out of fuel? Get instant help from <strong className="text-white">500+ verified responders</strong> across South Africa. 
-                No membership fees. Pay only when you need us.
+                From flat tyres to dead batteries – request roadside help the same way you request a ride. Our <strong className="text-white">500+ verified responders</strong> across South Africa will be there in minutes!
               </motion.p>
 
               {/* CTA Buttons */}

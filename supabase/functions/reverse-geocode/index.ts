@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
 type ReverseGeocodeRequest = {
@@ -64,29 +64,30 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Validate authentication
+    // Authentication is optional for geocoding - if user is not authenticated,
+    // we still provide the service but could add rate limiting in the future
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    let isAuthenticated = false
+    
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const supabase = createClient(
+          Deno.env.get('SUPABASE_URL')!,
+          Deno.env.get('SUPABASE_ANON_KEY')!,
+          { global: { headers: { Authorization: authHeader } } }
+        )
+
+        const token = authHeader.replace('Bearer ', '')
+        const { data: authData, error: authError } = await supabase.auth.getUser(token)
+        isAuthenticated = !authError && !!authData?.user
+      } catch {
+        // Auth failed, but we continue without auth
+        isAuthenticated = false
+      }
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    )
-
-    const token = authHeader.replace('Bearer ', '')
-    const { data: authData, error: authError } = await supabase.auth.getUser(token)
-    if (authError || !authData?.user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
+    // Log auth status for debugging (optional)
+    console.log('reverse-geocode: isAuthenticated =', isAuthenticated)
 
     if (req.method !== 'POST') {
       return new Response(JSON.stringify({ error: 'Method not allowed' }), {

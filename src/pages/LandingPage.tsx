@@ -23,7 +23,8 @@ import {
   Play
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
+import { exportAIPromptPDF } from "@/utils/exportAIPromptPDF";
 
 const painPoints = [
   "Stranded on a dark highway at midnight?",
@@ -163,6 +164,16 @@ export const LandingPage = () => {
   });
   const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
+
+  // Check for PDF export trigger
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('export') === 'ai-prompt') {
+      exportAIPromptPDF();
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">

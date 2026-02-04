@@ -38,6 +38,7 @@ import AdminSLA from "./pages/admin/AdminSLA";
 import AdminLiveMap from "./pages/admin/AdminLiveMap";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import NotFound from "./pages/NotFound";
+import ExportAIPrompt from "./pages/ExportAIPrompt";
 
 const queryClient = new QueryClient();
 
@@ -210,6 +211,9 @@ const App = () => (
                 <AdminNotifications />
               </ProtectedRoute>
             } />
+            
+            {/* Export Route */}
+            <Route path="/export-ai-prompt" element={<ExportAIPrompt />} />
             
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />

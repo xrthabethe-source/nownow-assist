@@ -34,7 +34,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
       const roleRedirects: Record<AppRole, string> = {
         admin: '/admin',
         driver: '/driver',
-        customer: '/',
+        customer: '/customer',
       };
       
       const redirectPath = role ? roleRedirects[role] : '/';

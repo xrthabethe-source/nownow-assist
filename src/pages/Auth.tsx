@@ -59,7 +59,7 @@ export default function Auth() {
       } else if (role === 'driver') {
         navigate('/driver', { replace: true });
       } else {
-        navigate('/', { replace: true });
+        navigate('/customer', { replace: true });
       }
     }
   }, [user, role, authLoading, navigate, location]);

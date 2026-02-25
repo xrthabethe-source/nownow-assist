@@ -7,7 +7,9 @@ import { BottomNav } from "@/components/shared/BottomNav";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { RoleSwitcher } from "@/components/shared/RoleSwitcher";
 import { DriverNotificationsDialog } from "@/components/driver/DriverNotificationsDialog";
-import { MapPin, Clock, Zap, Star, TrendingUp, Bell, Settings, ChevronRight, Navigation, Loader2, Volume2, VolumeX } from "lucide-react";
+import { DriverVerificationSection } from "@/components/driver/DriverVerificationSection";
+import { useDriverVerification } from "@/hooks/useDriverVerification";
+import { MapPin, Clock, Zap, Star, TrendingUp, Bell, Settings, ChevronRight, Navigation, Loader2, Volume2, VolumeX, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { useNavigate } from "react-router-dom";
@@ -102,6 +104,9 @@ export const DriverHome = () => {
   // Fetch available jobs from database
   const { data: availableJobs } = useAvailableJobs(driverRecord?.id || null);
   const acceptJobMutation = useAcceptJob();
+  
+  // Driver verification status
+  const { canGoOnline, verification, isLoading: verificationLoading } = useDriverVerification(driverRecord?.id || null);
   
   // Get first pending job to show as alert
   const pendingJob = availableJobs?.[0];
@@ -207,16 +212,29 @@ export const DriverHome = () => {
                       {isOnline ? "You're Online" : "You're Offline"}
                     </p>
                     <p className="text-sm text-white/70">
-                      {isOnline ? "Receiving job requests" : "Go online to receive jobs"}
+                      {!canGoOnline
+                        ? "Complete verification to go online"
+                        : isOnline ? "Receiving job requests" : "Go online to receive jobs"}
                     </p>
                   </div>
                 </div>
                 <Switch
                   checked={isOnline}
-                  onCheckedChange={setIsOnline}
+                  onCheckedChange={(checked) => {
+                    if (checked && !canGoOnline) return;
+                    setIsOnline(checked);
+                  }}
+                  disabled={!canGoOnline}
                   className="data-[state=checked]:bg-accent"
                 />
               </div>
+              
+              {!canGoOnline && (
+                <div className="mt-3 pt-3 border-t border-white/20 flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-warning" />
+                  <span className="text-sm text-white/70">Verification required before going online</span>
+                </div>
+              )}
               
               {/* GPS Status Indicator */}
               {isOnline && (
@@ -432,6 +450,13 @@ export const DriverHome = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Verification Section */}
+      {driverRecord?.id && !canGoOnline && (
+        <div className="container py-4">
+          <DriverVerificationSection driverId={driverRecord.id} />
+        </div>
+      )}
 
       <BottomNav type="driver" />
       

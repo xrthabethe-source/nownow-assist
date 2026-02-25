@@ -39,6 +39,7 @@ import AdminLiveMap from "./pages/admin/AdminLiveMap";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import NotFound from "./pages/NotFound";
 import ExportAIPrompt from "./pages/ExportAIPrompt";
+import AdminVerificationQueue from "./pages/admin/AdminVerificationQueue";
 
 const queryClient = new QueryClient();
 
@@ -209,6 +210,11 @@ const App = () => (
             <Route path="/admin/notifications" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminNotifications />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/verification-queue" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminVerificationQueue />
               </ProtectedRoute>
             } />
             

@@ -347,6 +347,140 @@ export type Database = {
           },
         ]
       }
+      driver_verifications: {
+        Row: {
+          approved_at: string | null
+          audit_log: Json | null
+          background_check_file_hash: string | null
+          background_check_rejection_reason: string | null
+          background_check_status: string
+          background_check_upload_count: number
+          background_check_url: string | null
+          bg_consent_given: boolean | null
+          bg_date_of_birth: string | null
+          bg_full_name: string | null
+          bg_id_number: string | null
+          created_at: string
+          driver_id: string
+          fraud_flags: string[] | null
+          fraud_risk_score: number
+          id: string
+          id_doc_file_hash: string | null
+          id_doc_file_url: string | null
+          id_doc_rejection_reason: string | null
+          id_doc_status: string
+          id_doc_type: string | null
+          id_doc_upload_count: number
+          license_file_hash: string | null
+          license_file_url: string | null
+          license_rejection_reason: string | null
+          license_status: string
+          license_upload_count: number
+          profile_photo_file_hash: string | null
+          profile_photo_rejection_reason: string | null
+          profile_photo_status: string
+          profile_photo_upload_count: number
+          profile_photo_url: string | null
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          verified_at: string | null
+          verified_badge_active: boolean
+        }
+        Insert: {
+          approved_at?: string | null
+          audit_log?: Json | null
+          background_check_file_hash?: string | null
+          background_check_rejection_reason?: string | null
+          background_check_status?: string
+          background_check_upload_count?: number
+          background_check_url?: string | null
+          bg_consent_given?: boolean | null
+          bg_date_of_birth?: string | null
+          bg_full_name?: string | null
+          bg_id_number?: string | null
+          created_at?: string
+          driver_id: string
+          fraud_flags?: string[] | null
+          fraud_risk_score?: number
+          id?: string
+          id_doc_file_hash?: string | null
+          id_doc_file_url?: string | null
+          id_doc_rejection_reason?: string | null
+          id_doc_status?: string
+          id_doc_type?: string | null
+          id_doc_upload_count?: number
+          license_file_hash?: string | null
+          license_file_url?: string | null
+          license_rejection_reason?: string | null
+          license_status?: string
+          license_upload_count?: number
+          profile_photo_file_hash?: string | null
+          profile_photo_rejection_reason?: string | null
+          profile_photo_status?: string
+          profile_photo_upload_count?: number
+          profile_photo_url?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_badge_active?: boolean
+        }
+        Update: {
+          approved_at?: string | null
+          audit_log?: Json | null
+          background_check_file_hash?: string | null
+          background_check_rejection_reason?: string | null
+          background_check_status?: string
+          background_check_upload_count?: number
+          background_check_url?: string | null
+          bg_consent_given?: boolean | null
+          bg_date_of_birth?: string | null
+          bg_full_name?: string | null
+          bg_id_number?: string | null
+          created_at?: string
+          driver_id?: string
+          fraud_flags?: string[] | null
+          fraud_risk_score?: number
+          id?: string
+          id_doc_file_hash?: string | null
+          id_doc_file_url?: string | null
+          id_doc_rejection_reason?: string | null
+          id_doc_status?: string
+          id_doc_type?: string | null
+          id_doc_upload_count?: number
+          license_file_hash?: string | null
+          license_file_url?: string | null
+          license_rejection_reason?: string | null
+          license_status?: string
+          license_upload_count?: number
+          profile_photo_file_hash?: string | null
+          profile_photo_rejection_reason?: string | null
+          profile_photo_status?: string
+          profile_photo_upload_count?: number
+          profile_photo_url?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          verified_at?: string | null
+          verified_badge_active?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_verifications_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: true
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drivers: {
         Row: {
           created_at: string

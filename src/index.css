@@ -21,13 +21,13 @@
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 17%;
 
-    /* Primary: Now-Now Blue (extracted from logo #1B3A5F) */
-    --primary: 213 55% 24%;
+    /* Primary: Now-Now Blue (extracted from logo #1456DB) */
+    --primary: 220 84% 47%;
     --primary-foreground: 0 0% 100%;
 
     /* Secondary: Light Blue tint */
     --secondary: 210 40% 96%;
-    --secondary-foreground: 213 55% 24%;
+    --secondary-foreground: 220 84% 47%;
 
     /* Muted: Very light gray-blue */
     --muted: 210 30% 96%;
@@ -52,12 +52,12 @@
     /* Border: Subtle gray */
     --border: 214 20% 90%;
     --input: 214 20% 90%;
-    --ring: 213 55% 24%;
+    --ring: 220 84% 47%;
 
     --radius: 0.75rem;
 
     /* Custom brand colors */
-    --brand-primary: 213 55% 24%;
+    --brand-primary: 220 84% 47%;
     --brand-accent: 32 93% 54%;
     --brand-white: 0 0% 100%;
     --brand-grey: 210 30% 96%;
@@ -65,24 +65,24 @@
 
     /* Legacy naming */
     --brand-amber: 32 93% 54%;
-    --brand-dark: 213 55% 24%;
+    --brand-dark: 220 84% 47%;
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.08), 0 2px 4px -2px hsl(0 0% 0% / 0.05);
     --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.05);
     --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.05);
-    --shadow-primary: 0 4px 14px -2px hsl(213 55% 24% / 0.25);
+    --shadow-primary: 0 4px 14px -2px hsl(220 84% 47% / 0.25);
     --shadow-accent: 0 4px 14px -2px hsl(32 93% 54% / 0.3);
 
     /* Sidebar: Deep Blue */
-    --sidebar-background: 213 55% 20%;
+    --sidebar-background: 220 84% 40%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 32 93% 54%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 213 45% 28%;
+    --sidebar-accent: 220 75% 50%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 213 40% 28%;
+    --sidebar-border: 220 70% 45%;
     --sidebar-ring: 32 93% 54%;
   }
 
@@ -96,7 +96,7 @@
     --popover: 215 25% 14%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 213 55% 40%;
+    --primary: 220 84% 55%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 215 25% 18%;
@@ -119,7 +119,7 @@
 
     --border: 215 25% 22%;
     --input: 215 25% 22%;
-    --ring: 213 55% 40%;
+    --ring: 220 84% 55%;
 
     --sidebar-background: 215 25% 8%;
     --sidebar-foreground: 0 0% 98%;
@@ -164,7 +164,7 @@
 
 @layer utilities {
   .text-brand-primary {
-    color: hsl(213 55% 24%);
+    color: hsl(220 84% 47%);
   }
 
   .text-brand-accent {
@@ -180,7 +180,7 @@
   }
 
   .bg-brand-primary {
-    background-color: hsl(213 55% 24%);
+    background-color: hsl(220 84% 47%);
   }
 
   .bg-brand-accent {
@@ -241,10 +241,10 @@
 /* Animations */
 @keyframes pulse-action {
   0%, 100% {
-    box-shadow: 0 0 0 0 hsl(213 55% 24% / 0.4);
+    box-shadow: 0 0 0 0 hsl(220 84% 47% / 0.4);
   }
   50% {
-    box-shadow: 0 0 0 8px hsl(213 55% 24% / 0);
+    box-shadow: 0 0 0 8px hsl(220 84% 47% / 0);
   }
 }
 

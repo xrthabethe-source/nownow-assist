@@ -59,7 +59,7 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         brand: {
-          primary: "hsl(213 55% 24%)",
+          primary: "hsl(220 84% 47%)",
           accent: "hsl(32 93% 54%)",
           white: "hsl(0 0% 100%)",
           grey: "hsl(210 30% 96%)",

@@ -9,32 +9,32 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Primary CTA: Warm Action Orange #F7931E - main actions
-        default: "bg-accent text-white hover:bg-accent/90 shadow-accent",
-        // Secondary: Deep Trust Blue #0B2A3D
-        secondary: "bg-primary text-white hover:bg-primary/90 shadow-primary",
+        // Primary CTA: Brand Blue
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary",
+        // Secondary: Light blue surface
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         // Destructive
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        // Outline: White border for dark backgrounds
-        outline: "border-2 border-white/30 bg-transparent text-white hover:bg-white/10 hover:border-white/50",
-        // Ghost: Subtle hover for dark backgrounds
-        ghost: "text-white hover:bg-white/10",
+        // Outline: Blue border
+        outline: "border-2 border-primary/20 bg-transparent text-primary hover:bg-primary/5 hover:border-primary/40",
+        // Ghost
+        ghost: "text-foreground hover:bg-muted",
         // Link style
-        link: "text-accent underline-offset-4 hover:underline",
-        // Amber/CTA: Warm Action Orange #F7931E - explicit orange button
-        amber: "bg-accent text-white hover:bg-accent/90 shadow-accent",
-        // Dark variant: Deep Trust Blue solid
-        dark: "bg-primary text-white hover:bg-primary/90 shadow-primary",
-        // Glass: Translucent for overlays
-        glass: "bg-white/10 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20",
+        link: "text-primary underline-offset-4 hover:underline",
+        // Amber/CTA: Orange action
+        amber: "bg-accent text-accent-foreground hover:bg-accent/90 shadow-accent",
+        // Dark variant: Deep Blue solid
+        dark: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary",
+        // Glass
+        glass: "bg-white/80 backdrop-blur-xl border border-border text-foreground hover:bg-white/90",
         // Success
         success: "bg-success text-success-foreground hover:bg-success/90",
         // Warning
         warning: "bg-warning text-warning-foreground hover:bg-warning/90",
         // SOS Emergency
         sos: "bg-destructive text-destructive-foreground animate-pulse-amber hover:bg-destructive/90",
-        // Light: For use on coloured backgrounds needing a light button
-        light: "bg-white text-primary hover:bg-white/90 shadow-md",
+        // Light: White button
+        light: "bg-white text-primary hover:bg-white/90 shadow-md border border-border",
       },
       size: {
         default: "h-12 px-6 py-3",

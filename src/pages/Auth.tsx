@@ -16,7 +16,6 @@ import {
   validateStrongPassword 
 } from '@/lib/security';
 
-// Validation schemas
 const emailSchema = z.string().trim().email('Please enter a valid email address');
 const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
 const nameSchema = z.string().trim().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long');
@@ -39,7 +38,6 @@ export default function Auth() {
   const [lockoutMessage, setLockoutMessage] = useState<string | null>(null);
   const [retryCountdown, setRetryCountdown] = useState(0);
 
-  // Countdown timer for retry delay
   useEffect(() => {
     if (retryCountdown > 0) {
       const timer = setTimeout(() => setRetryCountdown(retryCountdown - 1), 1000);
@@ -47,11 +45,9 @@ export default function Auth() {
     }
   }, [retryCountdown]);
 
-  // Redirect authenticated users
   useEffect(() => {
     if (user && !authLoading) {
       const from = (location.state as any)?.from?.pathname;
-      
       if (from) {
         navigate(from, { replace: true });
       } else if (role === 'admin') {
@@ -64,7 +60,6 @@ export default function Auth() {
     }
   }, [user, role, authLoading, navigate, location]);
 
-  // Validate password strength on change (only for signup)
   useEffect(() => {
     if (!isLogin && password) {
       setPasswordStrength(validateStrongPassword(password));
@@ -73,30 +68,16 @@ export default function Auth() {
 
   const validateFields = () => {
     const errors: Record<string, string> = {};
-    
     const emailResult = emailSchema.safeParse(email);
-    if (!emailResult.success) {
-      errors.email = emailResult.error.errors[0].message;
-    }
-    
+    if (!emailResult.success) errors.email = emailResult.error.errors[0].message;
     const passwordResult = passwordSchema.safeParse(password);
-    if (!passwordResult.success) {
-      errors.password = passwordResult.error.errors[0].message;
-    }
-    
+    if (!passwordResult.success) errors.password = passwordResult.error.errors[0].message;
     if (!isLogin) {
-      // Check strong password requirements for signup
       const strengthCheck = validateStrongPassword(password);
-      if (!strengthCheck.valid) {
-        errors.password = 'Password does not meet security requirements';
-      }
-      
+      if (!strengthCheck.valid) errors.password = 'Password does not meet security requirements';
       const nameResult = nameSchema.safeParse(fullName);
-      if (!nameResult.success) {
-        errors.fullName = nameResult.error.errors[0].message;
-      }
+      if (!nameResult.success) errors.fullName = nameResult.error.errors[0].message;
     }
-    
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -104,55 +85,33 @@ export default function Auth() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
-    // Check if there's an active countdown
     if (retryCountdown > 0) {
       setError(`Please wait ${retryCountdown} seconds before trying again.`);
       return;
     }
-    
-    if (!validateFields()) {
-      return;
-    }
-    
+    if (!validateFields()) return;
     setLoading(true);
-
     try {
       if (isLogin) {
-        // Check rate limiting BEFORE attempting login
         const rateLimit = await checkLoginRateLimit(email);
-        
         if (!rateLimit.allowed || rateLimit.locked) {
           setIsLocked(true);
           setLockoutMessage(rateLimit.message || 'Account temporarily locked due to too many failed attempts.');
-          if (rateLimit.retryAfterSeconds) {
-            setRetryCountdown(rateLimit.retryAfterSeconds);
-          }
+          if (rateLimit.retryAfterSeconds) setRetryCountdown(rateLimit.retryAfterSeconds);
           setLoading(false);
           return;
         }
-        
-        // Apply progressive delay if needed
         if (rateLimit.retryAfterSeconds && rateLimit.retryAfterSeconds > 0) {
           setRetryCountdown(rateLimit.retryAfterSeconds);
           setError(`Please wait ${rateLimit.retryAfterSeconds} seconds before trying again.`);
           setLoading(false);
           return;
         }
-        
         const { error } = await signIn(email, password);
-        
         if (error) {
-          // Record failed attempt
           await recordLoginAttempt(email, false, error.message);
-          
-          if (error.message.includes('Invalid login credentials')) {
-            setError('Invalid email or password. Please try again.');
-          } else {
-            setError(error.message);
-          }
+          setError(error.message.includes('Invalid login credentials') ? 'Invalid email or password. Please try again.' : error.message);
         } else {
-          // Record successful login
           await recordLoginAttempt(email, true);
           setIsLocked(false);
           setLockoutMessage(null);
@@ -160,11 +119,7 @@ export default function Auth() {
       } else {
         const { error } = await signUp(email, password, fullName, accountType);
         if (error) {
-          if (error.message.includes('already registered')) {
-            setError('This email is already registered. Please sign in instead.');
-          } else {
-            setError(error.message);
-          }
+          setError(error.message.includes('already registered') ? 'This email is already registered. Please sign in instead.' : error.message);
         }
       }
     } catch (err: any) {
@@ -177,7 +132,7 @@ export default function Auth() {
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -191,18 +146,17 @@ export default function Auth() {
       >
         <div className="mb-8 text-center">
           <Logo size="lg" className="mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-foreground">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>
-          <p className="text-white/70">
+          <p className="text-muted-foreground">
             {isLogin ? 'Sign in to continue' : 'Sign up to get started'}
           </p>
         </div>
 
-        {/* Card with Soft Grey background for readability */}
         <Card variant="default">
           <CardHeader className="pb-4">
-            <CardTitle className="text-foreground">{isLogin ? 'Sign In' : 'Sign Up'}</CardTitle>
+            <CardTitle>{isLogin ? 'Sign In' : 'Sign Up'}</CardTitle>
             <CardDescription>
               {isLogin 
                 ? 'Enter your credentials to access your account' 
@@ -210,16 +164,13 @@ export default function Auth() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Account Lockout Warning */}
             {isLocked && lockoutMessage && (
               <div className="mb-4 flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
                 <ShieldAlert className="h-5 w-5 shrink-0" />
                 <div>
                   <p className="font-medium">Account Temporarily Locked</p>
                   <p>{lockoutMessage}</p>
-                  {retryCountdown > 0 && (
-                    <p className="mt-1 font-mono">Retry in: {retryCountdown}s</p>
-                  )}
+                  {retryCountdown > 0 && <p className="mt-1 font-mono">Retry in: {retryCountdown}s</p>}
                 </div>
               </div>
             )}
@@ -228,47 +179,39 @@ export default function Auth() {
               {!isLogin && (
                 <>
                   <div className="space-y-3">
-                    <Label className="text-foreground">I want to sign up as a</Label>
+                    <Label>I want to sign up as a</Label>
                     <RadioGroup
                       value={accountType}
                       onValueChange={(value) => setAccountType(value as 'customer' | 'driver')}
                       className="grid grid-cols-2 gap-4"
                     >
                       <div>
-                        <RadioGroupItem
-                          value="customer"
-                          id="customer"
-                          className="peer sr-only"
-                        />
+                        <RadioGroupItem value="customer" id="customer" className="peer sr-only" />
                         <Label
                           htmlFor="customer"
-                          className="flex flex-col items-center justify-between rounded-md border-2 border-border bg-green-800 p-4 hover:bg-green-700 peer-data-[state=checked]:border-accent [&:has([data-state=checked])]:border-accent cursor-pointer text-white"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-border bg-secondary p-4 hover:bg-secondary/80 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
                         >
-                          <Users className="mb-2 h-6 w-6" />
+                          <Users className="mb-2 h-6 w-6 text-primary" />
                           <span className="font-medium">Customer</span>
-                          <span className="text-xs text-white/70">Request services</span>
+                          <span className="text-xs text-muted-foreground">Request services</span>
                         </Label>
                       </div>
                       <div>
-                        <RadioGroupItem
-                          value="driver"
-                          id="driver"
-                          className="peer sr-only"
-                        />
+                        <RadioGroupItem value="driver" id="driver" className="peer sr-only" />
                         <Label
                           htmlFor="driver"
-                          className="flex flex-col items-center justify-between rounded-md border-2 border-border bg-green-800 p-4 hover:bg-green-700 peer-data-[state=checked]:border-accent [&:has([data-state=checked])]:border-accent cursor-pointer text-white"
+                          className="flex flex-col items-center justify-between rounded-md border-2 border-border bg-secondary p-4 hover:bg-secondary/80 peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
                         >
-                          <Car className="mb-2 h-6 w-6" />
+                          <Car className="mb-2 h-6 w-6 text-primary" />
                           <span className="font-medium">Driver</span>
-                          <span className="text-xs text-white/70">Provide services</span>
+                          <span className="text-xs text-muted-foreground">Provide services</span>
                         </Label>
                       </div>
                     </RadioGroup>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-foreground">Full Name</Label>
+                    <Label htmlFor="fullName">Full Name</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
@@ -276,23 +219,18 @@ export default function Auth() {
                         type="text"
                         placeholder="Enter your full name"
                         value={fullName}
-                        onChange={(e) => {
-                          setFullName(e.target.value);
-                          setFieldErrors((prev) => ({ ...prev, fullName: '' }));
-                        }}
-                        className="pl-10 bg-green-800 text-white placeholder:text-white/50 border-green-700"
+                        onChange={(e) => { setFullName(e.target.value); setFieldErrors((prev) => ({ ...prev, fullName: '' })); }}
+                        className="pl-10"
                         maxLength={100}
                       />
                     </div>
-                    {fieldErrors.fullName && (
-                      <p className="text-sm text-destructive">{fieldErrors.fullName}</p>
-                    )}
+                    {fieldErrors.fullName && <p className="text-sm text-destructive">{fieldErrors.fullName}</p>}
                   </div>
                 </>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-foreground">Email</Label>
+                <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -300,23 +238,16 @@ export default function Auth() {
                     type="email"
                     placeholder="Enter your email"
                     value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setFieldErrors((prev) => ({ ...prev, email: '' }));
-                      setIsLocked(false);
-                      setLockoutMessage(null);
-                    }}
-                    className="pl-10 bg-green-800 text-white placeholder:text-white/50 border-green-700"
+                    onChange={(e) => { setEmail(e.target.value); setFieldErrors((prev) => ({ ...prev, email: '' })); setIsLocked(false); setLockoutMessage(null); }}
+                    className="pl-10"
                     autoComplete="email"
                   />
                 </div>
-                {fieldErrors.email && (
-                  <p className="text-sm text-destructive">{fieldErrors.email}</p>
-                )}
+                {fieldErrors.email && <p className="text-sm text-destructive">{fieldErrors.email}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-foreground">Password</Label>
+                <Label htmlFor="password">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -324,19 +255,13 @@ export default function Auth() {
                     type="password"
                     placeholder="Enter your password"
                     value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setFieldErrors((prev) => ({ ...prev, password: '' }));
-                    }}
-                    className="pl-10 bg-green-800 text-white placeholder:text-white/50 border-green-700"
+                    onChange={(e) => { setPassword(e.target.value); setFieldErrors((prev) => ({ ...prev, password: '' })); }}
+                    className="pl-10"
                     autoComplete={isLogin ? 'current-password' : 'new-password'}
                   />
                 </div>
-                {fieldErrors.password && (
-                  <p className="text-sm text-destructive">{fieldErrors.password}</p>
-                )}
+                {fieldErrors.password && <p className="text-sm text-destructive">{fieldErrors.password}</p>}
                 
-                {/* Password strength indicator for signup */}
                 {!isLogin && password && (
                   <div className="mt-2 space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">Password requirements:</p>
@@ -349,14 +274,8 @@ export default function Auth() {
                         { check: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password), label: 'Special char' },
                       ].map(({ check, label }) => (
                         <div key={label} className="flex items-center gap-1 text-xs">
-                          {check ? (
-                            <CheckCircle2 className="h-3 w-3 text-success" />
-                          ) : (
-                            <XCircle className="h-3 w-3 text-muted-foreground" />
-                          )}
-                          <span className={check ? 'text-success' : 'text-muted-foreground'}>
-                            {label}
-                          </span>
+                          {check ? <CheckCircle2 className="h-3 w-3 text-success" /> : <XCircle className="h-3 w-3 text-muted-foreground" />}
+                          <span className={check ? 'text-success' : 'text-muted-foreground'}>{label}</span>
                         </div>
                       ))}
                     </div>
@@ -373,7 +292,6 @@ export default function Auth() {
 
               <Button
                 type="submit"
-                variant="amber"
                 className="w-full"
                 disabled={loading || (retryCountdown > 0) || (isLocked && retryCountdown > 0)}
               >
@@ -393,26 +311,16 @@ export default function Auth() {
             <div className="mt-6 text-center">
               <button
                 type="button"
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError(null);
-                  setFieldErrors({});
-                  setIsLocked(false);
-                  setLockoutMessage(null);
-                  setRetryCountdown(0);
-                }}
-                className="text-sm text-accent hover:underline"
+                onClick={() => { setIsLogin(!isLogin); setError(null); setFieldErrors({}); setIsLocked(false); setLockoutMessage(null); setRetryCountdown(0); }}
+                className="text-sm text-primary hover:underline"
               >
-                {isLogin
-                  ? "Don't have an account? Sign up"
-                  : 'Already have an account? Sign in'}
+                {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
               </button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Security notice */}
-        <p className="mt-4 text-center text-xs text-white/50">
+        <p className="mt-4 text-center text-xs text-muted-foreground">
           Protected by enterprise-grade security. Your data is encrypted and secure.
         </p>
       </motion.div>

@@ -7,15 +7,15 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: "bg-secondary text-secondary-foreground",
-        success: "bg-success/15 text-success",
-        warning: "bg-warning/15 text-warning",
-        destructive: "bg-destructive/15 text-destructive",
-        primary: "bg-primary/15 text-primary",
-        outline: "border border-border bg-transparent",
-        online: "bg-success/15 text-success",
+        success: "bg-success/10 text-success",
+        warning: "bg-accent/10 text-accent",
+        destructive: "bg-destructive/10 text-destructive",
+        primary: "bg-primary/10 text-primary",
+        outline: "border border-border bg-transparent text-foreground",
+        online: "bg-success/10 text-success",
         offline: "bg-muted text-muted-foreground",
-        pending: "bg-warning/15 text-warning",
-        active: "bg-primary/15 text-primary",
+        pending: "bg-accent/10 text-accent",
+        active: "bg-primary/10 text-primary",
       },
     },
     defaultVariants: {
@@ -45,7 +45,7 @@ export const StatusBadge = ({
             className={cn(
               "absolute inline-flex h-full w-full animate-ping rounded-full opacity-75",
               variant === "success" && "bg-success",
-              variant === "warning" && "bg-warning",
+              variant === "warning" && "bg-accent",
               variant === "destructive" && "bg-destructive",
               variant === "primary" && "bg-primary",
               variant === "online" && "bg-success",
@@ -56,7 +56,7 @@ export const StatusBadge = ({
             className={cn(
               "relative inline-flex h-2 w-2 rounded-full",
               variant === "success" && "bg-success",
-              variant === "warning" && "bg-warning",
+              variant === "warning" && "bg-accent",
               variant === "destructive" && "bg-destructive",
               variant === "primary" && "bg-primary",
               variant === "online" && "bg-success",

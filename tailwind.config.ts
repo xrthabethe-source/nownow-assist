@@ -59,17 +59,11 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         brand: {
-          /* Deep Trust Blue #0B2A3D */
-          primary: "hsl(201 71% 14%)",
-          /* Warm Action Orange #F7931E */
+          primary: "hsl(213 55% 24%)",
           accent: "hsl(32 93% 54%)",
-          /* Clean White #FFFFFF */
           white: "hsl(0 0% 100%)",
-          /* Soft Grey #F2F4F7 */
-          grey: "hsl(216 25% 96%)",
-          /* Charcoal #1F2933 */
-          charcoal: "hsl(210 24% 16%)",
-          /* Legacy naming for compatibility */
+          grey: "hsl(210 30% 96%)",
+          charcoal: "hsl(215 25% 17%)",
           amber: "hsl(var(--brand-amber))",
           dark: "hsl(var(--brand-dark))",
         },

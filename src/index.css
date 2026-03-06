@@ -6,109 +6,107 @@
 
 @layer base {
   :root {
-    /* Corporate Identity Palette - Colour-Led Design */
+    /* Blue & White Brand Palette — extracted from Now-Now Assist logo */
     
-    /* Primary Background: Deep Trust Blue #0B2A3D */
-    --background: 201 71% 14%;
-    /* Primary Foreground: White #FFFFFF */
-    --foreground: 0 0% 100%;
+    /* Primary Background: Clean White */
+    --background: 0 0% 100%;
+    /* Primary Foreground: Dark Gray for text */
+    --foreground: 215 25% 17%;
 
-    /* Card: Dark Green #166534 - for secondary panels */
-    --card: 142 64% 24%;
-    --card-foreground: 0 0% 100%;
+    /* Card: White with subtle border */
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 17%;
 
-    /* Popover: Dark Green for dropdowns/menus */
-    --popover: 142 64% 24%;
-    --popover-foreground: 0 0% 100%;
+    /* Popover: White */
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 17%;
 
-    /* Primary: Deep Trust Blue #0B2A3D */
-    --primary: 201 71% 14%;
+    /* Primary: Now-Now Blue (extracted from logo #1B3A5F) */
+    --primary: 213 55% 24%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Darker Green #15803D */
-    --secondary: 142 64% 30%;
-    --secondary-foreground: 0 0% 100%;
+    /* Secondary: Light Blue tint */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 213 55% 24%;
 
-    /* Muted: Darker blue variation for contrast on blue backgrounds */
-    --muted: 201 50% 20%;
-    --muted-foreground: 0 0% 80%;
+    /* Muted: Very light gray-blue */
+    --muted: 210 30% 96%;
+    --muted-foreground: 215 15% 47%;
 
-    /* Accent: Warm Action Orange #F7931E */
+    /* Accent: Warm Action Orange #F7931E (from logo) */
     --accent: 32 93% 54%;
-    --accent-foreground: 210 24% 16%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Destructive: Keep for errors */
+    /* Destructive */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Success: Green */
+    /* Success */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
-    /* Warning: Use Accent Orange */
+    /* Warning: Orange */
     --warning: 32 93% 54%;
-    --warning-foreground: 210 24% 16%;
+    --warning-foreground: 0 0% 100%;
 
-    /* Border: Lighter blue for visibility on dark backgrounds */
-    --border: 201 40% 25%;
-    --input: 201 40% 25%;
-    --ring: 32 93% 54%;
+    /* Border: Subtle gray */
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 213 55% 24%;
 
     --radius: 0.75rem;
 
-    /* Custom brand colors - Corporate Identity */
-    --brand-primary: 201 71% 14%;
+    /* Custom brand colors */
+    --brand-primary: 213 55% 24%;
     --brand-accent: 32 93% 54%;
     --brand-white: 0 0% 100%;
-    /* Brand green and orange */
-    --brand-grey: 142 64% 24%;
-    --brand-charcoal: 0 0% 100%;
+    --brand-grey: 210 30% 96%;
+    --brand-charcoal: 215 25% 17%;
 
-    /* Legacy naming for compatibility */
+    /* Legacy naming */
     --brand-amber: 32 93% 54%;
-    --brand-dark: 201 71% 14%;
+    --brand-dark: 213 55% 24%;
 
-    /* Shadows - Neutral for dark backgrounds */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.25), 0 2px 4px -2px hsl(0 0% 0% / 0.15);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -4px hsl(0 0% 0% / 0.15);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.35), 0 8px 10px -6px hsl(0 0% 0% / 0.2);
-    --shadow-primary: 0 4px 14px -2px hsl(201 71% 10% / 0.5);
-    --shadow-accent: 0 4px 14px -2px hsl(32 93% 54% / 0.4);
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.08), 0 2px 4px -2px hsl(0 0% 0% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.05);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.05);
+    --shadow-primary: 0 4px 14px -2px hsl(213 55% 24% / 0.25);
+    --shadow-accent: 0 4px 14px -2px hsl(32 93% 54% / 0.3);
 
-    /* Sidebar - Deep Trust Blue based */
-    --sidebar-background: 201 71% 12%;
+    /* Sidebar: Deep Blue */
+    --sidebar-background: 213 55% 20%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 32 93% 54%;
-    --sidebar-primary-foreground: 210 24% 16%;
-    --sidebar-accent: 201 50% 20%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 213 45% 28%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 201 40% 22%;
+    --sidebar-border: 213 40% 28%;
     --sidebar-ring: 32 93% 54%;
   }
 
   .dark {
-    /* Dark mode maintains the same colour-forward approach */
-    --background: 201 71% 10%;
+    --background: 215 25% 10%;
     --foreground: 0 0% 98%;
 
-    --card: 201 71% 14%;
+    --card: 215 25% 14%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 201 71% 14%;
+    --popover: 215 25% 14%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 32 93% 54%;
-    --primary-foreground: 210 24% 16%;
+    --primary: 213 55% 40%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 201 50% 20%;
+    --secondary: 215 25% 18%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 201 50% 18%;
-    --muted-foreground: 0 0% 70%;
+    --muted: 215 25% 18%;
+    --muted-foreground: 0 0% 60%;
 
     --accent: 32 93% 54%;
-    --accent-foreground: 210 24% 16%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
@@ -117,29 +115,28 @@
     --success-foreground: 0 0% 100%;
 
     --warning: 32 93% 54%;
-    --warning-foreground: 210 24% 16%;
+    --warning-foreground: 0 0% 100%;
 
-    --border: 201 40% 22%;
-    --input: 201 40% 22%;
-    --ring: 32 93% 54%;
+    --border: 215 25% 22%;
+    --input: 215 25% 22%;
+    --ring: 213 55% 40%;
 
-    --sidebar-background: 201 71% 8%;
+    --sidebar-background: 215 25% 8%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 32 93% 54%;
-    --sidebar-primary-foreground: 210 24% 16%;
-    --sidebar-accent: 201 50% 18%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 25% 16%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 201 40% 20%;
+    --sidebar-border: 215 25% 18%;
     --sidebar-ring: 32 93% 54%;
   }
 
-  /* Light panel mode - now uses green instead of white */
   .light-panel {
-    --background: 142 64% 24%;
-    --foreground: 0 0% 100%;
-    --muted: 142 64% 30%;
-    --muted-foreground: 0 0% 85%;
-    --border: 142 64% 30%;
+    --background: 210 40% 96%;
+    --foreground: 215 25% 17%;
+    --muted: 210 30% 92%;
+    --muted-foreground: 215 15% 47%;
+    --border: 214 20% 88%;
   }
 }
 
@@ -156,7 +153,6 @@
     @apply bg-background text-foreground antialiased;
   }
 
-  /* Typography on dark backgrounds - white text */
   h1, h2, h3, h4, h5, h6 {
     @apply text-foreground;
   }
@@ -167,9 +163,8 @@
 }
 
 @layer utilities {
-  /* Utility classes for brand colors */
   .text-brand-primary {
-    color: hsl(201 71% 14%);
+    color: hsl(213 55% 24%);
   }
 
   .text-brand-accent {
@@ -177,7 +172,7 @@
   }
 
   .text-brand-charcoal {
-    color: hsl(210 24% 16%);
+    color: hsl(215 25% 17%);
   }
 
   .text-brand-white {
@@ -185,7 +180,7 @@
   }
 
   .bg-brand-primary {
-    background-color: hsl(201 71% 14%);
+    background-color: hsl(213 55% 24%);
   }
 
   .bg-brand-accent {
@@ -193,25 +188,23 @@
   }
 
   .bg-brand-grey {
-    background-color: hsl(142 64% 24%);
+    background-color: hsl(210 30% 96%);
   }
 
   .bg-brand-white {
-    background-color: hsl(142 64% 24%);
+    background-color: hsl(0 0% 100%);
   }
 
-  /* Light surface utilities - now use green */
   .surface-light {
-    @apply bg-green-800 text-white;
+    @apply bg-secondary text-secondary-foreground;
   }
 
   .surface-white {
-    @apply bg-green-800 text-white;
+    @apply bg-white text-foreground;
   }
 
-  /* Dark surface utilities */
   .surface-dark {
-    @apply bg-brand-primary text-brand-white;
+    @apply bg-primary text-primary-foreground;
   }
 
   .shadow-primary {
@@ -223,7 +216,7 @@
   }
 
   .glass {
-    @apply backdrop-blur-xl bg-primary/80;
+    @apply backdrop-blur-xl bg-white/80 border border-border;
   }
 
   .glass-light {
@@ -231,48 +224,38 @@
   }
 }
 
-/* Custom scrollbar - styled for dark backgrounds */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-primary/20 rounded-full;
+  @apply bg-muted rounded-full;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-white/30 rounded-full hover:bg-white/50;
+  @apply bg-primary/20 rounded-full hover:bg-primary/30;
 }
 
-/* Animation keyframes - Subtle, professional */
+/* Animations */
 @keyframes pulse-action {
   0%, 100% {
-    box-shadow: 0 0 0 0 hsl(32 93% 54% / 0.4);
+    box-shadow: 0 0 0 0 hsl(213 55% 24% / 0.4);
   }
   50% {
-    box-shadow: 0 0 0 8px hsl(32 93% 54% / 0);
+    box-shadow: 0 0 0 8px hsl(213 55% 24% / 0);
   }
 }
 
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 @keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-pulse-amber {
@@ -287,7 +270,7 @@
   animation: slide-up 0.4s ease-out;
 }
 
-/* Leaflet map z-index override - ensure maps don't overlap dropdowns/modals */
+/* Leaflet overrides */
 .leaflet-container {
   z-index: 0 !important;
 }
@@ -298,7 +281,6 @@
   z-index: inherit !important;
 }
 
-/* Only allow map controls to have modest z-index within the map */
 .leaflet-control {
   z-index: 10 !important;
 }

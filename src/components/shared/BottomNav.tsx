@@ -25,7 +25,7 @@ export const BottomNav = ({ type }: BottomNavProps) => {
   const links = type === "customer" ? customerLinks : driverLinks;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-primary/95 backdrop-blur-xl safe-area-inset-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-white/95 backdrop-blur-xl safe-area-inset-bottom">
       <div className="flex items-center justify-around py-2">
         {links.map((link) => (
           <RouterNavLink
@@ -35,7 +35,7 @@ export const BottomNav = ({ type }: BottomNavProps) => {
             className={({ isActive }) =>
               cn(
                 "relative flex flex-col items-center gap-1 px-4 py-2 transition-colors",
-                isActive ? "text-accent" : "text-white/60"
+                isActive ? "text-primary" : "text-muted-foreground"
               )
             }
           >
@@ -44,7 +44,7 @@ export const BottomNav = ({ type }: BottomNavProps) => {
                 {isActive && (
                   <motion.div
                     layoutId={`nav-indicator-${type}`}
-                    className="absolute -top-2 left-1/2 h-1 w-8 -translate-x-1/2 rounded-full bg-accent"
+                    className="absolute -top-2 left-1/2 h-1 w-8 -translate-x-1/2 rounded-full bg-primary"
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}

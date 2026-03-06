@@ -8,26 +8,26 @@ const cardVariants = cva(
   {
     variants: {
       variant: {
-        // Default: Soft Grey for secondary panels on blue backgrounds
-        default: "bg-secondary text-secondary-foreground border-border/50 shadow-sm",
-        // Elevated: Soft Grey with stronger shadow
-        elevated: "bg-secondary text-secondary-foreground border-border/50 shadow-lg hover:shadow-xl",
-        // Glass: Translucent dark for overlays
-        glass: "bg-primary/80 backdrop-blur-xl border-border/50 text-white",
+        // Default: White card with subtle border
+        default: "bg-card text-card-foreground border-border shadow-sm",
+        // Elevated: White with stronger shadow
+        elevated: "bg-card text-card-foreground border-border shadow-lg hover:shadow-xl",
+        // Glass: Translucent white
+        glass: "bg-white/80 backdrop-blur-xl border-border text-foreground",
         // Outline: Transparent with visible border
-        outline: "bg-transparent border-2 border-white/20 text-white",
-        // Primary surface: Deep Trust Blue background
+        outline: "bg-transparent border-2 border-border text-foreground",
+        // Primary surface: Blue background
         primary: "bg-primary text-primary-foreground border-primary/50 shadow-md",
-        // Amber/Accent highlight card
-        amber: "bg-accent/15 border-accent/30 text-white",
-        // Dark: Deep Trust Blue solid
-        dark: "bg-primary text-white border-transparent shadow-lg",
-        // Interactive: Soft Grey with hover states
-        interactive: "bg-secondary text-secondary-foreground border-border/50 shadow-sm hover:shadow-md hover:border-accent/50 cursor-pointer",
+        // Amber/Accent: Light orange tint
+        amber: "bg-accent/5 border-accent/20 text-foreground",
+        // Dark: Deep blue solid
+        dark: "bg-primary text-primary-foreground border-transparent shadow-lg",
+        // Interactive: White with hover states
+        interactive: "bg-card text-card-foreground border-border shadow-sm hover:shadow-md hover:border-primary/30 cursor-pointer",
         // Status variants
-        success: "bg-success/15 border-success/30 text-white",
-        warning: "bg-warning/15 border-warning/30 text-white",
-        destructive: "bg-destructive/15 border-destructive/30 text-white",
+        success: "bg-success/5 border-success/20 text-foreground",
+        warning: "bg-warning/5 border-warning/20 text-foreground",
+        destructive: "bg-destructive/5 border-destructive/20 text-foreground",
       },
     },
     defaultVariants: {

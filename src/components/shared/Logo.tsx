@@ -10,12 +10,12 @@ interface LogoProps {
 }
 
 const sizeClasses = {
-  sm: "h-10",
-  md: "h-14",
-  lg: "h-20",
-  xl: "h-24",
-  "2xl": "h-32",
-  hero: "h-40",
+  sm: "h-14",
+  md: "h-20",
+  lg: "h-28",
+  xl: "h-36",
+  "2xl": "h-44",
+  hero: "h-56",
 };
 
 export const Logo = ({

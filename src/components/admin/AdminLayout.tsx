@@ -403,20 +403,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   );
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Desktop Sidebar - Deep Trust Blue */}
+    <div className="flex min-h-screen bg-secondary">
+      {/* Desktop Sidebar - Deep Blue */}
       <motion.aside
         initial={false}
         animate={{ width: collapsed ? 72 : 280 }}
-        className="hidden border-r border-border bg-primary lg:block"
+        className="hidden border-r border-sidebar-border bg-sidebar lg:block"
       >
         <NavContent />
       </motion.aside>
 
-      {/* Main Content - Maintains blue background */}
+      {/* Main Content - Light background */}
       <div className="flex flex-1 flex-col">
-        {/* Header - Deep Trust Blue */}
-        <header className="sticky top-0 z-40 border-b border-border bg-primary/95 backdrop-blur-xl">
+        {/* Header - White */}
+        <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur-xl">
           <div className="flex h-16 items-center justify-between px-4 lg:px-6">
             {/* Left side */}
             <div className="flex items-center gap-4">

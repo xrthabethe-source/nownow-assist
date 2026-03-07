@@ -32,6 +32,7 @@ import {
   HelpCircle,
   Database,
   Lock,
+  ShieldAlert,
   Globe,
   Palette,
   Mail,

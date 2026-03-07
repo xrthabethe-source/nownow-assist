@@ -40,6 +40,7 @@ import AdminNotifications from "./pages/admin/AdminNotifications";
 import NotFound from "./pages/NotFound";
 import ExportAIPrompt from "./pages/ExportAIPrompt";
 import AdminVerificationQueue from "./pages/admin/AdminVerificationQueue";
+import AdminSecurityMonitoring from "./pages/admin/AdminSecurityMonitoring";
 
 const queryClient = new QueryClient();
 
@@ -215,6 +216,11 @@ const App = () => (
             <Route path="/admin/verification-queue" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminVerificationQueue />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/security" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminSecurityMonitoring />
               </ProtectedRoute>
             } />
             

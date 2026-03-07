@@ -407,7 +407,7 @@ export default function AdminSecurityMonitoring() {
                       {driver.fraudFlags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {driver.fraudFlags.map((flag) => (
-                            <Badge key={flag} variant="destructive" className="text-[10px]">
+                            <Badge key={flag} variant="outline" className="text-[10px] border-destructive/50 text-destructive">
                               {flag.replace(/_/g, ' ')}
                             </Badge>
                           ))}

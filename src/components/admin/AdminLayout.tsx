@@ -119,6 +119,7 @@ const navSections: NavSection[] = [
   {
     title: "Security & Compliance",
     items: [
+      { icon: ShieldAlert, label: "Security Monitor", path: "/admin/security", badge: "New", badgeVariant: "destructive" },
       { icon: Shield, label: "Audit Logs", path: "/admin/audit" },
       { icon: Lock, label: "Security Settings", path: "/admin/settings?tab=security" },
       { icon: Database, label: "Data Management", path: "/admin/settings?tab=data" },

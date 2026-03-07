@@ -189,7 +189,7 @@ export default function AdminSecurityMonitoring() {
           <TabsTrigger value="drivers" className="gap-1">
             <Users className="h-4 w-4" /> Drivers
             {(data?.fraudDrivers.filter(d => d.riskLevel === 'high' || d.riskLevel === 'critical').length || 0) > 0 && (
-              <Badge variant="warning" className="ml-1 h-5 px-1.5 text-[10px]">
+              <Badge variant="outline" className="ml-1 h-5 px-1.5 text-[10px] border-warning text-warning">
                 {data?.fraudDrivers.filter(d => d.riskLevel === 'high' || d.riskLevel === 'critical').length}
               </Badge>
             )}

@@ -111,9 +111,11 @@ export default function Auth() {
         const { error } = await signIn(email, password);
         if (error) {
           await recordLoginAttempt(email, false, error.message);
+          trackSecurityEvent('login_failed', { email, reason: error.message });
           setError(error.message.includes('Invalid login credentials') ? 'Invalid email or password. Please try again.' : error.message);
         } else {
           await recordLoginAttempt(email, true);
+          trackSecurityEvent('login_success', { email });
           setIsLocked(false);
           setLockoutMessage(null);
         }

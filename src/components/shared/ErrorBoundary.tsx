@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { ErrorFallback } from "./ErrorFallback";
 import { supabase } from "@/integrations/supabase/client";
+import { captureError } from "@/lib/sentry";
 
 interface Props {
   children: ReactNode;
@@ -22,8 +23,10 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log to console for dev
     console.error("ErrorBoundary caught:", error, errorInfo);
+
+    // Report to Sentry
+    captureError(error, { componentStack: errorInfo.componentStack });
 
     // Log to audit_logs table
     this.logErrorToAudit(error, errorInfo);

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2, Mail, Lock, User, AlertCircle, Car, Users, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
+import { trackSecurityEvent } from '@/lib/sentry';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Logo } from '@/components/shared/Logo';
 import { 
@@ -110,9 +111,11 @@ export default function Auth() {
         const { error } = await signIn(email, password);
         if (error) {
           await recordLoginAttempt(email, false, error.message);
+          trackSecurityEvent('login_failed', { email, reason: error.message });
           setError(error.message.includes('Invalid login credentials') ? 'Invalid email or password. Please try again.' : error.message);
         } else {
           await recordLoginAttempt(email, true);
+          trackSecurityEvent('login_success', { email });
           setIsLocked(false);
           setLockoutMessage(null);
         }

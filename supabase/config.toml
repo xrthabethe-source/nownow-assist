@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.report-abuse]
 verify_jwt = false
+
+[functions.security-monitor]
+verify_jwt = false

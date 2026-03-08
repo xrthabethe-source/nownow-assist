@@ -209,6 +209,7 @@ export default function DriverSignUpStep2() {
           submitted_at: new Date().toISOString(),
           id_doc_file_url: "uploaded",
           license_file_url: "uploaded",
+          profile_photo_url: "uploaded",
           background_check_url: "uploaded",
         });
 

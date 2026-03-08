@@ -216,30 +216,23 @@ export default function AdminActiveJobs() {
 
   const getStatusVariant = (status: string | null): "success" | "warning" | "destructive" | "primary" | "default" => {
     switch (status) {
-      case "in_progress":
-        return "primary";
+      case "in_progress": return "primary";
       case "dispatched":
-      case "accepted":
-        return "warning";
-      case "pending":
-        return "destructive";
-      default:
-        return "default";
+      case "accepted": return "warning";
+      case "arrived": return "success";
+      case "pending": return "destructive";
+      default: return "default";
     }
   };
 
   const getStatusLabel = (status: string | null): string => {
     switch (status) {
-      case "in_progress":
-        return "In Progress";
-      case "dispatched":
-        return "Dispatched";
-      case "accepted":
-        return "Accepted";
-      case "pending":
-        return "Pending Driver";
-      default:
-        return status || "Unknown";
+      case "in_progress": return "In Progress";
+      case "dispatched": return "On The Way";
+      case "accepted": return "Accepted";
+      case "arrived": return "Arrived";
+      case "pending": return "Pending Driver";
+      default: return status || "Unknown";
     }
   };
 

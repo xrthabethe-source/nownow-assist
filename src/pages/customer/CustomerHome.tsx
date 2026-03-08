@@ -265,20 +265,34 @@ export const CustomerHome = () => {
           <h3 className="font-semibold text-foreground">Recent Activity</h3>
           <Button variant="ghost" size="sm" onClick={() => navigate('/customer/history')}>View All</Button>
         </div>
-        <Card variant="default" className="cursor-pointer hover:shadow-md transition-all" onClick={() => navigate('/customer/history')}>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <TyreIcon className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground">Tyre Change</p>
-                <p className="text-sm text-muted-foreground">Dec 10, 2025 • R350</p>
-              </div>
-              <StatusBadge variant="success">Completed</StatusBadge>
-            </div>
-          </CardContent>
-        </Card>
+        {recentJobs && recentJobs.length > 0 ? (
+          recentJobs.slice(0, 3).map((job: any) => {
+            const statusVariant = job.status === "completed" ? "success" : job.status === "cancelled" ? "destructive" : "warning";
+            const ServiceIcon = serviceIcons[job.services?.name] || TyreIcon;
+            return (
+              <Card key={job.id} variant="default" className="cursor-pointer hover:shadow-md transition-all mb-2" onClick={() => navigate('/customer/history')}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                      <ServiceIcon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-foreground">{job.services?.name || "Service"}</p>
+                      <p className="text-sm text-muted-foreground">{format(new Date(job.created_at), "MMM d, yyyy")} • R{job.final_price || job.estimated_price || 0}</p>
+                    </div>
+                    <StatusBadge variant={statusVariant}>{job.status === "completed" ? "Completed" : job.status === "cancelled" ? "Cancelled" : "Active"}</StatusBadge>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })
+        ) : (
+          <Card variant="default">
+            <CardContent className="p-4 text-center text-muted-foreground">
+              <p>No recent activity yet. Request a service to get started!</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Safety Card */}

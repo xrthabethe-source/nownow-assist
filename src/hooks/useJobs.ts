@@ -260,6 +260,8 @@ export function useUpdateJobStatus() {
 
       if (status === "dispatched") {
         updates.dispatched_at = new Date().toISOString();
+      } else if (status === "arrived") {
+        // No dedicated timestamp column, just status update
       } else if (status === "in_progress") {
         updates.started_at = new Date().toISOString();
       } else if (status === "completed") {

@@ -43,6 +43,8 @@ import NotFound from "./pages/NotFound";
 import ExportAIPrompt from "./pages/ExportAIPrompt";
 import AdminVerificationQueue from "./pages/admin/AdminVerificationQueue";
 import AdminSecurityMonitoring from "./pages/admin/AdminSecurityMonitoring";
+import DriverSignUpStep1 from "./pages/driver/DriverSignUpStep1";
+import DriverSignUpStep2 from "./pages/driver/DriverSignUpStep2";
 
 const queryClient = new QueryClient();
 

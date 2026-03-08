@@ -63,6 +63,8 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/welcome" element={<LandingPage />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/driver/signup" element={<DriverSignUpStep1 />} />
+            <Route path="/driver/signup/step2" element={<DriverSignUpStep2 />} />
             
             {/* Customer Routes - Protected for customers */}
             <Route path="/customer" element={

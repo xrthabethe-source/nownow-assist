@@ -139,10 +139,7 @@ export default function AdminActiveJobs() {
 
       if (error) throw error;
 
-      // If no real data, return demo data
-      if (!data || data.length === 0) {
-        return demoActiveJobs;
-      }
+      if (!data) return [];
 
       // Get customer profiles
       const customerIds = data.map(j => j.customer_id).filter(Boolean);

@@ -253,7 +253,7 @@ export function useUpdateJobStatus() {
       finalPrice,
     }: {
       jobId: string;
-      status: "dispatched" | "in_progress" | "completed" | "cancelled";
+      status: "dispatched" | "arrived" | "in_progress" | "completed" | "cancelled";
       finalPrice?: number;
     }) => {
       const updates: Record<string, unknown> = { status };

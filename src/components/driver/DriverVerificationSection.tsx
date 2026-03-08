@@ -111,7 +111,7 @@ export function DriverVerificationSection({ driverId }: Props) {
 
   const handleSaveBgConsent = async () => {
     if (!driverId) return;
-    const { supabase } = await import("@/integrations/supabase/client");
+    const { supabase } = await import("@/integrations/supabase/client") as any;
     await (supabase as any).from("driver_verifications")
       .update({
         bg_consent_given: bgConsent,

@@ -42,6 +42,9 @@ export default function DriverSignUpStep2() {
   const fileRefs = useRef<Record<DocKey, HTMLInputElement | null>>({
     id_document: null,
     drivers_licence: null,
+    profile_photo: null,
+    vehicle_inspection: null,
+    vehicle_registration: null,
     background_check: null,
   });
 

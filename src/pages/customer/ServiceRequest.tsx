@@ -77,6 +77,11 @@ export const ServiceRequest = () => {
     location: "",
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [showWhatsAppFallback, setShowWhatsAppFallback] = useState(false);
+  const submissionTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  
+  // Connectivity
+  const { isOffline, isWeak } = useConnectivity();
   
   // Location state (same as home page)
   const [location, setLocation] = useState<string>("Detecting location...");

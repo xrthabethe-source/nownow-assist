@@ -221,12 +221,6 @@ export const ServiceRequest = () => {
       return;
     }
     
-    // Payment validation skipped for demo - assume payment is done
-    // if (!selectedPayment && paymentMethods.length === 0) {
-    //   toast.error("Please add a payment method first");
-    //   return;
-    // }
-    
     // Validate friend details if requesting for someone else
     if (!validateFriendDetails()) {
       toast.error("Please fix the errors in friend's details");
@@ -238,32 +232,84 @@ export const ServiceRequest = () => {
       toast.error("Please acknowledge the terms to continue");
       return;
     }
+
+    const pickupAddr = requestForOther ? friendDetails.location : location;
+    const lat = coordinates?.lat || -26.1076;
+    const lng = coordinates?.lng || 28.0567;
+    const notes = requestForOther ? `Request for: ${friendDetails.name}, Phone: ${friendDetails.phone}` : undefined;
+
+    // Cache location for offline use
+    cacheCurrentLocation(pickupAddr, lat, lng);
+
+    // ── Offline path: save draft locally ──
+    if (isOffline || isWeak) {
+      addPendingDraft({
+        serviceId: dbService?.id || serviceId || 'unknown',
+        serviceName: service?.name || 'Service',
+        pickupAddress: pickupAddr,
+        pickupLat: lat,
+        pickupLng: lng,
+        estimatedPrice: actualPrice,
+        etaMinutes: dbService?.eta_minutes || 20,
+        notes,
+      });
+      toast.success("Request saved! It will be submitted automatically when you're back online.");
+      navigate(`/customer/home`);
+      return;
+    }
     
+    // ── Online path: submit with 20s timeout for WhatsApp fallback ──
     setIsProcessing(true);
+    setShowWhatsAppFallback(false);
+
+    // Start 20-second WhatsApp fallback timer
+    submissionTimerRef.current = setTimeout(() => {
+      setShowWhatsAppFallback(true);
+    }, 20000);
     
     try {
-      // Create job in database
       if (dbService?.id) {
         await createJobMutation.mutateAsync({
           serviceId: dbService.id,
-          pickupAddress: requestForOther ? friendDetails.location : location,
-          pickupLat: coordinates?.lat || -26.1076,
-          pickupLng: coordinates?.lng || 28.0567,
+          pickupAddress: pickupAddr,
+          pickupLat: lat,
+          pickupLng: lng,
           estimatedPrice: actualPrice,
           etaMinutes: dbService.eta_minutes || 20,
-          notes: requestForOther ? `Request for: ${friendDetails.name}, Phone: ${friendDetails.phone}` : undefined,
+          notes,
         });
         toast.success("Service request created!");
       }
       
-      navigate(`/customer/tracking/${serviceId}`, { state: { address: requestForOther ? friendDetails.location : location } });
+      if (submissionTimerRef.current) clearTimeout(submissionTimerRef.current);
+      navigate(`/customer/tracking/${serviceId}`, { state: { address: pickupAddr } });
     } catch (error) {
       console.error("Failed to create job:", error);
-      toast.error("Failed to create request. Please try again.");
+      
+      // On failure, save as offline draft for auto-retry
+      addPendingDraft({
+        serviceId: dbService?.id || serviceId || 'unknown',
+        serviceName: service?.name || 'Service',
+        pickupAddress: pickupAddr,
+        pickupLat: lat,
+        pickupLng: lng,
+        estimatedPrice: actualPrice,
+        etaMinutes: dbService?.eta_minutes || 20,
+        notes,
+      });
+      toast.error("Request saved locally. We'll retry when your connection improves.");
+      setShowWhatsAppFallback(true);
     } finally {
       setIsProcessing(false);
     }
   };
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (submissionTimerRef.current) clearTimeout(submissionTimerRef.current);
+    };
+  }, []);
 
   const handleFriendDetailChange = (field: string, value: string) => {
     setFriendDetails({ ...friendDetails, [field]: value });

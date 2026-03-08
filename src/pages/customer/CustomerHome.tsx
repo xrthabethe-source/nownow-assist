@@ -39,6 +39,8 @@ const item = {
 };
 
 export const CustomerHome = () => {
+  const { user } = useAuth();
+  const { data: recentJobs } = useCustomerJobs();
   const [location, setLocation] = useState("");
   const [manualInput, setManualInput] = useState("");
   const [isEditing, setIsEditing] = useState(false);

@@ -43,6 +43,8 @@ import NotFound from "./pages/NotFound";
 import ExportAIPrompt from "./pages/ExportAIPrompt";
 import AdminVerificationQueue from "./pages/admin/AdminVerificationQueue";
 import AdminSecurityMonitoring from "./pages/admin/AdminSecurityMonitoring";
+import DriverSignUpStep1 from "./pages/driver/DriverSignUpStep1";
+import DriverSignUpStep2 from "./pages/driver/DriverSignUpStep2";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +63,8 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/welcome" element={<LandingPage />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/driver/signup" element={<DriverSignUpStep1 />} />
+            <Route path="/driver/signup/step2" element={<DriverSignUpStep2 />} />
             
             {/* Customer Routes - Protected for customers */}
             <Route path="/customer" element={

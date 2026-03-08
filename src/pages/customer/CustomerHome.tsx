@@ -14,9 +14,12 @@ import { LocationMapPicker } from "@/components/customer/LocationMapPicker";
 import { useSavedLocations, SavedLocation } from "@/hooks/useSavedLocations";
 import { supabase } from "@/integrations/supabase/client";
 import { validateStreetInput } from "@/lib/streetValidation";
+import { useAuth } from "@/hooks/useAuth";
+import { useCustomerJobs } from "@/hooks/useJobs";
 import { MapPin, Clock, Loader2, RefreshCw, Bookmark, BookmarkPlus, Edit2, Check, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 
 const services = [
   { id: "fuel", name: "Fuel Rescue", icon: FuelIcon, price: "R349", eta: "15-25 min", description: "We bring fuel to get you moving now", featured: true },

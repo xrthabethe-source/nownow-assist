@@ -90,7 +90,7 @@ export const LandingPage = () => {
           </nav>
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" className="font-medium" onClick={() => navigate("/auth")}>Log in</Button>
-            <Button size="sm" className="hidden sm:flex font-medium" onClick={() => navigate("/driver/signup")}>Drive with us</Button>
+            <Button size="sm" className="hidden sm:flex font-medium" onClick={() => navigate("/driver/signup")}>Become a Driver</Button>
           </div>
         </div>
       </header>

@@ -234,6 +234,7 @@ const App = () => (
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </OfflineCacheProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

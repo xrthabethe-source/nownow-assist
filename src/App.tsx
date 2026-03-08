@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
+import { ConnectivityBanner } from "@/components/shared/ConnectivityBanner";
+import { OfflineCacheProvider } from "@/components/shared/OfflineCacheProvider";
 
 // Pages
 import LandingPage from "./pages/LandingPage";
@@ -52,6 +54,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <OfflineCacheProvider>
+          <ConnectivityBanner />
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
@@ -230,6 +234,7 @@ const App = () => (
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </OfflineCacheProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

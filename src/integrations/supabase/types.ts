@@ -655,6 +655,7 @@ export type Database = {
           cancelled_at: string | null
           completed_at: string | null
           created_at: string
+          created_offline: boolean | null
           customer_id: string | null
           dispatched_at: string | null
           driver_id: string | null
@@ -664,6 +665,7 @@ export type Database = {
           id: string
           job_number: string
           notes: string | null
+          offline_draft_id: string | null
           pickup_address: string | null
           pickup_lat: number | null
           pickup_lng: number | null
@@ -672,6 +674,7 @@ export type Database = {
           service_id: string | null
           started_at: string | null
           status: string | null
+          synced_at: string | null
           updated_at: string
         }
         Insert: {
@@ -680,6 +683,7 @@ export type Database = {
           cancelled_at?: string | null
           completed_at?: string | null
           created_at?: string
+          created_offline?: boolean | null
           customer_id?: string | null
           dispatched_at?: string | null
           driver_id?: string | null
@@ -689,6 +693,7 @@ export type Database = {
           id?: string
           job_number: string
           notes?: string | null
+          offline_draft_id?: string | null
           pickup_address?: string | null
           pickup_lat?: number | null
           pickup_lng?: number | null
@@ -697,6 +702,7 @@ export type Database = {
           service_id?: string | null
           started_at?: string | null
           status?: string | null
+          synced_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -705,6 +711,7 @@ export type Database = {
           cancelled_at?: string | null
           completed_at?: string | null
           created_at?: string
+          created_offline?: boolean | null
           customer_id?: string | null
           dispatched_at?: string | null
           driver_id?: string | null
@@ -714,6 +721,7 @@ export type Database = {
           id?: string
           job_number?: string
           notes?: string | null
+          offline_draft_id?: string | null
           pickup_address?: string | null
           pickup_lat?: number | null
           pickup_lng?: number | null
@@ -722,6 +730,7 @@ export type Database = {
           service_id?: string | null
           started_at?: string | null
           status?: string | null
+          synced_at?: string | null
           updated_at?: string
         }
         Relationships: [

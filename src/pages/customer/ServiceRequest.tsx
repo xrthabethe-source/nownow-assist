@@ -824,6 +824,12 @@ export const ServiceRequest = () => {
               `Confirm & Pay R${actualPrice}`
             )}
           </Button>
+
+          <WhatsAppFallback
+            visible={showWhatsAppFallback}
+            serviceName={service?.name}
+            location={location}
+          />
         </motion.div>
       </div>
     </div>

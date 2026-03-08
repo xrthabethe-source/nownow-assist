@@ -141,6 +141,7 @@ export const LiveTracking = () => {
       case "pending": return 0;
       case "accepted": return 1;
       case "dispatched": return 2;
+      case "arrived": return 3;
       case "in_progress": return 3;
       case "completed": return 4;
       default: return 0;

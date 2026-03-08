@@ -25,11 +25,14 @@ interface Step1Data {
   email: string;
 }
 
-type DocKey = "id_document" | "drivers_licence" | "background_check";
+type DocKey = "id_document" | "drivers_licence" | "profile_photo" | "vehicle_inspection" | "vehicle_registration" | "background_check";
 
 const DOC_LABELS: Record<DocKey, string> = {
-  id_document: "SA ID Document / Work Permit / Asylum Visa",
+  id_document: "ID / Passport",
   drivers_licence: "Driver's Licence",
+  profile_photo: "Profile Photo",
+  vehicle_inspection: "Vehicle Inspection Report",
+  vehicle_registration: "Vehicle Registration Documents",
   background_check: "Background Check Certificate",
 };
 

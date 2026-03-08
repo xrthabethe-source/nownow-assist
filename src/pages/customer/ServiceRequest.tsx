@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { TyreIcon, BatteryIcon, FuelIcon, DiagnosticsIcon, MechanicIcon } from "@/components/icons/ServiceIcons";
 import { ArrowLeft, MapPin, Clock, CreditCard, Shield, ChevronRight, Check, User, Phone, Users, AlertCircle, AlertTriangle, RefreshCw, Edit2 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { friendDetailsSchema } from "@/lib/validations";
 import { toast } from "sonner";
 import { useCreateJob } from "@/hooks/useJobs";
@@ -16,6 +16,10 @@ import { validateStreetInput } from "@/lib/streetValidation";
 import { usePaymentMethods } from "@/hooks/usePaymentMethods";
 import { useSavedLocations, SavedLocation } from "@/hooks/useSavedLocations";
 import { LocationSelector } from "@/components/customer/LocationSelector";
+import { useConnectivity } from "@/hooks/useConnectivity";
+import { addPendingDraft } from "@/lib/offlineStorage";
+import { cacheCurrentLocation } from "@/hooks/useOfflineCache";
+import { WhatsAppFallback } from "@/components/shared/WhatsAppFallback";
 
 const services: Record<string, any> = {
   fuel: { 

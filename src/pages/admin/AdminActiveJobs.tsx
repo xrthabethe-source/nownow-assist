@@ -134,7 +134,7 @@ export default function AdminActiveJobs() {
           services(name, icon),
           drivers(id, user_id, vehicle_plate, vehicle_make, vehicle_model)
         `)
-        .in("status", ["pending", "dispatched", "in_progress", "accepted"])
+        .in("status", ["pending", "dispatched", "arrived", "in_progress", "accepted"])
         .order("created_at", { ascending: false });
 
       if (error) throw error;

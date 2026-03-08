@@ -184,7 +184,7 @@ export function useDriverJobs(driverId: string | null) {
           services (id, name, icon, base_price)
         `)
         .eq("driver_id", driverId)
-        .in("status", ["accepted", "dispatched", "in_progress"])
+        .in("status", ["accepted", "dispatched", "arrived", "in_progress"])
         .order("accepted_at", { ascending: false });
 
       if (error) throw error;

@@ -111,7 +111,7 @@ export const LiveTracking = () => {
             )
           `)
           .eq("customer_id", user.id)
-          .in("status", ["pending", "accepted", "dispatched", "in_progress"])
+          .in("status", ["pending", "accepted", "dispatched", "arrived", "in_progress"])
           .order("created_at", { ascending: false })
           .limit(1)
           .single();

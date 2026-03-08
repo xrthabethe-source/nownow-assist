@@ -56,6 +56,9 @@ export default function DriverSignUpStep2() {
   const [files, setFiles] = useState<Record<DocKey, File | null>>({
     id_document: null,
     drivers_licence: null,
+    profile_photo: null,
+    vehicle_inspection: null,
+    vehicle_registration: null,
     background_check: null,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});

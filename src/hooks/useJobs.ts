@@ -184,7 +184,7 @@ export function useDriverJobs(driverId: string | null) {
           services (id, name, icon, base_price)
         `)
         .eq("driver_id", driverId)
-        .in("status", ["accepted", "dispatched", "in_progress"])
+        .in("status", ["accepted", "dispatched", "arrived", "in_progress"])
         .order("accepted_at", { ascending: false });
 
       if (error) throw error;
@@ -253,13 +253,15 @@ export function useUpdateJobStatus() {
       finalPrice,
     }: {
       jobId: string;
-      status: "dispatched" | "in_progress" | "completed" | "cancelled";
+      status: "dispatched" | "arrived" | "in_progress" | "completed" | "cancelled";
       finalPrice?: number;
     }) => {
       const updates: Record<string, unknown> = { status };
 
       if (status === "dispatched") {
         updates.dispatched_at = new Date().toISOString();
+      } else if (status === "arrived") {
+        // No dedicated timestamp column, just status update
       } else if (status === "in_progress") {
         updates.started_at = new Date().toISOString();
       } else if (status === "completed") {

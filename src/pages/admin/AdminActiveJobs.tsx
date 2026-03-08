@@ -37,88 +37,6 @@ import {
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
-// Demo active jobs data
-const demoActiveJobs = [
-  {
-    id: "demo-1",
-    job_number: "JOB-000142",
-    status: "in_progress",
-    pickup_address: "123 Victoria Island, Lagos",
-    eta_minutes: 12,
-    estimated_price: 15000,
-    created_at: new Date(Date.now() - 25 * 60000).toISOString(),
-    services: { name: "Fuel Delivery", icon: "fuel" },
-    drivers: { id: "d1", user_id: "u1", vehicle_plate: "LAG-234-KJ", vehicle_make: "Toyota", vehicle_model: "Hilux" },
-    customer: { full_name: "Adaeze Okoro", phone: "+234 802 345 6789" },
-    driverProfile: { full_name: "Michael Adeyemi", phone: "+234 801 234 5678" },
-  },
-  {
-    id: "demo-2",
-    job_number: "JOB-000143",
-    status: "dispatched",
-    pickup_address: "45 Lekki Phase 1, Lagos",
-    eta_minutes: 18,
-    estimated_price: 8500,
-    created_at: new Date(Date.now() - 15 * 60000).toISOString(),
-    services: { name: "Tyre Change", icon: "tyre" },
-    drivers: { id: "d2", user_id: "u2", vehicle_plate: "LAG-891-XY", vehicle_make: "Ford", vehicle_model: "Ranger" },
-    customer: { full_name: "Emeka Nwachukwu", phone: "+234 803 456 7890" },
-    driverProfile: { full_name: "Chukwudi Okafor", phone: "+234 803 987 6543" },
-  },
-  {
-    id: "demo-3",
-    job_number: "JOB-000144",
-    status: "pending",
-    pickup_address: "78 Ikeja GRA, Lagos",
-    eta_minutes: null,
-    estimated_price: 25000,
-    created_at: new Date(Date.now() - 8 * 60000).toISOString(),
-    services: { name: "Towing", icon: "tow" },
-    drivers: null,
-    customer: { full_name: "Funke Akindele", phone: "+234 805 678 9012" },
-    driverProfile: null,
-  },
-  {
-    id: "demo-4",
-    job_number: "JOB-000145",
-    status: "accepted",
-    pickup_address: "32 Surulere, Lagos",
-    eta_minutes: 22,
-    estimated_price: 12000,
-    created_at: new Date(Date.now() - 5 * 60000).toISOString(),
-    services: { name: "Jump Start", icon: "battery" },
-    drivers: { id: "d3", user_id: "u3", vehicle_plate: "LAG-456-AB", vehicle_make: "Nissan", vehicle_model: "Patrol" },
-    customer: { full_name: "Olumide Balogun", phone: "+234 806 789 0123" },
-    driverProfile: { full_name: "Ifeanyi Eze", phone: "+234 805 432 1098" },
-  },
-  {
-    id: "demo-5",
-    job_number: "JOB-000146",
-    status: "in_progress",
-    pickup_address: "15 Ajah, Lagos",
-    eta_minutes: 8,
-    estimated_price: 18000,
-    created_at: new Date(Date.now() - 35 * 60000).toISOString(),
-    services: { name: "Fuel Delivery", icon: "fuel" },
-    drivers: { id: "d4", user_id: "u4", vehicle_plate: "LAG-789-CD", vehicle_make: "Toyota", vehicle_model: "Corolla" },
-    customer: { full_name: "Ngozi Ibe", phone: "+234 807 890 1234" },
-    driverProfile: { full_name: "Babatunde Yusuf", phone: "+234 807 654 3210" },
-  },
-  {
-    id: "demo-6",
-    job_number: "JOB-000147",
-    status: "pending",
-    pickup_address: "56 Maryland, Lagos",
-    eta_minutes: null,
-    estimated_price: 7500,
-    created_at: new Date(Date.now() - 3 * 60000).toISOString(),
-    services: { name: "Battery Replacement", icon: "battery" },
-    drivers: null,
-    customer: { full_name: "Chioma Uzoma", phone: "+234 808 901 2345" },
-    driverProfile: null,
-  },
-];
-
 export default function AdminActiveJobs() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -134,15 +52,12 @@ export default function AdminActiveJobs() {
           services(name, icon),
           drivers(id, user_id, vehicle_plate, vehicle_make, vehicle_model)
         `)
-        .in("status", ["pending", "dispatched", "in_progress", "accepted"])
+        .in("status", ["pending", "dispatched", "arrived", "in_progress", "accepted"])
         .order("created_at", { ascending: false });
 
       if (error) throw error;
 
-      // If no real data, return demo data
-      if (!data || data.length === 0) {
-        return demoActiveJobs;
-      }
+      if (!data) return [];
 
       // Get customer profiles
       const customerIds = data.map(j => j.customer_id).filter(Boolean);
@@ -219,30 +134,23 @@ export default function AdminActiveJobs() {
 
   const getStatusVariant = (status: string | null): "success" | "warning" | "destructive" | "primary" | "default" => {
     switch (status) {
-      case "in_progress":
-        return "primary";
+      case "in_progress": return "primary";
       case "dispatched":
-      case "accepted":
-        return "warning";
-      case "pending":
-        return "destructive";
-      default:
-        return "default";
+      case "accepted": return "warning";
+      case "arrived": return "success";
+      case "pending": return "destructive";
+      default: return "default";
     }
   };
 
   const getStatusLabel = (status: string | null): string => {
     switch (status) {
-      case "in_progress":
-        return "In Progress";
-      case "dispatched":
-        return "Dispatched";
-      case "accepted":
-        return "Accepted";
-      case "pending":
-        return "Pending Driver";
-      default:
-        return status || "Unknown";
+      case "in_progress": return "In Progress";
+      case "dispatched": return "On The Way";
+      case "accepted": return "Accepted";
+      case "arrived": return "Arrived";
+      case "pending": return "Pending Driver";
+      default: return status || "Unknown";
     }
   };
 

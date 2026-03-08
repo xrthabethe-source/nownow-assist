@@ -328,7 +328,7 @@ export const LandingPage = () => {
                       <li key={benefit} className="flex items-center gap-2 text-white"><CheckCircle2 className="h-5 w-5 text-accent" />{benefit}</li>
                     ))}
                   </ul>
-                  <Button variant="amber" size="lg" onClick={() => navigate("/auth")}>Apply to Drive<ArrowRight className="ml-2 h-4 w-4" /></Button>
+                  <Button variant="amber" size="lg" onClick={() => navigate("/driver/signup")}>Apply to Drive<ArrowRight className="ml-2 h-4 w-4" /></Button>
                 </div>
                 <div className="relative hidden md:block">
                   <div className="aspect-square rounded-3xl bg-gradient-to-br from-white/10 to-white/5 p-8">

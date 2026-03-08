@@ -28,6 +28,11 @@ const services = [
   { id: "mechanic", name: "Call a Mechanic", icon: MechanicIcon, price: "R149", eta: "Varies", description: "Connect with a local mechanic", isMechanic: true },
 ];
 
+const serviceIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  "Fuel Rescue": FuelIcon, "Jump-Start Rescue": BatteryIcon, "Jump-Start": BatteryIcon,
+  "Tyre Change": TyreIcon, "Call a Mechanic": MechanicIcon,
+};
+
 const container = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.08 } },

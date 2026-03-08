@@ -175,7 +175,10 @@ export default function DriverSignUpStep2() {
         const updateMap: Record<DocKey, string> = {
           id_document: "id_document_url",
           drivers_licence: "license_document_url",
-          background_check: "vehicle_registration_url", // reuse field for bg check
+          profile_photo: "profile_photo_url",
+          vehicle_inspection: "vehicle_registration_url",
+          vehicle_registration: "vehicle_registration_url",
+          background_check: "vehicle_registration_url",
         };
         await supabase
           .from("drivers")

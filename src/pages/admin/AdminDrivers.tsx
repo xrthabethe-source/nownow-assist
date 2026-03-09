@@ -903,6 +903,13 @@ export default function AdminDrivers() {
         onOpenChange={setReviewDialogOpen}
         driver={selectedDriver}
       />
+
+      {/* Applicant Contact Dialog */}
+      <ApplicantMessageDialog
+        open={contactDialogOpen}
+        onOpenChange={setContactDialogOpen}
+        driver={selectedDriver}
+      />
     </AdminLayout>
   );
 }

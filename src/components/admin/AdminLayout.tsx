@@ -405,20 +405,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   );
 
   return (
-    <div className="flex min-h-screen bg-secondary">
+    <div className="flex h-screen overflow-hidden bg-secondary">
       {/* Desktop Sidebar - Deep Blue */}
       <motion.aside
         initial={false}
         animate={{ width: collapsed ? 72 : 280 }}
-        className="hidden border-r border-sidebar-border bg-sidebar lg:block"
+        className="hidden h-screen flex-shrink-0 border-r border-sidebar-border bg-sidebar lg:block"
       >
         <NavContent />
       </motion.aside>
 
       {/* Main Content - Light background */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header - White */}
-        <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur-xl">
+        <header className="sticky top-0 z-40 flex-shrink-0 border-b border-border bg-white/95 backdrop-blur-xl">
           <div className="flex h-16 items-center justify-between px-4 lg:px-6">
             {/* Left side */}
             <div className="flex items-center gap-4">
@@ -499,8 +499,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-6">{children}</main>
+        {/* Page Content - Scrollable */}
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );

@@ -57,8 +57,7 @@ export default function AdminPayments() {
     },
   });
 
-  // Use demo data if no real payments exist
-  const displayPayments = payments && payments.length > 0 ? payments : demoPayments;
+  const displayPayments = payments || [];
 
   const filteredPayments = displayPayments?.filter((payment) => {
     const matchesSearch =

@@ -74,7 +74,7 @@ export default function AdminCustomers() {
       if (profilesError) throw profilesError;
 
       if (!profiles || profiles.length === 0) {
-        return demoCustomers;
+        return [];
       }
 
       return profiles as Customer[];

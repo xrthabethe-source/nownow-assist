@@ -364,7 +364,7 @@ export default function AdminLiveMap() {
       if (error) throw error;
 
       if (!driversData || driversData.length === 0) {
-        return demoDrivers;
+        return [];
       }
 
       const { data: profilesData } = await supabase

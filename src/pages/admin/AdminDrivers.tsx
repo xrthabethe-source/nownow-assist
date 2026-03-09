@@ -142,9 +142,8 @@ export default function AdminDrivers() {
 
       if (driversError) throw driversError;
 
-      // If no real data, return demo drivers
       if (!driversData || driversData.length === 0) {
-        return demoDrivers;
+        return [];
       }
 
       const { data: profilesData } = await supabase.from("profiles").select("id, full_name, email, phone");

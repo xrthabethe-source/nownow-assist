@@ -107,9 +107,8 @@ export default function AdminDisputes() {
     },
   });
 
-  // Use demo data if no real disputes exist
-  const disputes = dbDisputes && dbDisputes.length > 0 ? dbDisputes : demoDisputes;
-  const isUsingDemoData = !dbDisputes || dbDisputes.length === 0;
+  const disputes = dbDisputes || [];
+  const isUsingDemoData = false;
   const updateStatusMutation = useMutation({
     mutationFn: async ({ disputeId, status }: { disputeId: string; status: string }) => {
       const { error } = await supabase

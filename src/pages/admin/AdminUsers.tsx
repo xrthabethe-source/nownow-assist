@@ -118,7 +118,7 @@ export default function AdminUsers() {
       if (profilesError) throw profilesError;
 
       if (!profiles || profiles.length === 0) {
-        return demoUsers;
+        return [];
       }
 
       const { data: roles, error: rolesError } = await supabase

@@ -135,9 +135,8 @@ export default function AdminReports() {
       const { data: drivers } = await supabase.from("drivers").select("id, is_online");
       const { data: roles } = await supabase.from("user_roles").select("role");
 
-      // If no real data, return demo data
       if (!profiles || profiles.length === 0) {
-        return demoUserStats;
+        return { totalUsers: 0, totalDrivers: 0, onlineDrivers: 0, roleBreakdown: { customers: 0, drivers: 0, admins: 0 } };
       }
 
       return {

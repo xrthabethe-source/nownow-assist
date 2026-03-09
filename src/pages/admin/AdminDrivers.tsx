@@ -53,6 +53,7 @@ import {
   MapPin,
   Ban,
   MessageSquare,
+  Phone,
   Send,
   FileText,
   Image,

@@ -266,6 +266,11 @@ export const DriverHome = () => {
         <div className="container py-4"><DriverVerificationSection driverId={driverRecord.id} /></div>
       )}
 
+      {/* Messages from Admin */}
+      <div className="container py-4">
+        <DriverMessagesPanel />
+      </div>
+
       <BottomNav type="driver" />
       <DriverNotificationsDialog open={notificationsOpen} onOpenChange={setNotificationsOpen} />
     </div>

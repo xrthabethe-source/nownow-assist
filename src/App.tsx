@@ -67,6 +67,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/driver/signup" element={<DriverSignUpStep1 />} />
             <Route path="/driver/signup/step2" element={<DriverSignUpStep2 />} />
+            <Route path="/driver/signup/verify-phone" element={<DriverSignUpPhoneVerify />} />
+            <Route path="/driver/signup/verify-email" element={<DriverSignUpEmailVerify />} />
             
             {/* Customer Routes - Protected for customers */}
             <Route path="/customer" element={

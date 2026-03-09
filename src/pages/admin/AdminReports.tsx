@@ -104,9 +104,8 @@ export default function AdminReports() {
 
       if (error) throw error;
 
-      // If no real data, return demo data
       if (!data || data.length === 0) {
-        return demoRevenueStats(parseInt(dateRange));
+        return { totalRevenue: 0, totalPayouts: 0, totalFees: 0, dailyData: [] };
       }
 
       const totalRevenue = data.reduce((sum, p) => sum + Number(p.amount), 0);

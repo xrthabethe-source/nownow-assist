@@ -611,7 +611,14 @@ export default function AdminDrivers() {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleMessageDriver(driver, "general")}>
                               <MessageSquare className="mr-2 h-4 w-4" />
-                              Send Message
+                              Send In-App Message
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedDriver(driver);
+                              setContactDialogOpen(true);
+                            }}>
+                              <Phone className="mr-2 h-4 w-4 text-primary" />
+                              Contact via SMS/WhatsApp
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

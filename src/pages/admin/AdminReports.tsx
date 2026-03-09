@@ -65,9 +65,8 @@ export default function AdminReports() {
 
       if (error) throw error;
 
-      // If no real data, return demo data
       if (!data || data.length === 0) {
-        return demoJobStats(parseInt(dateRange));
+        return { total: 0, byStatus: { completed: 0, cancelled: 0, in_progress: 0, pending: 0 }, dailyData: [] };
       }
 
       const byStatus = {

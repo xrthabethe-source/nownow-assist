@@ -711,7 +711,7 @@ export default function AdminDrivers() {
                             </div>
 
                             {/* Actions */}
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -719,6 +719,17 @@ export default function AdminDrivers() {
                               >
                                 <Eye className="mr-2 h-4 w-4" />
                                 Review
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedDriver(driver);
+                                  setContactDialogOpen(true);
+                                }}
+                              >
+                                <MessageSquare className="mr-2 h-4 w-4 text-primary" />
+                                Contact
                               </Button>
                               <Button
                                 variant="default"

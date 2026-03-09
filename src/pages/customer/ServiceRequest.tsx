@@ -13,7 +13,7 @@ import { useCreateJob } from "@/hooks/useJobs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { validateStreetInput } from "@/lib/streetValidation";
-import { usePaymentMethods } from "@/hooks/usePaymentMethods";
+// Payment is handled by Payfast - no in-app card collection needed
 import { useSavedLocations, SavedLocation } from "@/hooks/useSavedLocations";
 import { LocationSelector } from "@/components/customer/LocationSelector";
 import { useConnectivity } from "@/hooks/useConnectivity";
@@ -63,7 +63,7 @@ const services: Record<string, any> = {
   },
 };
 
-const steps = ["Service", "Location", "Payment", "Confirm"];
+const steps = ["Service", "Location", "Confirm"];
 
 export const ServiceRequest = () => {
   const { serviceId } = useParams();
@@ -92,10 +92,8 @@ export const ServiceRequest = () => {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   
-  // Payment methods
-  const { paymentMethods, loading: loadingPayments } = usePaymentMethods();
-  const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
-  const [showPaymentSelector, setShowPaymentSelector] = useState(false);
+  // Payment is handled externally by Payfast
+  
   
   const createJobMutation = useCreateJob();
   
@@ -122,22 +120,11 @@ export const ServiceRequest = () => {
   
   // Use database price if available
   const actualPrice = dbService?.base_price || service?.price;
-  
-  // Selected payment method
-  const selectedPayment = paymentMethods.find(pm => pm.id === selectedPaymentId) || paymentMethods[0];
 
-  // Auto-detect location on mount (same as home page)
+  // Auto-detect location on mount
   useEffect(() => {
     detectLocation();
   }, []);
-  
-  // Auto-select default payment method
-  useEffect(() => {
-    if (paymentMethods.length > 0 && !selectedPaymentId) {
-      const defaultPm = paymentMethods.find(pm => pm.is_default) || paymentMethods[0];
-      setSelectedPaymentId(defaultPm.id);
-    }
-  }, [paymentMethods, selectedPaymentId]);
 
   const detectLocation = async () => {
     setIsLoadingLocation(true);
@@ -635,88 +622,25 @@ export const ServiceRequest = () => {
           </Card>
         </motion.div>
 
-        {/* Payment Method */}
+        {/* Payment via Payfast */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card 
-            variant="interactive" 
-            className="mb-4 cursor-pointer"
-            onClick={() => setShowPaymentSelector(!showPaymentSelector)}
-          >
+          <Card variant="default" className="mb-4">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
                   <CreditCard className="h-6 w-6 text-foreground" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm text-muted-foreground">Payment Method</p>
-                  {loadingPayments ? (
-                    <p className="font-semibold text-foreground">Loading...</p>
-                  ) : selectedPayment ? (
-                    <p className="font-semibold text-foreground">
-                      {selectedPayment.card_brand || "Card"} •••• {selectedPayment.card_last_four}
-                    </p>
-                  ) : paymentMethods.length === 0 ? (
-                    <p className="font-semibold text-destructive">Add a payment method</p>
-                  ) : (
-                    <p className="font-semibold text-foreground">Select a card</p>
-                  )}
+                  <p className="text-sm text-muted-foreground">Payment</p>
+                  <p className="font-semibold text-foreground">Secure checkout via Payfast</p>
+                  <p className="text-xs text-muted-foreground">You'll enter card details on Payfast's secure page</p>
                 </div>
-                <ChevronRight className={`h-5 w-5 text-muted-foreground transition-transform ${showPaymentSelector ? "rotate-90" : ""}`} />
+                <Shield className="h-5 w-5 text-success" />
               </div>
-              
-              {/* Payment selector dropdown */}
-              {showPaymentSelector && paymentMethods.length > 0 && (
-                <div className="mt-4 space-y-2 border-t pt-4">
-                  {paymentMethods.map((pm) => (
-                    <div
-                      key={pm.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                        selectedPaymentId === pm.id 
-                          ? "bg-primary/10 border border-primary" 
-                          : "bg-muted/50 hover:bg-muted"
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedPaymentId(pm.id);
-                        setShowPaymentSelector(false);
-                      }}
-                    >
-                      <CreditCard className="h-5 w-5 text-muted-foreground" />
-                      <div className="flex-1">
-                        <p className="font-medium">
-                          {pm.card_brand || "Card"} •••• {pm.card_last_four}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Expires {String(pm.expiry_month).padStart(2, "0")}/{pm.expiry_year}
-                        </p>
-                      </div>
-                      {selectedPaymentId === pm.id && (
-                        <Check className="h-5 w-5 text-primary" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              {showPaymentSelector && paymentMethods.length === 0 && (
-                <div className="mt-4 p-4 text-center border-t">
-                  <p className="text-sm text-muted-foreground mb-2">No payment methods saved</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate("/customer/profile");
-                    }}
-                  >
-                    Add Card in Profile
-                  </Button>
-                </div>
-              )}
             </CardContent>
           </Card>
         </motion.div>

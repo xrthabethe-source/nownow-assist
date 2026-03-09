@@ -93,7 +93,7 @@ export const ServiceRequest = () => {
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   
   // Payment is handled externally by Payfast
-  const [showPaymentSelector, setShowPaymentSelector] = useState(false);
+  
   
   const createJobMutation = useCreateJob();
   

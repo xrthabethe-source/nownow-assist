@@ -45,6 +45,8 @@ import AdminVerificationQueue from "./pages/admin/AdminVerificationQueue";
 import AdminSecurityMonitoring from "./pages/admin/AdminSecurityMonitoring";
 import DriverSignUpStep1 from "./pages/driver/DriverSignUpStep1";
 import DriverSignUpStep2 from "./pages/driver/DriverSignUpStep2";
+import DriverSignUpPhoneVerify from "./pages/driver/DriverSignUpPhoneVerify";
+import DriverSignUpEmailVerify from "./pages/driver/DriverSignUpEmailVerify";
 
 const queryClient = new QueryClient();
 

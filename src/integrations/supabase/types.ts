@@ -397,6 +397,45 @@ export type Database = {
           },
         ]
       }
+      driver_otp_verifications: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          max_attempts: number | null
+          otp_code: string
+          otp_type: string
+          phone: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          max_attempts?: number | null
+          otp_code: string
+          otp_type: string
+          phone?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          max_attempts?: number | null
+          otp_code?: string
+          otp_type?: string
+          phone?: string | null
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
       driver_verifications: {
         Row: {
           approved_at: string | null
@@ -537,6 +576,7 @@ export type Database = {
           current_location_lat: number | null
           current_location_lng: number | null
           documents_submitted_at: string | null
+          email_verified: boolean | null
           id: string
           id_document_note: string | null
           id_document_status: string | null
@@ -548,6 +588,7 @@ export type Database = {
           license_document_url: string | null
           license_number: string | null
           payout_percentage: number | null
+          phone_verified: boolean | null
           profile_photo_note: string | null
           profile_photo_status: string | null
           profile_photo_url: string | null
@@ -567,12 +608,14 @@ export type Database = {
           vehicle_registration_url: string | null
           vehicle_type: string | null
           vehicle_year: number | null
+          whatsapp_number: string | null
         }
         Insert: {
           created_at?: string
           current_location_lat?: number | null
           current_location_lng?: number | null
           documents_submitted_at?: string | null
+          email_verified?: boolean | null
           id?: string
           id_document_note?: string | null
           id_document_status?: string | null
@@ -584,6 +627,7 @@ export type Database = {
           license_document_url?: string | null
           license_number?: string | null
           payout_percentage?: number | null
+          phone_verified?: boolean | null
           profile_photo_note?: string | null
           profile_photo_status?: string | null
           profile_photo_url?: string | null
@@ -603,12 +647,14 @@ export type Database = {
           vehicle_registration_url?: string | null
           vehicle_type?: string | null
           vehicle_year?: number | null
+          whatsapp_number?: string | null
         }
         Update: {
           created_at?: string
           current_location_lat?: number | null
           current_location_lng?: number | null
           documents_submitted_at?: string | null
+          email_verified?: boolean | null
           id?: string
           id_document_note?: string | null
           id_document_status?: string | null
@@ -620,6 +666,7 @@ export type Database = {
           license_document_url?: string | null
           license_number?: string | null
           payout_percentage?: number | null
+          phone_verified?: boolean | null
           profile_photo_note?: string | null
           profile_photo_status?: string | null
           profile_photo_url?: string | null
@@ -639,6 +686,7 @@ export type Database = {
           vehicle_registration_url?: string | null
           vehicle_type?: string | null
           vehicle_year?: number | null
+          whatsapp_number?: string | null
         }
         Relationships: []
       }

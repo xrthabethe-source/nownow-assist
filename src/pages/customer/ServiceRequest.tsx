@@ -13,7 +13,7 @@ import { useCreateJob } from "@/hooks/useJobs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { validateStreetInput } from "@/lib/streetValidation";
-import { usePaymentMethods } from "@/hooks/usePaymentMethods";
+// Payment is handled by Payfast - no in-app card collection needed
 import { useSavedLocations, SavedLocation } from "@/hooks/useSavedLocations";
 import { LocationSelector } from "@/components/customer/LocationSelector";
 import { useConnectivity } from "@/hooks/useConnectivity";

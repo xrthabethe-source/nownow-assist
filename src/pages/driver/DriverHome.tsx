@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge";
 import { RoleSwitcher } from "@/components/shared/RoleSwitcher";
 import { DriverNotificationsDialog } from "@/components/driver/DriverNotificationsDialog";
 import { DriverVerificationSection } from "@/components/driver/DriverVerificationSection";
+import { DriverMessagesPanel } from "@/components/driver/DriverMessagesPanel";
 import { useDriverVerification } from "@/hooks/useDriverVerification";
 import { MapPin, Clock, Zap, Star, TrendingUp, Bell, Settings, ChevronRight, Navigation, Loader2, Volume2, VolumeX, Shield } from "lucide-react";
 import { useState, useEffect } from "react";

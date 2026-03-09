@@ -38,23 +38,40 @@ export const initiatePayfastPayment = async ({
 };
 
 /**
- * Redirects user to Payfast payment page by submitting a form
+ * Redirects user to PayFast payment page.
+ * Uses window.open as primary method to avoid iframe restrictions,
+ * falls back to form POST for published site.
  */
 export const redirectToPayfast = (paymentUrl: string, paymentData: Record<string, string>) => {
+  // Build the form and submit it
   const form = document.createElement("form");
   form.method = "POST";
   form.action = paymentUrl;
   form.style.display = "none";
-  form.target = "_top"; // Break out of iframe
 
   Object.entries(paymentData).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
     const input = document.createElement("input");
     input.type = "hidden";
     input.name = key;
-    input.value = value;
+    input.value = String(value);
     form.appendChild(input);
   });
 
+  // Detect if we're in an iframe
+  const isInIframe = window.self !== window.top;
+
+  if (isInIframe) {
+    // In iframe (Lovable preview): open in new tab
+    form.target = "_blank";
+  }
+  // On published site: form submits in same window (default behavior)
+
   document.body.appendChild(form);
   form.submit();
+
+  // Clean up
+  setTimeout(() => {
+    document.body.removeChild(form);
+  }, 1000);
 };

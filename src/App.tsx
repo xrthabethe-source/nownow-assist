@@ -45,6 +45,8 @@ import AdminVerificationQueue from "./pages/admin/AdminVerificationQueue";
 import AdminSecurityMonitoring from "./pages/admin/AdminSecurityMonitoring";
 import DriverSignUpStep1 from "./pages/driver/DriverSignUpStep1";
 import DriverSignUpStep2 from "./pages/driver/DriverSignUpStep2";
+import DriverSignUpPhoneVerify from "./pages/driver/DriverSignUpPhoneVerify";
+import DriverSignUpEmailVerify from "./pages/driver/DriverSignUpEmailVerify";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +67,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/driver/signup" element={<DriverSignUpStep1 />} />
             <Route path="/driver/signup/step2" element={<DriverSignUpStep2 />} />
+            <Route path="/driver/signup/verify-phone" element={<DriverSignUpPhoneVerify />} />
+            <Route path="/driver/signup/verify-email" element={<DriverSignUpEmailVerify />} />
             
             {/* Customer Routes - Protected for customers */}
             <Route path="/customer" element={

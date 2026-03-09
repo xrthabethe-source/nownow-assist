@@ -121,21 +121,6 @@ export const ServiceRequest = () => {
   // Use database price if available
   const actualPrice = dbService?.base_price || service?.price;
   
-  // Selected payment method
-  const selectedPayment = paymentMethods.find(pm => pm.id === selectedPaymentId) || paymentMethods[0];
-
-  // Auto-detect location on mount (same as home page)
-  useEffect(() => {
-    detectLocation();
-  }, []);
-  
-  // Auto-select default payment method
-  useEffect(() => {
-    if (paymentMethods.length > 0 && !selectedPaymentId) {
-      const defaultPm = paymentMethods.find(pm => pm.is_default) || paymentMethods[0];
-      setSelectedPaymentId(defaultPm.id);
-    }
-  }, [paymentMethods, selectedPaymentId]);
 
   const detectLocation = async () => {
     setIsLoadingLocation(true);

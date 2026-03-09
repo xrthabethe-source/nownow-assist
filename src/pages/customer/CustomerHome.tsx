@@ -18,8 +18,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCustomerJobs } from "@/hooks/useJobs";
 import { MapPin, Clock, Loader2, RefreshCw, Bookmark, BookmarkPlus, Edit2, Check, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 const services = [
   { id: "fuel", name: "Fuel Rescue", icon: FuelIcon, price: "R349", eta: "15-25 min", description: "We bring fuel to get you moving now", featured: true },
@@ -59,7 +60,20 @@ export const CustomerHome = () => {
   const [isFromSaved, setIsFromSaved] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: savedLocations, isLoading: isLoadingSavedLocations } = useSavedLocations();
+
+  // Handle payment return from PayFast
+  useEffect(() => {
+    const paymentStatus = searchParams.get("payment");
+    if (paymentStatus === "success") {
+      toast.success("Payment successful! Your responder will be dispatched shortly.");
+      setSearchParams({}, { replace: true });
+    } else if (paymentStatus === "cancelled") {
+      toast.error("Payment was cancelled. Your request has not been submitted.");
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const DEBUG_LOCATION = true;
   const debug = (...args: unknown[]) => {

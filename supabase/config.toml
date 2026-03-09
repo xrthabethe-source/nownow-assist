@@ -29,3 +29,9 @@ verify_jwt = false
 
 [functions.security-monitor]
 verify_jwt = false
+
+[functions.payfast-payment]
+verify_jwt = false
+
+[functions.payfast-webhook]
+verify_jwt = false

@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { DriverDocumentReviewDialog } from "@/components/admin/DriverDocumentReviewDialog";
+import { ApplicantMessageDialog } from "@/components/admin/ApplicantMessageDialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +53,7 @@ import {
   MapPin,
   Ban,
   MessageSquare,
+  Phone,
   Send,
   FileText,
   Image,
@@ -106,6 +108,7 @@ export default function AdminDrivers() {
   const [payoutDialogOpen, setPayoutDialogOpen] = useState(false);
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [messageSubject, setMessageSubject] = useState<"complaint" | "payout" | "general">("general");
   const [messageContent, setMessageContent] = useState("");
@@ -609,7 +612,14 @@ export default function AdminDrivers() {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleMessageDriver(driver, "general")}>
                               <MessageSquare className="mr-2 h-4 w-4" />
-                              Send Message
+                              Send In-App Message
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              setSelectedDriver(driver);
+                              setContactDialogOpen(true);
+                            }}>
+                              <Phone className="mr-2 h-4 w-4 text-primary" />
+                              Contact via SMS/WhatsApp
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -709,7 +719,7 @@ export default function AdminDrivers() {
                             </div>
 
                             {/* Actions */}
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -717,6 +727,17 @@ export default function AdminDrivers() {
                               >
                                 <Eye className="mr-2 h-4 w-4" />
                                 Review
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedDriver(driver);
+                                  setContactDialogOpen(true);
+                                }}
+                              >
+                                <MessageSquare className="mr-2 h-4 w-4 text-primary" />
+                                Contact
                               </Button>
                               <Button
                                 variant="default"
@@ -880,6 +901,13 @@ export default function AdminDrivers() {
       <DriverDocumentReviewDialog
         open={reviewDialogOpen}
         onOpenChange={setReviewDialogOpen}
+        driver={selectedDriver}
+      />
+
+      {/* Applicant Contact Dialog */}
+      <ApplicantMessageDialog
+        open={contactDialogOpen}
+        onOpenChange={setContactDialogOpen}
         driver={selectedDriver}
       />
     </AdminLayout>

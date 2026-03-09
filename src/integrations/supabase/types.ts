@@ -142,6 +142,56 @@ export type Database = {
         }
         Relationships: []
       }
+      applicant_communications: {
+        Row: {
+          admin_id: string
+          channel: string
+          created_at: string
+          delivery_error: string | null
+          delivery_status: string
+          driver_id: string
+          id: string
+          message_content: string
+          phone_number: string | null
+          template_used: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_id: string
+          channel?: string
+          created_at?: string
+          delivery_error?: string | null
+          delivery_status?: string
+          driver_id: string
+          id?: string
+          message_content: string
+          phone_number?: string | null
+          template_used?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string
+          channel?: string
+          created_at?: string
+          delivery_error?: string | null
+          delivery_status?: string
+          driver_id?: string
+          id?: string
+          message_content?: string
+          phone_number?: string | null
+          template_used?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applicant_communications_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           created_at: string

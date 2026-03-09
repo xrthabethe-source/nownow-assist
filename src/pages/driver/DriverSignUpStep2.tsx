@@ -126,6 +126,11 @@ export default function DriverSignUpStep2() {
       const userId = authData.user?.id;
       if (!userId) throw new Error("Account creation failed");
 
+      // Detect fake signup (email already exists) - Supabase returns identities as empty array
+      if (authData.user?.identities && authData.user.identities.length === 0) {
+        throw new Error("An account with this email already exists. Please use a different email or sign in.");
+      }
+
       // 2. Wait briefly for trigger to create profile + driver record
       await new Promise((r) => setTimeout(r, 2000));
 

@@ -34,9 +34,9 @@ const services = [
 ];
 
 const testimonials = [
-  { name: "Sarah M.", location: "Johannesburg", rating: 5, text: "Flat tyre at 11pm on the N1. Help arrived in 12 minutes. Absolute lifesaver!", avatar: "SM" },
-  { name: "David K.", location: "Cape Town", rating: 5, text: "Battery died in a mall parking lot. Within 15 mins, I was on my way. Incredible service.", avatar: "DK" },
-  { name: "Thandi N.", location: "Durban", rating: 5, text: "As a woman traveling alone, the live tracking feature made me feel so safe. Highly recommend!", avatar: "TN" },
+  { name: "Sarah M.", location: "Centurion", rating: 5, text: "Flat tyre at 11pm on the N1. Help arrived in 12 minutes. Absolute lifesaver!", avatar: "SM" },
+  { name: "David K.", location: "Centurion", rating: 5, text: "Battery died in a mall parking lot. Within 15 mins, I was on my way. Incredible service.", avatar: "DK" },
+  { name: "Thandi N.", location: "Centurion", rating: 5, text: "As a woman traveling alone, the live tracking feature made me feel so safe. Highly recommend!", avatar: "TN" },
 ];
 
 const stats = [

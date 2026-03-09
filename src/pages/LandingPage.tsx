@@ -126,9 +126,9 @@ export const LandingPage = () => {
 
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
                 className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-primary-foreground">
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5" /><span className="font-medium">No insurance</span></div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5" /><span className="font-medium">No membership fee</span></div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5" /><span className="font-medium">Pay only when you need us</span></div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-accent" /><span className="font-medium text-white">No insurance</span></div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-accent" /><span className="font-medium text-white">No membership fee</span></div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-accent" /><span className="font-medium text-white">Pay only when you need us</span></div>
               </motion.div>
             </div>
           </div>

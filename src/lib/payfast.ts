@@ -43,7 +43,39 @@ export const initiatePayfastPayment = async ({
  * falls back to form POST for published site.
  */
 export const redirectToPayfast = (paymentUrl: string, paymentData: Record<string, string>) => {
-  // Build the form and submit it
+  // Detect if we're in an iframe
+  const isInIframe = window.self !== window.top;
+
+  if (isInIframe) {
+    // In iframe (Lovable preview): open window FIRST to avoid popup blocker,
+    // then write a self-submitting form into it
+    const newWindow = window.open("about:blank", "_blank");
+    if (newWindow) {
+      const formHtml = `
+        <html><body>
+        <p>Redirecting to PayFast...</p>
+        <form id="pf" method="POST" action="${paymentUrl}">
+          ${Object.entries(paymentData)
+            .filter(([_, v]) => v !== undefined && v !== null)
+            .map(([k, v]) => `<input type="hidden" name="${k}" value="${String(v).replace(/"/g, '&quot;')}" />`)
+            .join("")}
+        </form>
+        <script>document.getElementById('pf').submit();<\/script>
+        </body></html>`;
+      newWindow.document.write(formHtml);
+      newWindow.document.close();
+    } else {
+      // Popup blocked – fall back to navigating top frame
+      try {
+        window.top!.location.href = `${paymentUrl}?${new URLSearchParams(paymentData).toString()}`;
+      } catch {
+        window.location.href = `${paymentUrl}?${new URLSearchParams(paymentData).toString()}`;
+      }
+    }
+    return;
+  }
+
+  // On published site: standard form POST in same window
   const form = document.createElement("form");
   form.method = "POST";
   form.action = paymentUrl;
@@ -58,19 +90,9 @@ export const redirectToPayfast = (paymentUrl: string, paymentData: Record<string
     form.appendChild(input);
   });
 
-  // Detect if we're in an iframe
-  const isInIframe = window.self !== window.top;
-
-  if (isInIframe) {
-    // In iframe (Lovable preview): open in new tab
-    form.target = "_blank";
-  }
-  // On published site: form submits in same window (default behavior)
-
   document.body.appendChild(form);
   form.submit();
 
-  // Clean up
   setTimeout(() => {
     document.body.removeChild(form);
   }, 1000);

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { encode as hexEncode } from "https://deno.land/std@0.224.0/encoding/hex.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,12 +20,18 @@ async function generateSignature(data: Record<string, string>, passphrase: strin
 
   const withPassphrase = `${paramString}&passphrase=${encodeURIComponent(passphrase).replace(/%20/g, "+")}`;
 
-  // Use Deno's built-in crypto for reliable MD5
-  const encoder = new TextEncoder();
-  const dataBuffer = encoder.encode(withPassphrase);
-  const hashBuffer = await crypto.subtle.digest("MD5", dataBuffer);
-  const hashArray = new Uint8Array(hashBuffer);
-  return Array.from(hashArray).map(b => b.toString(16).padStart(2, "0")).join("");
+  // Use Deno's built-in hash (not crypto.subtle which doesn't support MD5)
+  const { createHash } = await import("https://deno.land/std@0.224.0/crypto/mod.ts");
+  // Fallback: use a simple MD5 via the std library
+  const hash = new TextEncoder().encode(withPassphrase);
+  
+  // Use Web Crypto with a polyfill approach - actually let's just compute MD5 manually
+  // Deno std crypto doesn't have createHash either in newer versions
+  // Use the tried and tested approach with an external MD5 module
+  const { Md5 } = await import("https://deno.land/std@0.119.0/hash/md5.ts");
+  const md5 = new Md5();
+  md5.update(withPassphrase);
+  return md5.toString();
 }
 
 Deno.serve(async (req) => {
@@ -85,8 +92,7 @@ Deno.serve(async (req) => {
     const isSandbox = MERCHANT_ID === "10000100";
     const payfastUrl = isSandbox ? PAYFAST_SANDBOX_URL : PAYFAST_LIVE_URL;
 
-    // Build payment data — order doesn't matter for signature (we sort alphabetically)
-    // but we exclude signature from the data used to generate it
+    // Build payment data
     const paymentData: Record<string, string> = {
       merchant_id: MERCHANT_ID,
       merchant_key: MERCHANT_KEY,
@@ -102,7 +108,7 @@ Deno.serve(async (req) => {
       custom_str2: job_id || "",
     };
 
-    // Generate signature using proper MD5
+    // Generate signature
     const signature = await generateSignature(paymentData, PASSPHRASE);
     paymentData.signature = signature;
 

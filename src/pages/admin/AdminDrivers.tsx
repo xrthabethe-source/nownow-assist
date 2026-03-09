@@ -107,6 +107,7 @@ export default function AdminDrivers() {
   const [payoutDialogOpen, setPayoutDialogOpen] = useState(false);
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [messageSubject, setMessageSubject] = useState<"complaint" | "payout" | "general">("general");
   const [messageContent, setMessageContent] = useState("");

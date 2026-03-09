@@ -43,50 +43,6 @@ interface Customer {
   created_at: string;
 }
 
-// Demo customers data
-const demoCustomers: Customer[] = [
-  {
-    id: "cust-001",
-    email: "john.mokoena@email.com",
-    full_name: "John Mokoena",
-    avatar_url: null,
-    phone: "+27 82 123 4567",
-    created_at: "2025-06-15T08:00:00Z",
-  },
-  {
-    id: "cust-002",
-    email: "sarah.nkosi@email.com",
-    full_name: "Sarah Nkosi",
-    avatar_url: null,
-    phone: "+27 83 234 5678",
-    created_at: "2025-08-22T10:30:00Z",
-  },
-  {
-    id: "cust-003",
-    email: "thabo.molefe@email.com",
-    full_name: "Thabo Molefe",
-    avatar_url: null,
-    phone: "+27 87 678 9012",
-    created_at: "2025-11-18T11:45:00Z",
-  },
-  {
-    id: "cust-004",
-    email: "lindiwe.zulu@email.com",
-    full_name: "Lindiwe Zulu",
-    avatar_url: null,
-    phone: "+27 84 555 1234",
-    created_at: "2025-10-05T14:20:00Z",
-  },
-  {
-    id: "cust-005",
-    email: "sipho.dlamini@email.com",
-    full_name: "Sipho Dlamini",
-    avatar_url: null,
-    phone: "+27 82 999 8888",
-    created_at: "2025-09-12T09:00:00Z",
-  },
-];
-
 export default function AdminCustomers() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -103,7 +59,7 @@ export default function AdminCustomers() {
       if (rolesError) throw rolesError;
 
       if (!customerRoles || customerRoles.length === 0) {
-        return demoCustomers;
+        return [];
       }
 
       const customerIds = customerRoles.map(r => r.user_id);
@@ -118,7 +74,7 @@ export default function AdminCustomers() {
       if (profilesError) throw profilesError;
 
       if (!profiles || profiles.length === 0) {
-        return demoCustomers;
+        return [];
       }
 
       return profiles as Customer[];

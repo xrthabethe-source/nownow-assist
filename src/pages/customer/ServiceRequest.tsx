@@ -120,7 +120,11 @@ export const ServiceRequest = () => {
   
   // Use database price if available
   const actualPrice = dbService?.base_price || service?.price;
-  
+
+  // Auto-detect location on mount
+  useEffect(() => {
+    detectLocation();
+  }, []);
 
   const detectLocation = async () => {
     setIsLoadingLocation(true);

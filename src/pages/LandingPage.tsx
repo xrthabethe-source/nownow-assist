@@ -116,10 +116,10 @@ export const LandingPage = () => {
 
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                 className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button variant="amber" size="xl" onClick={() => navigate("/auth")} className="w-full sm:w-auto px-8 md:px-12 shadow-accent animate-pulse-amber">
+                <Button variant="amber" size="xl" onClick={() => navigate("/auth")} className="w-full sm:w-auto px-8 md:px-12 shadow-accent animate-pulse-amber text-primary-foreground">
                   <Zap className="mr-2 h-5 w-5" />Sign Up for Free
                 </Button>
-                <Button variant="light" size="lg" onClick={() => navigate("/auth")} className="w-full sm:w-auto">
+                <Button variant="light" size="lg" onClick={() => navigate("/auth")} className="w-full sm:w-auto text-primary-foreground bg-primary-foreground/20 border-primary-foreground/30 hover:bg-primary-foreground/30">
                   <Play className="mr-2 h-4 w-4" />Get Help Now
                 </Button>
               </motion.div>

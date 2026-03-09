@@ -59,7 +59,7 @@ export default function AdminCustomers() {
       if (rolesError) throw rolesError;
 
       if (!customerRoles || customerRoles.length === 0) {
-        return demoCustomers;
+        return [];
       }
 
       const customerIds = customerRoles.map(r => r.user_id);

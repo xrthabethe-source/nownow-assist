@@ -18,8 +18,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCustomerJobs } from "@/hooks/useJobs";
 import { MapPin, Clock, Loader2, RefreshCw, Bookmark, BookmarkPlus, Edit2, Check, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 const services = [
   { id: "fuel", name: "Fuel Rescue", icon: FuelIcon, price: "R349", eta: "15-25 min", description: "We bring fuel to get you moving now", featured: true },

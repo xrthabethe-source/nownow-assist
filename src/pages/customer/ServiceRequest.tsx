@@ -20,6 +20,7 @@ import { useConnectivity } from "@/hooks/useConnectivity";
 import { addPendingDraft } from "@/lib/offlineStorage";
 import { cacheCurrentLocation } from "@/hooks/useOfflineCache";
 import { WhatsAppFallback } from "@/components/shared/WhatsAppFallback";
+import { initiatePayfastPayment, redirectToPayfast } from "@/lib/payfast";
 
 const services: Record<string, any> = {
   fuel: { 

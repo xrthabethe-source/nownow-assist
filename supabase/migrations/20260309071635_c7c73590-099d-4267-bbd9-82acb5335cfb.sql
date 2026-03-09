@@ -1,0 +1,2 @@
+ALTER TABLE public.drivers DROP CONSTRAINT drivers_status_check;
+ALTER TABLE public.drivers ADD CONSTRAINT drivers_status_check CHECK (status = ANY (ARRAY['pending'::text, 'approved'::text, 'suspended'::text, 'rejected'::text, 'documents_required'::text]));

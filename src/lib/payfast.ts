@@ -45,6 +45,7 @@ export const redirectToPayfast = (paymentUrl: string, paymentData: Record<string
   form.method = "POST";
   form.action = paymentUrl;
   form.style.display = "none";
+  form.target = "_top"; // Break out of iframe
 
   Object.entries(paymentData).forEach(([key, value]) => {
     const input = document.createElement("input");

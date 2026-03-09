@@ -63,7 +63,7 @@ const services: Record<string, any> = {
   },
 };
 
-const steps = ["Service", "Location", "Payment", "Confirm"];
+const steps = ["Service", "Location", "Confirm"];
 
 export const ServiceRequest = () => {
   const { serviceId } = useParams();

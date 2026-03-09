@@ -269,8 +269,11 @@ export const ServiceRequest = () => {
     }, 20000);
     
     try {
+      let jobId: string | undefined;
+      
+      // Create the job first (pending payment)
       if (dbService?.id) {
-        await createJobMutation.mutateAsync({
+        const result = await createJobMutation.mutateAsync({
           serviceId: dbService.id,
           pickupAddress: pickupAddr,
           pickupLat: lat,
@@ -279,11 +282,25 @@ export const ServiceRequest = () => {
           etaMinutes: dbService.eta_minutes || 20,
           notes,
         });
-        toast.success("Service request created!");
+        jobId = result?.id;
       }
+
+      // Initiate Payfast payment
+      const origin = window.location.origin;
+      const payfast = await initiatePayfastPayment({
+        amount: actualPrice,
+        itemName: service?.name || "Roadside Assistance",
+        jobId,
+        returnUrl: `${origin}/customer/tracking/${serviceId}?payment=success`,
+        cancelUrl: `${origin}/customer/home?payment=cancelled`,
+      });
       
       if (submissionTimerRef.current) clearTimeout(submissionTimerRef.current);
-      navigate(`/customer/tracking/${serviceId}`, { state: { address: pickupAddr } });
+      
+      // Redirect to Payfast payment page
+      toast.success("Redirecting to payment...");
+      redirectToPayfast(payfast.payment_url, payfast.payment_data);
+      
     } catch (error) {
       console.error("Failed to create job:", error);
       

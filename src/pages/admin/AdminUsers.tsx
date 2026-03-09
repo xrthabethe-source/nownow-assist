@@ -71,67 +71,6 @@ interface UserWithRole {
   permissions?: string[];
 }
 
-// Demo users data - only office staff and drivers
-const demoUsers: UserWithRole[] = [
-  {
-    id: "usr-003",
-    email: "samuel.khumalo@email.com",
-    full_name: "Samuel Khumalo",
-    avatar_url: null,
-    phone: "+27 84 345 6789",
-    created_at: "2025-03-10T14:20:00Z",
-    role: "driver",
-  },
-  {
-    id: "usr-004",
-    email: "david.okonkwo@email.com",
-    full_name: "David Okonkwo",
-    avatar_url: null,
-    phone: "+27 85 456 7890",
-    created_at: "2025-05-02T09:15:00Z",
-    role: "driver",
-  },
-  {
-    id: "usr-005",
-    email: "admin@nownow.co.za",
-    full_name: "Admin User",
-    avatar_url: null,
-    phone: "+27 86 567 8901",
-    created_at: "2024-01-01T00:00:00Z",
-    role: "admin",
-    permissions: ["all"],
-  },
-  {
-    id: "usr-007",
-    email: "blessing.ndlovu@email.com",
-    full_name: "Blessing Ndlovu",
-    avatar_url: null,
-    phone: "+27 88 789 0123",
-    created_at: "2025-09-25T16:00:00Z",
-    role: "driver",
-  },
-  {
-    id: "usr-008",
-    email: "ops.manager@nownow.co.za",
-    full_name: "Operations Manager",
-    avatar_url: null,
-    phone: "+27 82 111 2222",
-    created_at: "2025-03-15T09:00:00Z",
-    role: "admin",
-    permissions: ["jobs", "drivers", "disputes"],
-  },
-  {
-    id: "usr-009",
-    email: "finance@nownow.co.za",
-    full_name: "Finance Admin",
-    avatar_url: null,
-    phone: "+27 83 333 4444",
-    created_at: "2025-04-20T10:30:00Z",
-    role: "admin",
-    permissions: ["payments", "reports", "pricing"],
-  },
-];
-
 const availablePermissions = [
   { id: "all", label: "Full Access", icon: Shield, description: "Complete system access" },
   { id: "users", label: "User Management", icon: Users, description: "Manage customers and user accounts" },

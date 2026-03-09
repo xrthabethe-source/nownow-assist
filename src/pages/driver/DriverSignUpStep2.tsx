@@ -110,29 +110,45 @@ export default function DriverSignUpStep2() {
     setSubmitting(true);
 
     try {
-      // 1. Create auth account (driver role)
-      const password = crypto.randomUUID().slice(0, 16) + "Aa1!";
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: step1.email,
-        password,
-        options: {
-          data: {
-            full_name: `${step1.name} ${step1.surname}`,
-            account_type: "driver",
+      // 1. Check if user is already authenticated, or try to get existing session
+      let userId: string | undefined;
+      
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session?.user?.id) {
+        userId = sessionData.session.user.id;
+      } else {
+        // Try to create auth account (driver role)
+        const password = crypto.randomUUID().slice(0, 16) + "Aa1!";
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: step1.email,
+          password,
+          options: {
+            data: {
+              full_name: `${step1.name} ${step1.surname}`,
+              account_type: "driver",
+            },
           },
-        },
-      });
-      if (authError) throw authError;
-      const userId = authData.user?.id;
-      if (!userId) throw new Error("Account creation failed");
+        });
+        
+        if (authError) {
+          // If user already registered, prompt them to sign in and upload docs from portal
+          if (authError.message?.includes("already registered") || (authError as any).code === "user_already_exists") {
+            throw new Error("This email is already registered. Please sign in at the login page and upload your documents from the Driver Portal.");
+          }
+          throw authError;
+        }
+        
+        userId = authData.user?.id;
+        if (!userId) throw new Error("Account creation failed");
 
-      // Detect fake signup (email already exists) - Supabase returns identities as empty array
-      if (authData.user?.identities && authData.user.identities.length === 0) {
-        throw new Error("An account with this email already exists. Please use a different email or sign in.");
+        // Detect fake signup (email already exists)
+        if (authData.user?.identities && authData.user.identities.length === 0) {
+          throw new Error("This email is already registered. Please sign in at the login page and upload your documents from the Driver Portal.");
+        }
+
+        // Wait briefly for trigger to create profile + driver record
+        await new Promise((r) => setTimeout(r, 2000));
       }
-
-      // 2. Wait briefly for trigger to create profile + driver record
-      await new Promise((r) => setTimeout(r, 2000));
 
       // 3. Get the driver record
       const { data: driver } = await supabase

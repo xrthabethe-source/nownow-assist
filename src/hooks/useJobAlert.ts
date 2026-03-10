@@ -18,7 +18,7 @@ const createRingtone = (audioContext: AudioContext) => {
 export const useJobAlert = (hasIncomingJob: boolean) => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const oscillatorRef = useRef<OscillatorNode | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isPlayingRef = useRef(false);
 
   const playRingPattern = useCallback(() => {

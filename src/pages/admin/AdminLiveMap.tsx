@@ -328,7 +328,7 @@ export default function AdminLiveMap() {
   const [mapReady, setMapReady] = useState(false);
   const animationRef = useRef<number | null>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const simulationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const simulationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Cleanup on unmount to prevent map glitches
   useEffect(() => {

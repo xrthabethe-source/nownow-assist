@@ -7,10 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Mail, Lock, User, AlertCircle, Car, Users, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, Mail, Lock, User, AlertCircle, Car, Users, ShieldAlert, CheckCircle2, XCircle, Phone, ShieldCheck } from 'lucide-react';
 import { trackSecurityEvent } from '@/lib/sentry';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Logo } from '@/components/shared/Logo';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   checkLoginRateLimit, 
   recordLoginAttempt, 
@@ -20,6 +22,7 @@ import {
 const emailSchema = z.string().trim().email('Please enter a valid email address');
 const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
 const nameSchema = z.string().trim().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long');
+const phoneSchema = z.string().trim().regex(/^(\+27|0)\d{9}$/, 'Enter a valid SA phone number (e.g. 071 234 5678)');
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -30,6 +33,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
   const [accountType, setAccountType] = useState<'customer' | 'driver'>('customer');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,12 +43,28 @@ export default function Auth() {
   const [lockoutMessage, setLockoutMessage] = useState<string | null>(null);
   const [retryCountdown, setRetryCountdown] = useState(0);
 
+  // OTP state
+  const [showOtp, setShowOtp] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [otpResendCountdown, setOtpResendCountdown] = useState(0);
+
   useEffect(() => {
     if (retryCountdown > 0) {
       const timer = setTimeout(() => setRetryCountdown(retryCountdown - 1), 1000);
       return () => clearTimeout(timer);
     }
   }, [retryCountdown]);
+
+  useEffect(() => {
+    if (otpResendCountdown > 0) {
+      const timer = setTimeout(() => setOtpResendCountdown(otpResendCountdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [otpResendCountdown]);
 
   useEffect(() => {
     if (user && !authLoading) {
@@ -67,6 +87,14 @@ export default function Auth() {
     }
   }, [password, isLogin]);
 
+  // Reset OTP state when phone changes
+  useEffect(() => {
+    setOtpVerified(false);
+    setShowOtp(false);
+    setOtpCode('');
+    setOtpError(null);
+  }, [phone]);
+
   const validateFields = () => {
     const errors: Record<string, string> = {};
     const emailResult = emailSchema.safeParse(email);
@@ -78,9 +106,66 @@ export default function Auth() {
       if (!strengthCheck.valid) errors.password = 'Password does not meet security requirements';
       const nameResult = nameSchema.safeParse(fullName);
       if (!nameResult.success) errors.fullName = nameResult.error.errors[0].message;
+      const cleanPhone = phone.replace(/\s/g, '');
+      const phoneResult = phoneSchema.safeParse(cleanPhone);
+      if (!phoneResult.success) errors.phone = phoneResult.error.errors[0].message;
+      if (!otpVerified && cleanPhone && phoneResult.success) errors.phone = 'Please verify your phone number';
     }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  const handleSendOtp = async () => {
+    const cleanPhone = phone.replace(/\s/g, '');
+    const phoneResult = phoneSchema.safeParse(cleanPhone);
+    if (!phoneResult.success) {
+      setFieldErrors(prev => ({ ...prev, phone: phoneResult.error.errors[0].message }));
+      return;
+    }
+    if (!email.trim()) {
+      setFieldErrors(prev => ({ ...prev, email: 'Email is required to send OTP' }));
+      return;
+    }
+
+    setOtpSending(true);
+    setOtpError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('driver-otp', {
+        body: { action: 'send', email: email.trim().toLowerCase(), phone: cleanPhone, otp_type: 'phone' },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      setShowOtp(true);
+      setOtpResendCountdown(60);
+    } catch (err: any) {
+      setOtpError(err.message || 'Failed to send OTP');
+    } finally {
+      setOtpSending(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otpCode.length < 5) {
+      setOtpError('Please enter the full 5-digit code');
+      return;
+    }
+    setOtpVerifying(true);
+    setOtpError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('driver-otp', {
+        body: { action: 'verify', email: email.trim().toLowerCase(), otp_type: 'phone', otp_code: otpCode },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      if (data?.verified) {
+        setOtpVerified(true);
+        setShowOtp(false);
+      }
+    } catch (err: any) {
+      setOtpError(err.message || 'Verification failed');
+    } finally {
+      setOtpVerifying(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -123,6 +208,19 @@ export default function Auth() {
         const { error } = await signUp(email, password, fullName, accountType);
         if (error) {
           setError(error.message.includes('already registered') ? 'This email is already registered. Please sign in instead.' : error.message);
+        } else {
+          // Update profile with phone number after signup
+          // The handle_new_user trigger creates the profile, so we update it
+          const cleanPhone = phone.replace(/\s/g, '');
+          if (cleanPhone) {
+            // Small delay to allow trigger to fire
+            setTimeout(async () => {
+              const { data: { user: newUser } } = await supabase.auth.getUser();
+              if (newUser) {
+                await supabase.from('profiles').update({ phone: cleanPhone }).eq('id', newUser.id);
+              }
+            }, 1000);
+          }
         }
       }
     } catch (err: any) {
@@ -249,6 +347,89 @@ export default function Auth() {
                 {fieldErrors.email && <p className="text-sm text-destructive">{fieldErrors.email}</p>}
               </div>
 
+              {/* Mobile Number with OTP - Signup only */}
+              {!isLogin && (
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Mobile Number <span className="text-destructive">*</span></Label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="e.g. 071 234 5678"
+                        value={phone}
+                        onChange={(e) => { setPhone(e.target.value); setFieldErrors((prev) => ({ ...prev, phone: '' })); }}
+                        className="pl-10"
+                        disabled={otpVerified}
+                      />
+                    </div>
+                    {otpVerified ? (
+                      <div className="flex items-center gap-1 rounded-md bg-primary/10 px-3 text-sm font-medium text-primary">
+                        <ShieldCheck className="h-4 w-4" />
+                        Verified
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="default"
+                        onClick={handleSendOtp}
+                        disabled={otpSending || otpResendCountdown > 0 || !phone.trim()}
+                      >
+                        {otpSending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : otpResendCountdown > 0 ? (
+                          `${otpResendCountdown}s`
+                        ) : showOtp ? (
+                          'Resend'
+                        ) : (
+                          'Verify'
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                  {fieldErrors.phone && <p className="text-sm text-destructive">{fieldErrors.phone}</p>}
+
+                  {/* OTP Input */}
+                  {showOtp && !otpVerified && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="space-y-3 rounded-lg border border-border bg-secondary/50 p-3"
+                    >
+                      <p className="text-xs text-muted-foreground">
+                        Enter the 5-digit code sent to your phone
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <InputOTP maxLength={5} value={otpCode} onChange={setOtpCode}>
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleVerifyOtp}
+                          disabled={otpVerifying || otpCode.length < 5}
+                        >
+                          {otpVerifying ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm'}
+                        </Button>
+                      </div>
+                      {otpError && (
+                        <p className="text-xs text-destructive flex items-center gap-1">
+                          <AlertCircle className="h-3 w-3" /> {otpError}
+                        </p>
+                      )}
+                    </motion.div>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -314,7 +495,7 @@ export default function Auth() {
             <div className="mt-6 text-center">
               <button
                 type="button"
-                onClick={() => { setIsLogin(!isLogin); setError(null); setFieldErrors({}); setIsLocked(false); setLockoutMessage(null); setRetryCountdown(0); }}
+                onClick={() => { setIsLogin(!isLogin); setError(null); setFieldErrors({}); setIsLocked(false); setLockoutMessage(null); setRetryCountdown(0); setShowOtp(false); setOtpVerified(false); setOtpCode(''); setOtpError(null); }}
                 className="text-sm text-primary hover:underline"
               >
                 {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}

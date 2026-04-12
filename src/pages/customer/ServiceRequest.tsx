@@ -395,9 +395,6 @@ export const ServiceRequest = () => {
               </div>
             </CardContent>
           </Card>
-              </div>
-            </CardContent>
-          </Card>
         </motion.div>
 
         {/* Request For Toggle */}

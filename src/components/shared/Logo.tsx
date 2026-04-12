@@ -32,6 +32,7 @@ export const Logo = ({
       transition={{ duration: 0.3 }}
     >
       <img
+        style={{ marginTop: '-8px' }}
         src={logoImage}
         alt="Now-Now Assist"
         className={cn(

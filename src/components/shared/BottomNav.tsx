@@ -25,7 +25,7 @@ export const BottomNav = ({ type }: BottomNavProps) => {
   const links = type === "customer" ? customerLinks : driverLinks;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-white/95 backdrop-blur-xl safe-area-inset-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-xl safe-area-inset-bottom">
       <div className="flex items-center justify-around py-2">
         {links.map((link) => (
           <RouterNavLink

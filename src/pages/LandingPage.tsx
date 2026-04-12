@@ -197,8 +197,8 @@ export const LandingPage = () => {
               <motion.div key={solution.title} variants={item}>
                 <div className="h-full overflow-hidden rounded-2xl border border-border bg-card p-6 md:p-8 transition-all hover:shadow-lg group">
                   <div className="flex items-start gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 transition-colors group-hover:bg-primary/15">
-                      <solution.icon className="h-7 w-7 text-primary" />
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-orange-500/10 transition-colors group-hover:bg-orange-500/15">
+                      <solution.icon className="h-7 w-7 text-orange-500" />
                     </div>
                     <div className="flex-1">
                       <div className="mb-2 flex items-center gap-2">

@@ -241,10 +241,10 @@
 /* Animations */
 @keyframes pulse-action {
   0%, 100% {
-    box-shadow: 0 0 0 0 hsl(220 84% 47% / 0.4);
+    box-shadow: 0 0 0 0 hsl(32 93% 54% / 0.4);
   }
   50% {
-    box-shadow: 0 0 0 8px hsl(220 84% 47% / 0);
+    box-shadow: 0 0 0 8px hsl(32 93% 54% / 0);
   }
 }
 

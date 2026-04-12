@@ -262,8 +262,8 @@ export const CustomerHome = () => {
                   {service.featured && (
                     <span className="mb-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-accent-foreground">MOST POPULAR</span>
                   )}
-                  <div className={`mb-3 flex h-14 w-14 items-center justify-center rounded-2xl ${service.isMechanic ? 'bg-muted' : 'bg-primary/10'}`}>
-                    <service.icon className={`h-7 w-7 ${service.isMechanic ? 'text-muted-foreground' : 'text-primary'}`} />
+                  <div className={`mb-3 flex h-14 w-14 items-center justify-center rounded-2xl ${service.isMechanic ? 'bg-muted' : 'bg-secondary/10'}`}>
+                    <service.icon className={`h-7 w-7 ${service.isMechanic ? 'text-muted-foreground' : 'text-secondary'}`} />
                   </div>
                   <h3 className="mb-1 font-semibold text-foreground">{service.name}</h3>
                   <p className="text-lg font-bold text-primary">{service.price}</p>

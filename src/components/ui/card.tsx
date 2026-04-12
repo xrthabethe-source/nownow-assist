@@ -13,7 +13,7 @@ const cardVariants = cva(
         // Elevated: White with stronger shadow
         elevated: "bg-card text-card-foreground border-border shadow-lg hover:shadow-xl",
         // Glass: Translucent white
-        glass: "bg-white/80 backdrop-blur-xl border-border text-foreground",
+        glass: "bg-card/80 backdrop-blur-xl border-border text-foreground",
         // Outline: Transparent with visible border
         outline: "bg-transparent border-2 border-border text-foreground",
         // Primary surface: Blue background

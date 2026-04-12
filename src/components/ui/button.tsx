@@ -26,7 +26,7 @@ const buttonVariants = cva(
         // Dark variant: Deep Blue solid
         dark: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary",
         // Glass
-        glass: "bg-white/80 backdrop-blur-xl border border-border text-foreground hover:bg-white/90",
+        glass: "bg-card/80 backdrop-blur-xl border border-border text-foreground hover:bg-card/90",
         // Success
         success: "bg-success text-success-foreground hover:bg-success/90",
         // Warning
@@ -34,7 +34,7 @@ const buttonVariants = cva(
         // SOS Emergency
         sos: "bg-destructive text-destructive-foreground animate-pulse-amber hover:bg-destructive/90",
         // Light: White button
-        light: "bg-white text-primary hover:bg-white/90 shadow-md border border-border",
+        light: "bg-card text-primary hover:bg-card/90 shadow-md border border-border",
       },
       size: {
         default: "h-12 px-6 py-3",

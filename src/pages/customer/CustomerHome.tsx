@@ -226,10 +226,10 @@ export const CustomerHome = () => {
                     <div className="flex items-center gap-1">
                       <LocationSelector onSelect={handleSavedLocationSelect} />
                       {canSaveLocation && (
-                        <Button variant="ghost" size="icon-sm" onClick={() => setShowSaveDialog(true)} title="Save this location"><BookmarkPlus className="h-5 w-5 text-primary" /></Button>
+                        <Button variant="ghost" size="icon-sm" onClick={() => setShowSaveDialog(true)} title="Save this location"><BookmarkPlus className="h-5 w-5 text-secondary" /></Button>
                       )}
                       <Button variant="ghost" size="icon-sm" onClick={fetchLocation} disabled={isLocating} title="Detect via GPS">
-                        <RefreshCw className={`h-5 w-5 text-primary ${isLocating ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`h-5 w-5 text-secondary ${isLocating ? 'animate-spin' : ''}`} />
                       </Button>
                     </div>
                   </div>

@@ -378,20 +378,23 @@ export const ServiceRequest = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card variant="amber" className="mb-4">
+          <Card className="mb-4 border-secondary/30 bg-secondary/5">
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary">
-                  <ServiceIcon className="h-7 w-7 text-primary-foreground" />
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary">
+                  <ServiceIcon className="h-7 w-7 text-secondary-foreground" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-foreground">{service?.name}</h3>
                   <p className="text-sm text-muted-foreground">{service?.description}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-primary">R{actualPrice}</p>
+                  <p className="text-2xl font-bold text-accent">R{actualPrice}</p>
                   <p className="text-sm text-muted-foreground">{service?.eta}</p>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
               </div>
             </CardContent>
           </Card>

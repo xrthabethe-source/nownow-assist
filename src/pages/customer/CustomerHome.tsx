@@ -266,7 +266,7 @@ export const CustomerHome = () => {
                     <service.icon className="h-7 w-7 text-secondary" />
                   </div>
                   <h3 className="mb-1 font-semibold text-foreground">{service.name}</h3>
-                  <p className="text-lg font-bold text-primary">{service.price}</p>
+                  <p className="text-lg font-bold text-accent">{service.price}</p>
                   {service.isMechanic && <p className="mt-1 text-[10px] text-muted-foreground">Connection fee only</p>}
                   <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" /><span>{service.eta}</span>

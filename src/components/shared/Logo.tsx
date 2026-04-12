@@ -36,7 +36,7 @@ export const Logo = ({
         src={logoImage}
         alt="Now-Now Assist"
         className={cn(
-          "object-contain",
+          "object-contain text-6xl",
           sizeClasses[size],
           showText ? "w-auto" : "w-auto object-cover object-center"
         )}

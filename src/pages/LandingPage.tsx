@@ -102,7 +102,7 @@ export const LandingPage = () => {
           <div className="absolute top-20 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl opacity-50" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-3xl opacity-40" />
           
-          <div className="container relative py-16 md:py-24 lg:py-32">
+          <div className="container relative py-16 md:py-24 lg:py-32 text-sm">
             <div className="mx-auto max-w-4xl text-center">
               <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                 className="mb-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">

@@ -610,8 +610,8 @@ export const ServiceRequest = () => {
           <Card variant="default" className="mb-4">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                  <Clock className="h-6 w-6 text-primary" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary/10">
+                  <Clock className="h-6 w-6 text-secondary" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-muted-foreground">Estimated Arrival</p>

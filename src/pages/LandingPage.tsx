@@ -227,7 +227,7 @@ export const LandingPage = () => {
             {services.map((service) => (
               <motion.div key={service.name} variants={item}>
                 <div 
-                  className={`h-full relative cursor-pointer rounded-2xl border transition-all hover:scale-105 ${service.popular ? 'border-orange-500 ring-2 ring-orange-500 bg-orange-500/5' : 'border-border bg-card hover:shadow-md'}`}
+                  className="h-full relative cursor-pointer rounded-2xl border border-orange-500 ring-2 ring-orange-500 bg-orange-500/5 transition-all hover:scale-105"
                   onClick={() => navigate("/auth")}
                 >
                   {service.popular && (

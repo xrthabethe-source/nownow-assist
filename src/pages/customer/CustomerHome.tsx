@@ -169,7 +169,7 @@ export const CustomerHome = () => {
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-md">
         <div className="container flex items-center justify-center relative py-4">
           <div className="absolute left-4"><RoleSwitcher variant="compact" /></div>
-          <Logo size="lg" />
+          <Logo size="xl" />
         </div>
       </header>
 

@@ -392,25 +392,25 @@ export const AdminDashboard = () => {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-between" asChild>
+                <Button variant="outline" className="w-full justify-between text-primary-foreground" asChild>
                   <Link to="/admin/drivers">
                     View All Drivers
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                 </Button>
-                <Button variant="outline" className="w-full justify-between" asChild>
+                <Button variant="outline" className="w-full justify-between text-primary-foreground" asChild>
                   <Link to="/admin/pricing">
                     Manage Pricing
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                 </Button>
-                <Button variant="outline" className="w-full justify-between" asChild>
+                <Button variant="outline" className="w-full justify-between text-primary-foreground" asChild>
                   <Link to="/admin/payments">
                     Payment Reports
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                 </Button>
-                <Button variant="outline" className="w-full justify-between" asChild>
+                <Button variant="outline" className="w-full justify-between text-primary-foreground" asChild>
                   <Link to="/admin/disputes">
                     Dispute Center
                     <ChevronRight className="h-4 w-4" />

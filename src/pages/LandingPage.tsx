@@ -79,8 +79,8 @@ export const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      {/* Header - White with blue accents */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-border">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border">
         <div className="container flex items-center justify-between py-3 md:py-4">
           <Logo size="2xl" />
           <nav className="hidden md:flex items-center gap-8">

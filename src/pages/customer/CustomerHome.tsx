@@ -316,7 +316,7 @@ export const CustomerHome = () => {
 
       {/* Safety Card */}
       <div className="container py-4">
-        <Card className="border-l-4 border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950/30">
+        <Card className="border-l-4 border-l-[hsl(45,100%,51%)] bg-[hsl(45,100%,90%)] dark:bg-[hsl(45,100%,10%)]">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">

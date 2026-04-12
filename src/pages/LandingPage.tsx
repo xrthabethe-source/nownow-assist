@@ -158,7 +158,7 @@ export const LandingPage = () => {
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-destructive/10 px-4 py-1.5">
-              <AlertTriangle className="h-4 w-4 text-destructive" /><span className="text-sm font-medium text-destructive">Sound familiar?</span>
+              <AlertTriangle className="h-4 w-4 text-orange-500" /><span className="text-sm font-medium text-orange-500">Sound familiar?</span>
             </div>
             <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl lg:text-5xl">
               Roadside emergencies are stressful.<br /><span className="text-muted-foreground">We make them easy.</span>

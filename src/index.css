@@ -6,34 +6,34 @@
 
 @layer base {
   :root {
-    /* Blue & White Brand Palette — extracted from Now-Now Assist logo */
+    /* Orange & Dark Brand Palette */
     
-    /* Primary Background: Clean White */
-    --background: 0 0% 100%;
-    /* Primary Foreground: Dark Gray for text */
-    --foreground: 215 25% 17%;
+    /* Primary Background: Dark Charcoal */
+    --background: 220 20% 10%;
+    /* Primary Foreground: Light text */
+    --foreground: 0 0% 95%;
 
-    /* Card: White with subtle border */
-    --card: 0 0% 100%;
-    --card-foreground: 215 25% 17%;
+    /* Card: Dark surface */
+    --card: 220 18% 14%;
+    --card-foreground: 0 0% 95%;
 
-    /* Popover: White */
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 17%;
+    /* Popover: Dark */
+    --popover: 220 18% 14%;
+    --popover-foreground: 0 0% 95%;
 
-    /* Primary: Now-Now Blue (extracted from logo #1456DB) */
-    --primary: 220 84% 47%;
+    /* Primary: Warm Orange */
+    --primary: 32 93% 54%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Light Blue tint */
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 220 84% 47%;
+    /* Secondary: Slightly lighter dark */
+    --secondary: 220 18% 18%;
+    --secondary-foreground: 0 0% 90%;
 
-    /* Muted: Very light gray-blue */
-    --muted: 210 30% 96%;
-    --muted-foreground: 215 15% 47%;
+    /* Muted: Dark muted */
+    --muted: 220 15% 18%;
+    --muted-foreground: 220 10% 55%;
 
-    /* Accent: Warm Action Orange #F7931E (from logo) */
+    /* Accent: Orange */
     --accent: 32 93% 54%;
     --accent-foreground: 0 0% 100%;
 
@@ -46,64 +46,64 @@
     --success-foreground: 0 0% 100%;
 
     /* Warning: Orange */
-    --warning: 32 93% 54%;
+    --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    /* Border: Subtle gray */
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
-    --ring: 220 84% 47%;
+    /* Border: Subtle dark border */
+    --border: 220 15% 22%;
+    --input: 220 15% 22%;
+    --ring: 32 93% 54%;
 
     --radius: 0.75rem;
 
     /* Custom brand colors */
-    --brand-primary: 220 84% 47%;
+    --brand-primary: 32 93% 54%;
     --brand-accent: 32 93% 54%;
     --brand-white: 0 0% 100%;
-    --brand-grey: 210 30% 96%;
-    --brand-charcoal: 215 25% 17%;
+    --brand-grey: 220 15% 18%;
+    --brand-charcoal: 220 20% 10%;
 
     /* Legacy naming */
     --brand-amber: 32 93% 54%;
-    --brand-dark: 220 84% 47%;
+    --brand-dark: 220 20% 10%;
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.08), 0 2px 4px -2px hsl(0 0% 0% / 0.05);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.05);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.05);
-    --shadow-primary: 0 4px 14px -2px hsl(220 84% 47% / 0.25);
-    --shadow-accent: 0 4px 14px -2px hsl(32 93% 54% / 0.3);
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.15);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.2), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.25), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.3), 0 8px 10px -6px hsl(0 0% 0% / 0.15);
+    --shadow-primary: 0 4px 14px -2px hsl(32 93% 54% / 0.35);
+    --shadow-accent: 0 4px 14px -2px hsl(32 93% 54% / 0.4);
 
-    /* Sidebar: Deep Blue */
-    --sidebar-background: 220 84% 40%;
-    --sidebar-foreground: 0 0% 100%;
+    /* Sidebar: Even darker */
+    --sidebar-background: 220 22% 8%;
+    --sidebar-foreground: 0 0% 95%;
     --sidebar-primary: 32 93% 54%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 75% 50%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 220 70% 45%;
+    --sidebar-accent: 220 18% 16%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 220 15% 18%;
     --sidebar-ring: 32 93% 54%;
   }
 
   .dark {
-    --background: 215 25% 10%;
+    --background: 220 22% 7%;
     --foreground: 0 0% 98%;
 
-    --card: 215 25% 14%;
+    --card: 220 20% 11%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 215 25% 14%;
+    --popover: 220 20% 11%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 220 84% 55%;
+    --primary: 32 93% 54%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 215 25% 18%;
+    --secondary: 220 18% 15%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 215 25% 18%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 220 15% 15%;
+    --muted-foreground: 0 0% 55%;
 
     --accent: 32 93% 54%;
     --accent-foreground: 0 0% 100%;
@@ -114,29 +114,29 @@
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 32 93% 54%;
+    --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --border: 215 25% 22%;
-    --input: 215 25% 22%;
-    --ring: 220 84% 55%;
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 32 93% 54%;
 
-    --sidebar-background: 215 25% 8%;
+    --sidebar-background: 220 22% 5%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 32 93% 54%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 25% 16%;
+    --sidebar-accent: 220 18% 13%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 215 25% 18%;
+    --sidebar-border: 220 15% 15%;
     --sidebar-ring: 32 93% 54%;
   }
 
   .light-panel {
-    --background: 210 40% 96%;
-    --foreground: 215 25% 17%;
-    --muted: 210 30% 92%;
-    --muted-foreground: 215 15% 47%;
-    --border: 214 20% 88%;
+    --background: 220 18% 16%;
+    --foreground: 0 0% 95%;
+    --muted: 220 15% 20%;
+    --muted-foreground: 220 10% 55%;
+    --border: 220 15% 24%;
   }
 }
 

@@ -260,7 +260,7 @@ export const CustomerHome = () => {
               >
                 <CardContent className="flex flex-col items-center p-4 text-center">
                   {service.featured && (
-                    <span className="mb-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">MOST POPULAR</span>
+                    <span className="mb-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-accent-foreground">MOST POPULAR</span>
                   )}
                   <div className={`mb-3 flex h-14 w-14 items-center justify-center rounded-2xl ${service.isMechanic ? 'bg-muted' : 'bg-primary/10'}`}>
                     <service.icon className={`h-7 w-7 ${service.isMechanic ? 'text-muted-foreground' : 'text-primary'}`} />

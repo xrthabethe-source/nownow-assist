@@ -217,7 +217,7 @@ export const CustomerHome = () => {
                   <div className="flex items-center justify-between pt-1">
                     <div className="flex items-center gap-1">
                       {coordinates && !isLocating && (
-                        <Button variant="outline" size="sm" onClick={() => setShowMapPicker(true)} className="gap-1.5 border-secondary/20 text-secondary hover:bg-secondary/5 hover:border-secondary/40"><MapPin className="h-4 w-4" />Adjust Pin</Button>
+                        <Button variant="outline" size="sm" onClick={() => setShowMapPicker(true)} className="gap-1.5 border-accent/20 text-accent hover:bg-accent/5 hover:border-accent/40"><MapPin className="h-4 w-4" />Adjust Pin</Button>
                       )}
                       {!isLocating && location && (
                         <Button variant="ghost" size="sm" onClick={handleEditClick} className="gap-1.5 text-secondary hover:bg-secondary/10"><Edit2 className="h-4 w-4" />Edit</Button>

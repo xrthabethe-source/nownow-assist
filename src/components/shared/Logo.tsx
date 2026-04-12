@@ -14,7 +14,7 @@ const sizeClasses = {
   md: "h-20",
   lg: "h-28",
   xl: "h-36",
-  "2xl": "h-44",
+  "2xl": "h-52",
   hero: "h-56",
 };
 

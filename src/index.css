@@ -164,7 +164,7 @@
 
 @layer utilities {
   .text-brand-primary {
-    color: hsl(220 84% 47%);
+    color: hsl(32 93% 54%);
   }
 
   .text-brand-accent {
@@ -172,7 +172,7 @@
   }
 
   .text-brand-charcoal {
-    color: hsl(215 25% 17%);
+    color: hsl(220 20% 10%);
   }
 
   .text-brand-white {
@@ -180,7 +180,7 @@
   }
 
   .bg-brand-primary {
-    background-color: hsl(220 84% 47%);
+    background-color: hsl(32 93% 54%);
   }
 
   .bg-brand-accent {
@@ -188,7 +188,7 @@
   }
 
   .bg-brand-grey {
-    background-color: hsl(210 30% 96%);
+    background-color: hsl(220 15% 18%);
   }
 
   .bg-brand-white {
@@ -200,7 +200,7 @@
   }
 
   .surface-white {
-    @apply bg-white text-foreground;
+    @apply bg-card text-card-foreground;
   }
 
   .surface-dark {
@@ -216,11 +216,11 @@
   }
 
   .glass {
-    @apply backdrop-blur-xl bg-white/80 border border-border;
+    @apply backdrop-blur-xl bg-card/80 border border-border;
   }
 
   .glass-light {
-    @apply backdrop-blur-xl bg-white/90;
+    @apply backdrop-blur-xl bg-card/90;
   }
 }
 

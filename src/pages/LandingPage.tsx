@@ -105,7 +105,7 @@ export const LandingPage = () => {
           <div className="container relative py-16 md:py-24 lg:py-32 text-sm">
             <div className="mx-auto max-w-4xl text-center">
               <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                className="mb-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
+                className="mb-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-7xl md:text-4xl">
                 Stuck on the road?<br /><span className="text-accent">We'll be there, now-now.</span>
               </motion.h1>
 

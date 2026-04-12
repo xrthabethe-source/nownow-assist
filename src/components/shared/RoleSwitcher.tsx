@@ -85,8 +85,8 @@ export function RoleSwitcher({ variant = "default", className }: RoleSwitcherPro
             size="sm"
             className={cn("gap-1.5 h-8 px-2", className)}
           >
-            <CurrentIcon className={cn("h-4 w-4", currentRoleConfig?.color)} />
-            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+            <CurrentIcon className="h-4 w-4 text-secondary" />
+            <ChevronDown className="h-3 w-3 text-accent" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">

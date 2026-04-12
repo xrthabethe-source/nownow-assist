@@ -165,8 +165,8 @@ export const CustomerHome = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Header - White with blue */}
-      <header className="sticky top-0 z-40 border-b border-border bg-white/95 backdrop-blur-xl">
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-md">
         <div className="container flex items-center justify-between py-4">
           <Logo size="lg" />
           <RoleSwitcher variant="compact" />

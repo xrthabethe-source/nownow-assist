@@ -364,7 +364,7 @@ export const LandingPage = () => {
                     <Button variant="amber" size="xl" onClick={() => navigate("/auth")} className="w-full sm:w-auto px-12 shadow-accent">
                       <Zap className="mr-2 h-5 w-5" />Get Started Free
                     </Button>
-                    <Button variant="light" size="lg" onClick={() => window.location.href = 'tel:0800000000'} className="w-full sm:w-auto">
+                    <Button variant="amber" size="lg" onClick={() => window.location.href = 'tel:0800000000'} className="w-full sm:w-auto">
                       <Phone className="mr-2 h-4 w-4" />Call Us: 0800 000 000
                     </Button>
                   </div>

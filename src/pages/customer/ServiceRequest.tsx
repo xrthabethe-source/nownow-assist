@@ -407,7 +407,7 @@ export const ServiceRequest = () => {
           <div className="flex gap-2">
             <Button
               variant={!requestForOther ? "amber" : "outline"}
-              className="flex-1"
+              className={`flex-1 ${requestForOther ? "text-primary-foreground" : ""}`}
               onClick={() => {
                 setRequestForOther(false);
                 setFieldErrors({});
@@ -418,7 +418,7 @@ export const ServiceRequest = () => {
             </Button>
             <Button
               variant={requestForOther ? "amber" : "outline"}
-              className="flex-1"
+              className={`flex-1 ${!requestForOther ? "text-primary-foreground" : ""}`}
               onClick={() => setRequestForOther(true)}
             >
               <Users className="mr-2 h-4 w-4" />

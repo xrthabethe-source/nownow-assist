@@ -177,8 +177,8 @@ export const LandingPage = () => {
           </motion.div>
 
           <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="mt-12 text-center">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-6 py-3">
-              <Heart className="h-5 w-5 text-primary" /><span className="text-lg font-semibold text-primary">Now-Now Assist has your back.</span>
+            <div className="inline-flex items-center gap-2 rounded-full bg-orange-500/10 px-6 py-3">
+              <Heart className="h-5 w-5 text-orange-500" /><span className="text-lg font-semibold text-orange-500">Now-Now Assist has your back.</span>
             </div>
           </motion.div>
         </div>

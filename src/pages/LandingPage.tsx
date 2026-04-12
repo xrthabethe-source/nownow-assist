@@ -188,8 +188,8 @@ export const LandingPage = () => {
       <section className="bg-secondary py-16 md:py-24">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">Why 50,000+ drivers trust us</h2>
-            <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">We've reimagined roadside assistance for the modern world. Fast, transparent, and always reliable.</p>
+            <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Why 50,000+ drivers trust us</h2>
+            <p className="mx-auto max-w-2xl text-secondary-foreground/80 md:text-lg">We've reimagined roadside assistance for the modern world. Fast, transparent, and always reliable.</p>
           </motion.div>
 
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid gap-6 md:grid-cols-2">
@@ -253,8 +253,8 @@ export const LandingPage = () => {
       <section id="how-it-works" className="bg-secondary py-16 md:py-24">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">Help in 3 simple steps</h2>
-            <p className="mx-auto max-w-2xl text-white md:text-lg">Getting roadside assistance has never been easier. Here's how it works:</p>
+            <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Help in 3 simple steps</h2>
+            <p className="mx-auto max-w-2xl text-secondary-foreground/80 md:text-lg">Getting roadside assistance has never been easier. Here's how it works:</p>
           </motion.div>
 
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="mx-auto max-w-4xl">

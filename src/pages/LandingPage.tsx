@@ -189,7 +189,7 @@ export const LandingPage = () => {
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Why 50,000+ drivers trust us</h2>
-            <p className="mx-auto max-w-2xl text-secondary-foreground/80 md:text-lg">We've reimagined roadside assistance for the modern world. Fast, transparent, and always reliable.</p>
+            <p className="mx-auto max-w-2xl text-secondary-foreground md:text-lg">We've reimagined roadside assistance for the modern world. Fast, transparent, and always reliable.</p>
           </motion.div>
 
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid gap-6 md:grid-cols-2">

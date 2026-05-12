@@ -78,6 +78,7 @@ export const ServiceRequest = () => {
     location: "",
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [fuelType, setFuelType] = useState<"Diesel" | "ULP 93" | "ULP 95" | "">("");
   const [showWhatsAppFallback, setShowWhatsAppFallback] = useState(false);
   const submissionTimerRef = useRef<ReturnType<typeof setTimeout>>();
   
@@ -117,6 +118,7 @@ export const ServiceRequest = () => {
   const service = services[serviceId || "fuel"];
   const ServiceIcon = service?.icon || FuelIcon;
   const isMechanicService = service?.isMechanic === true;
+  const isFuelService = serviceId === "fuel";
   
   // Use database price if available
   const actualPrice = dbService?.base_price || service?.price;
@@ -221,10 +223,19 @@ export const ServiceRequest = () => {
       return;
     }
 
+    // For fuel service, require fuel type selection
+    if (isFuelService && !fuelType) {
+      toast.error("Please select a fuel type (Diesel, ULP 93, or ULP 95)");
+      return;
+    }
+
     const pickupAddr = requestForOther ? friendDetails.location : location;
     const lat = coordinates?.lat || -26.1076;
     const lng = coordinates?.lng || 28.0567;
-    const notes = requestForOther ? `Request for: ${friendDetails.name}, Phone: ${friendDetails.phone}` : undefined;
+    const noteParts: string[] = [];
+    if (isFuelService && fuelType) noteParts.push(`Fuel type: ${fuelType}`);
+    if (requestForOther) noteParts.push(`Request for: ${friendDetails.name}, Phone: ${friendDetails.phone}`);
+    const notes = noteParts.length ? noteParts.join(" | ") : undefined;
 
     // Cache location for offline use
     cacheCurrentLocation(pickupAddr, lat, lng);
@@ -426,6 +437,43 @@ export const ServiceRequest = () => {
             </Button>
           </div>
         </motion.div>
+
+        {/* Fuel Type Selection (only for Fuel Rescue) */}
+        {isFuelService && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.07 }}
+            className="mb-4"
+          >
+            <Card className="border-2 border-primary/20">
+              <CardContent className="space-y-3 p-4">
+                <div className="flex items-center gap-2 text-primary">
+                  <FuelIcon className="h-5 w-5" />
+                  <span className="font-semibold">Select Fuel Type</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Choose the fuel your vehicle needs
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["Diesel", "ULP 93", "ULP 95"] as const).map((type) => (
+                    <Button
+                      key={type}
+                      variant={fuelType === type ? "amber" : "outline"}
+                      className={`h-auto flex-col py-3 ${fuelType === type ? "text-primary-foreground" : ""}`}
+                      onClick={() => setFuelType(type)}
+                    >
+                      <span className="text-sm font-semibold">{type}</span>
+                      <span className="text-[10px] opacity-80">
+                        {type === "Diesel" ? "Diesel" : type === "ULP 93" ? "Unleaded 93" : "Unleaded 95"}
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         {/* Friend Details (when requesting for someone else) */}
         {requestForOther && (

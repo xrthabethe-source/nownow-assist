@@ -118,6 +118,7 @@ export const ServiceRequest = () => {
   const service = services[serviceId || "fuel"];
   const ServiceIcon = service?.icon || FuelIcon;
   const isMechanicService = service?.isMechanic === true;
+  const isFuelService = serviceId === "fuel";
   
   // Use database price if available
   const actualPrice = dbService?.base_price || service?.price;

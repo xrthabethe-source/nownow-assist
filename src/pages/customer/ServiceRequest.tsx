@@ -78,6 +78,7 @@ export const ServiceRequest = () => {
     location: "",
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [fuelType, setFuelType] = useState<"Diesel" | "ULP 93" | "ULP 95" | "">("");
   const [showWhatsAppFallback, setShowWhatsAppFallback] = useState(false);
   const submissionTimerRef = useRef<ReturnType<typeof setTimeout>>();
   

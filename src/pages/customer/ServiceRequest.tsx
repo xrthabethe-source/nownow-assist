@@ -223,10 +223,19 @@ export const ServiceRequest = () => {
       return;
     }
 
+    // For fuel service, require fuel type selection
+    if (isFuelService && !fuelType) {
+      toast.error("Please select a fuel type (Diesel, ULP 93, or ULP 95)");
+      return;
+    }
+
     const pickupAddr = requestForOther ? friendDetails.location : location;
     const lat = coordinates?.lat || -26.1076;
     const lng = coordinates?.lng || 28.0567;
-    const notes = requestForOther ? `Request for: ${friendDetails.name}, Phone: ${friendDetails.phone}` : undefined;
+    const noteParts: string[] = [];
+    if (isFuelService && fuelType) noteParts.push(`Fuel type: ${fuelType}`);
+    if (requestForOther) noteParts.push(`Request for: ${friendDetails.name}, Phone: ${friendDetails.phone}`);
+    const notes = noteParts.length ? noteParts.join(" | ") : undefined;
 
     // Cache location for offline use
     cacheCurrentLocation(pickupAddr, lat, lng);

@@ -448,27 +448,31 @@ export const ServiceRequest = () => {
           >
             <Card className="border-2 border-primary/20">
               <CardContent className="space-y-3 p-4">
-                <div className="flex items-center gap-2 text-primary">
-                  <FuelIcon className="h-5 w-5" />
-                  <span className="font-semibold">Select Fuel Type</span>
+                <div className="flex items-center gap-2">
+                  <FuelIcon className="h-5 w-5 text-secondary" />
+                  <span className="font-semibold text-primary-foreground">Select Fuel Type</span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-primary-foreground/70">
                   Choose the fuel your vehicle needs
                 </p>
                 <div className="grid grid-cols-3 gap-2">
-                  {(["Diesel", "ULP 93", "ULP 95"] as const).map((type) => (
-                    <Button
-                      key={type}
-                      variant={fuelType === type ? "amber" : "outline"}
-                      className={`h-auto flex-col py-3 ${fuelType === type ? "text-primary-foreground" : ""}`}
-                      onClick={() => setFuelType(type)}
-                    >
-                      <span className="text-sm font-semibold">{type}</span>
-                      <span className="text-[10px] opacity-80">
-                        {type === "Diesel" ? "Diesel" : type === "ULP 93" ? "Unleaded 93" : "Unleaded 95"}
-                      </span>
-                    </Button>
-                  ))}
+                  {(["Diesel", "ULP 93", "ULP 95"] as const).map((type) => {
+                    const selected = fuelType === type;
+                    return (
+                      <Button
+                        key={type}
+                        variant={selected ? "amber" : "outline"}
+                        className={`h-auto flex-col py-3 ${selected ? "text-primary-foreground" : "text-primary-foreground"}`}
+                        onClick={() => setFuelType(type)}
+                      >
+                        <FuelIcon className={`h-5 w-5 ${selected ? "text-primary-foreground" : "text-secondary"}`} />
+                        <span className="text-sm font-semibold text-primary-foreground">{type}</span>
+                        <span className="text-[10px] text-primary-foreground/80">
+                          {type === "Diesel" ? "Diesel" : type === "ULP 93" ? "Unleaded 93" : "Unleaded 95"}
+                        </span>
+                      </Button>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>

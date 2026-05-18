@@ -146,8 +146,29 @@ export default function AdminPricing() {
     },
   });
 
+  const updateFuelMutation = useMutation({
+    mutationFn: async (newFuel: FuelPricesConfig) => {
+      const { error } = await supabase
+        .from("app_settings")
+        .update({ value: JSON.parse(JSON.stringify(newFuel)) })
+        .eq("key", "fuel_prices");
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Fuel prices updated");
+      queryClient.invalidateQueries({ queryKey: ["admin-fuel-prices"] });
+    },
+    onError: (error) => {
+      toast.error("Failed to update fuel prices: " + error.message);
+    },
+  });
+
   const handleSaveSettings = () => {
     updateSettingsMutation.mutate(config);
+  };
+
+  const handleSaveFuel = () => {
+    updateFuelMutation.mutate(fuel);
   };
 
   return (

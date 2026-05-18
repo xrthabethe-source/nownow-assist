@@ -103,14 +103,12 @@ export default function AdminPricing() {
   const [surgeValues, setSurgeValues] = useState<Record<string, number>>({});
 
   // Update local state when data loads
-  useState(() => {
-    if (pricingSettings) {
-      setConfig(pricingSettings);
-    }
-  });
-  useState(() => {
+  useEffect(() => {
+    if (pricingSettings) setConfig(pricingSettings);
+  }, [pricingSettings]);
+  useEffect(() => {
     if (fuelPrices) setFuel(fuelPrices);
-  });
+  }, [fuelPrices]);
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (newConfig: PricingConfig) => {

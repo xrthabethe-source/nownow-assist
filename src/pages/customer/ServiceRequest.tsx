@@ -794,12 +794,28 @@ export const ServiceRequest = () => {
           className="mb-6"
         >
           <div className="space-y-2 rounded-2xl bg-muted p-4">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">
-                {isMechanicService ? "Connection Fee" : "Service"}
-              </span>
-              <span className="font-medium">R{actualPrice}</span>
-            </div>
+            {isFuelService && fuelKey && fuelPrices ? (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{litres}L of {fuelType} (R{pricePerLitre.toFixed(2)}/L)</span>
+                  <span className="font-medium">R{fuelCost.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Call-out / service fee</span>
+                  <span className="font-medium">R{serviceFee.toFixed(2)}</span>
+                </div>
+                <p className="text-xs text-muted-foreground italic">
+                  Fuel price tracks the regulated SA inland rate, updated by Now-Now Assist.
+                </p>
+              </>
+            ) : (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {isMechanicService ? "Connection Fee" : "Service"}
+                </span>
+                <span className="font-medium">R{actualPrice}</span>
+              </div>
+            )}
             {isMechanicService && (
               <p className="text-xs text-muted-foreground italic">
                 Repair costs are paid directly to the mechanic

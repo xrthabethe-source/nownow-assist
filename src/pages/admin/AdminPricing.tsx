@@ -71,11 +71,34 @@ export default function AdminPricing() {
     },
   });
 
+  const defaultFuel: FuelPricesConfig = {
+    diesel: 22.5,
+    ulp93: 23.4,
+    ulp95: 23.7,
+    service_fee: 229,
+    included_litres: 5,
+    currency: "R",
+  };
+
+  const { data: fuelPrices } = useQuery({
+    queryKey: ["admin-fuel-prices"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("*")
+        .eq("key", "fuel_prices")
+        .maybeSingle();
+      if (error) throw error;
+      return data?.value ? (data.value as unknown as FuelPricesConfig) : defaultFuel;
+    },
+  });
+
   const [config, setConfig] = useState<PricingConfig>({
     minimum_fare: 100,
     surge_enabled: true,
     max_surge_multiplier: 3.0,
   });
+  const [fuel, setFuel] = useState<FuelPricesConfig>(defaultFuel);
 
   const [surgeValues, setSurgeValues] = useState<Record<string, number>>({});
 
@@ -84,6 +107,9 @@ export default function AdminPricing() {
     if (pricingSettings) {
       setConfig(pricingSettings);
     }
+  });
+  useState(() => {
+    if (fuelPrices) setFuel(fuelPrices);
   });
 
   const updateSettingsMutation = useMutation({

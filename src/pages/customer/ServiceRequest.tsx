@@ -119,9 +119,33 @@ export const ServiceRequest = () => {
   const ServiceIcon = service?.icon || FuelIcon;
   const isMechanicService = service?.isMechanic === true;
   const isFuelService = serviceId === "fuel";
-  
-  // Use database price if available
-  const actualPrice = dbService?.base_price || service?.price;
+
+  // Fetch live fuel prices (admin-managed) for fuel rescue dynamic pricing
+  const { data: fuelPrices } = useQuery({
+    queryKey: ["fuel-prices"],
+    enabled: isFuelService,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "fuel_prices")
+        .maybeSingle();
+      return (data?.value as any) || null;
+    },
+  });
+
+  // Fuel cost computation
+  const fuelKey = fuelType === "Diesel" ? "diesel" : fuelType === "ULP 93" ? "ulp93" : fuelType === "ULP 95" ? "ulp95" : null;
+  const litres = fuelPrices?.included_litres ?? 5;
+  const serviceFee = fuelPrices?.service_fee ?? 229;
+  const pricePerLitre = fuelKey && fuelPrices ? Number(fuelPrices[fuelKey] || 0) : 0;
+  const fuelCost = pricePerLitre * litres;
+  const computedFuelTotal = Math.round((fuelCost + serviceFee) * 100) / 100;
+
+  // Use computed fuel total when applicable, otherwise db price or static
+  const actualPrice = isFuelService && fuelKey && fuelPrices
+    ? computedFuelTotal
+    : (dbService?.base_price || service?.price);
 
   // Auto-detect location on mount
   useEffect(() => {

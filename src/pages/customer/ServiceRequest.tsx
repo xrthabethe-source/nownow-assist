@@ -119,9 +119,33 @@ export const ServiceRequest = () => {
   const ServiceIcon = service?.icon || FuelIcon;
   const isMechanicService = service?.isMechanic === true;
   const isFuelService = serviceId === "fuel";
-  
-  // Use database price if available
-  const actualPrice = dbService?.base_price || service?.price;
+
+  // Fetch live fuel prices (admin-managed) for fuel rescue dynamic pricing
+  const { data: fuelPrices } = useQuery({
+    queryKey: ["fuel-prices"],
+    enabled: isFuelService,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "fuel_prices")
+        .maybeSingle();
+      return (data?.value as any) || null;
+    },
+  });
+
+  // Fuel cost computation
+  const fuelKey = fuelType === "Diesel" ? "diesel" : fuelType === "ULP 93" ? "ulp93" : fuelType === "ULP 95" ? "ulp95" : null;
+  const litres = fuelPrices?.included_litres ?? 5;
+  const serviceFee = fuelPrices?.service_fee ?? 229;
+  const pricePerLitre = fuelKey && fuelPrices ? Number(fuelPrices[fuelKey] || 0) : 0;
+  const fuelCost = pricePerLitre * litres;
+  const computedFuelTotal = Math.round((fuelCost + serviceFee) * 100) / 100;
+
+  // Use computed fuel total when applicable, otherwise db price or static
+  const actualPrice = isFuelService && fuelKey && fuelPrices
+    ? computedFuelTotal
+    : (dbService?.base_price || service?.price);
 
   // Auto-detect location on mount
   useEffect(() => {
@@ -770,12 +794,28 @@ export const ServiceRequest = () => {
           className="mb-6"
         >
           <div className="space-y-2 rounded-2xl bg-muted p-4">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">
-                {isMechanicService ? "Connection Fee" : "Service"}
-              </span>
-              <span className="font-medium">R{actualPrice}</span>
-            </div>
+            {isFuelService && fuelKey && fuelPrices ? (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{litres}L of {fuelType} (R{pricePerLitre.toFixed(2)}/L)</span>
+                  <span className="font-medium">R{fuelCost.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Call-out / service fee</span>
+                  <span className="font-medium">R{serviceFee.toFixed(2)}</span>
+                </div>
+                <p className="text-xs text-muted-foreground italic">
+                  Fuel price tracks the regulated SA inland rate, updated by Now-Now Assist.
+                </p>
+              </>
+            ) : (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {isMechanicService ? "Connection Fee" : "Service"}
+                </span>
+                <span className="font-medium">R{actualPrice}</span>
+              </div>
+            )}
             {isMechanicService && (
               <p className="text-xs text-muted-foreground italic">
                 Repair costs are paid directly to the mechanic

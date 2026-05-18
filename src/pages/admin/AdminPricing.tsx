@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -16,8 +16,18 @@ import {
   Zap,
   Save,
   RefreshCw,
+  Fuel,
 } from "lucide-react";
 import { motion } from "framer-motion";
+
+interface FuelPricesConfig {
+  diesel: number;
+  ulp93: number;
+  ulp95: number;
+  service_fee: number;
+  included_litres: number;
+  currency: string;
+}
 
 interface PricingConfig {
   minimum_fare: number;
@@ -61,20 +71,44 @@ export default function AdminPricing() {
     },
   });
 
+  const defaultFuel: FuelPricesConfig = {
+    diesel: 22.5,
+    ulp93: 23.4,
+    ulp95: 23.7,
+    service_fee: 229,
+    included_litres: 5,
+    currency: "R",
+  };
+
+  const { data: fuelPrices } = useQuery({
+    queryKey: ["admin-fuel-prices"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("*")
+        .eq("key", "fuel_prices")
+        .maybeSingle();
+      if (error) throw error;
+      return data?.value ? (data.value as unknown as FuelPricesConfig) : defaultFuel;
+    },
+  });
+
   const [config, setConfig] = useState<PricingConfig>({
     minimum_fare: 100,
     surge_enabled: true,
     max_surge_multiplier: 3.0,
   });
+  const [fuel, setFuel] = useState<FuelPricesConfig>(defaultFuel);
 
   const [surgeValues, setSurgeValues] = useState<Record<string, number>>({});
 
   // Update local state when data loads
-  useState(() => {
-    if (pricingSettings) {
-      setConfig(pricingSettings);
-    }
-  });
+  useEffect(() => {
+    if (pricingSettings) setConfig(pricingSettings);
+  }, [pricingSettings]);
+  useEffect(() => {
+    if (fuelPrices) setFuel(fuelPrices);
+  }, [fuelPrices]);
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (newConfig: PricingConfig) => {
@@ -112,8 +146,29 @@ export default function AdminPricing() {
     },
   });
 
+  const updateFuelMutation = useMutation({
+    mutationFn: async (newFuel: FuelPricesConfig) => {
+      const { error } = await supabase
+        .from("app_settings")
+        .update({ value: JSON.parse(JSON.stringify(newFuel)) })
+        .eq("key", "fuel_prices");
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Fuel prices updated");
+      queryClient.invalidateQueries({ queryKey: ["admin-fuel-prices"] });
+    },
+    onError: (error) => {
+      toast.error("Failed to update fuel prices: " + error.message);
+    },
+  });
+
   const handleSaveSettings = () => {
     updateSettingsMutation.mutate(config);
+  };
+
+  const handleSaveFuel = () => {
+    updateFuelMutation.mutate(fuel);
   };
 
   return (
@@ -217,7 +272,108 @@ export default function AdminPricing() {
           </motion.div>
         </div>
 
+        {/* Fuel Prices (per litre) */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Fuel className="h-5 w-5 text-secondary" />
+                    Fuel Prices (per litre)
+                  </CardTitle>
+                  <CardDescription>
+                    Set the regulated inland fuel price. The customer fuel rescue total is calculated automatically as (litres × price) + service fee.
+                  </CardDescription>
+                </div>
+                <Button onClick={handleSaveFuel} disabled={updateFuelMutation.isPending}>
+                  <Save className="mr-2 h-4 w-4" />
+                  {updateFuelMutation.isPending ? "Saving..." : "Save Fuel Prices"}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="fuel-diesel">Diesel (R / litre)</Label>
+                  <Input
+                    id="fuel-diesel"
+                    type="number"
+                    step="0.01"
+                    value={fuel.diesel}
+                    onChange={(e) => setFuel({ ...fuel, diesel: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fuel-ulp93">ULP 93 (R / litre)</Label>
+                  <Input
+                    id="fuel-ulp93"
+                    type="number"
+                    step="0.01"
+                    value={fuel.ulp93}
+                    onChange={(e) => setFuel({ ...fuel, ulp93: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fuel-ulp95">ULP 95 (R / litre)</Label>
+                  <Input
+                    id="fuel-ulp95"
+                    type="number"
+                    step="0.01"
+                    value={fuel.ulp95}
+                    onChange={(e) => setFuel({ ...fuel, ulp95: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="fuel-litres">Litres included per rescue</Label>
+                  <Input
+                    id="fuel-litres"
+                    type="number"
+                    step="1"
+                    value={fuel.included_litres}
+                    onChange={(e) => setFuel({ ...fuel, included_litres: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fuel-fee">Service / call-out fee (R)</Label>
+                  <Input
+                    id="fuel-fee"
+                    type="number"
+                    step="1"
+                    value={fuel.service_fee}
+                    onChange={(e) => setFuel({ ...fuel, service_fee: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-muted p-4">
+                <p className="mb-2 text-sm font-medium">Live total preview (customer will see):</p>
+                <div className="grid gap-2 sm:grid-cols-3 text-sm">
+                  {(["diesel", "ulp93", "ulp95"] as const).map((k) => {
+                    const label = k === "diesel" ? "Diesel" : k === "ulp93" ? "ULP 93" : "ULP 95";
+                    const fuelCost = (fuel[k] || 0) * (fuel.included_litres || 0);
+                    const total = fuelCost + (fuel.service_fee || 0);
+                    return (
+                      <div key={k} className="rounded-lg bg-background p-3">
+                        <p className="text-muted-foreground">{label}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {fuel.included_litres}L × R{(fuel[k] || 0).toFixed(2)} + R{fuel.service_fee}
+                        </p>
+                        <p className="text-lg font-bold text-primary">R{total.toFixed(2)}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
         {/* Service-specific Surge */}
+
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <Card>
             <CardHeader>

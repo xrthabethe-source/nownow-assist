@@ -16,8 +16,18 @@ import {
   Zap,
   Save,
   RefreshCw,
+  Fuel,
 } from "lucide-react";
 import { motion } from "framer-motion";
+
+interface FuelPricesConfig {
+  diesel: number;
+  ulp93: number;
+  ulp95: number;
+  service_fee: number;
+  included_litres: number;
+  currency: string;
+}
 
 interface PricingConfig {
   minimum_fare: number;

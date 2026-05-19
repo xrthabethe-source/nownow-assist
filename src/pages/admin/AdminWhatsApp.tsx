@@ -91,7 +91,7 @@ export default function AdminWhatsApp() {
     mutationFn: async () => {
       const { error } = await supabase
         .from("app_settings")
-        .update({ value: config, updated_at: new Date().toISOString() })
+        .update({ value: config as Record<string, string>, updated_at: new Date().toISOString() })
         .eq("key", "whatsapp_config");
       if (error) throw error;
     },

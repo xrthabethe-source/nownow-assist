@@ -83,6 +83,28 @@ Deno.serve(async (req) => {
         if (jobError) {
           console.error("Error updating job:", jobError);
         }
+
+        // Fire WhatsApp notifications (no-op if not a whatsapp job)
+        try {
+          await fetch(`${SUPABASE_URL}/functions/v1/whatsapp-notify`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ job_id: jobId, status: "payment_received" }),
+          });
+          await fetch(`${SUPABASE_URL}/functions/v1/whatsapp-notify`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ job_id: jobId, status: "dispatched" }),
+          });
+        } catch (e) {
+          console.error("whatsapp-notify failed", e);
+        }
       }
 
       console.log("Payment completed successfully:", pfPaymentId);

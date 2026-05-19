@@ -299,7 +299,14 @@ export default function AdminActiveJobs() {
                         <span className="font-mono font-medium">{job.job_number}</span>
                       </TableCell>
                       <TableCell>
-                        <span className="font-medium">{job.services?.name || "Unknown"}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{job.services?.name || "Unknown"}</span>
+                          {(job as { source?: string }).source === "whatsapp" && (
+                            <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-success">
+                              WhatsApp
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">

@@ -37,6 +37,7 @@ import {
   Palette,
   Mail,
   Smartphone,
+  MessageCircle,
   ChevronDown,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -98,6 +99,7 @@ const navSections: NavSection[] = [
     items: [
       { icon: MapPin, label: "Live Jobs", path: "/admin?view=jobs" },
       { icon: Wrench, label: "Services", path: "/admin/services" },
+      { icon: MessageCircle, label: "WhatsApp Channel", path: "/admin/whatsapp", badge: "New", badgeVariant: "success" },
       { icon: Clock, label: "Job History", path: "/admin/reports?type=jobs" },
     ],
   },

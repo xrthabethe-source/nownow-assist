@@ -228,6 +228,15 @@ export function useAcceptJob() {
         .single();
 
       if (error) throw error;
+
+      try {
+        await supabase.functions.invoke("whatsapp-notify", {
+          body: { job_id: jobId, status: "accepted" },
+        });
+      } catch (e) {
+        console.warn("whatsapp-notify failed (non-fatal)", e);
+      }
+
       return data;
     },
     onSuccess: () => {
@@ -279,6 +288,16 @@ export function useUpdateJobStatus() {
         .single();
 
       if (error) throw error;
+
+      // Fire WhatsApp notification (function no-ops for non-WhatsApp jobs)
+      try {
+        await supabase.functions.invoke("whatsapp-notify", {
+          body: { job_id: jobId, status },
+        });
+      } catch (e) {
+        console.warn("whatsapp-notify failed (non-fatal)", e);
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {

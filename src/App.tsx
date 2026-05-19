@@ -44,6 +44,7 @@ import ExportAIPrompt from "./pages/ExportAIPrompt";
 import AdminVerificationQueue from "./pages/admin/AdminVerificationQueue";
 import AdminSecurityMonitoring from "./pages/admin/AdminSecurityMonitoring";
 import DriverSignUp from "./pages/driver/DriverSignUp";
+import AdminWhatsApp from "./pages/admin/AdminWhatsApp";
 
 const queryClient = new QueryClient();
 
@@ -227,6 +228,11 @@ const App = () => (
             <Route path="/admin/security" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminSecurityMonitoring />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/whatsapp" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminWhatsApp />
               </ProtectedRoute>
             } />
             

@@ -770,10 +770,12 @@ export type Database = {
           rating: number | null
           review: string | null
           service_id: string | null
+          source: string
           started_at: string | null
           status: string | null
           synced_at: string | null
           updated_at: string
+          wa_phone: string | null
         }
         Insert: {
           accepted_at?: string | null
@@ -798,10 +800,12 @@ export type Database = {
           rating?: number | null
           review?: string | null
           service_id?: string | null
+          source?: string
           started_at?: string | null
           status?: string | null
           synced_at?: string | null
           updated_at?: string
+          wa_phone?: string | null
         }
         Update: {
           accepted_at?: string | null
@@ -826,10 +830,12 @@ export type Database = {
           rating?: number | null
           review?: string | null
           service_id?: string | null
+          source?: string
           started_at?: string | null
           status?: string | null
           synced_at?: string | null
           updated_at?: string
+          wa_phone?: string | null
         }
         Relationships: [
           {
@@ -1190,6 +1196,33 @@ export type Database = {
         }
         Relationships: []
       }
+      terms_consents: {
+        Row: {
+          accepted_at: string
+          channel: string
+          id: string
+          phone: string
+          profile_id: string | null
+          terms_version: string
+        }
+        Insert: {
+          accepted_at?: string
+          channel?: string
+          id?: string
+          phone: string
+          profile_id?: string | null
+          terms_version: string
+        }
+        Update: {
+          accepted_at?: string
+          channel?: string
+          id?: string
+          phone?: string
+          profile_id?: string | null
+          terms_version?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1244,6 +1277,81 @@ export type Database = {
           registration_number?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      whatsapp_conversations: {
+        Row: {
+          created_at: string
+          draft: Json
+          id: string
+          last_message_at: string
+          phone: string
+          profile_id: string | null
+          step: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          draft?: Json
+          id?: string
+          last_message_at?: string
+          phone: string
+          profile_id?: string | null
+          step?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          draft?: Json
+          id?: string
+          last_message_at?: string
+          phone?: string
+          profile_id?: string | null
+          step?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      whatsapp_messages: {
+        Row: {
+          body: string | null
+          created_at: string
+          direction: string
+          id: string
+          job_id: string | null
+          message_type: string
+          payload: Json | null
+          phone: string
+          profile_id: string | null
+          status: string | null
+          wa_message_id: string | null
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          direction: string
+          id?: string
+          job_id?: string | null
+          message_type?: string
+          payload?: Json | null
+          phone: string
+          profile_id?: string | null
+          status?: string | null
+          wa_message_id?: string | null
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          direction?: string
+          id?: string
+          job_id?: string | null
+          message_type?: string
+          payload?: Json | null
+          phone?: string
+          profile_id?: string | null
+          status?: string | null
+          wa_message_id?: string | null
         }
         Relationships: []
       }

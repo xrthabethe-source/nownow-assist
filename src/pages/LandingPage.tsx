@@ -3,53 +3,58 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/shared/Logo";
 import { TyreIcon, BatteryIcon, FuelIcon, PumpIcon, WrenchIcon } from "@/components/icons/ServiceIcons";
-import { 
-  ArrowRight, Shield, Clock, Star, MapPin, CheckCircle2, Zap, Users, Phone,
-  AlertTriangle, Heart, BadgeCheck, Timer, Wallet, Quote, ChevronRight, Play
+import {
+  ArrowRight, Shield, MapPin, CheckCircle2, Zap, Phone,
+  AlertTriangle, Heart, BadgeCheck, Timer, Wallet, Quote, MessageCircle
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useRef, useEffect } from "react";
 import { exportAIPromptPDF } from "@/utils/exportAIPromptPDF";
+import {
+  SUPPORT_PHONE_DISPLAY,
+  SUPPORT_PHONE_TEL,
+  openSupportWhatsApp,
+} from "@/lib/contact";
 
 const painPoints = [
-  "Stranded on a dark highway at midnight?",
+  "Stranded on a dark Centurion road at night?",
   "Flat tyre with no spare or tools?",
-  "Dead battery in an unsafe area?",
-  "Ran out of fuel kilometers from a station?",
+  "Dead battery and nobody to call?",
+  "Ran out of fuel kilometres from a station?",
 ];
 
 const solutions = [
-  { icon: Timer, title: "15-Minute Response", description: "Our network of 500+ responders ensures help is always nearby. No more waiting hours.", highlight: "Guaranteed" },
-  { icon: BadgeCheck, title: "Verified Professionals", description: "Every responder is background-checked, trained, and rated by real customers.", highlight: "100% Vetted" },
-  { icon: MapPin, title: "Real-Time Tracking", description: "Watch your responder approach in real-time. Know exactly when help arrives.", highlight: "Live GPS" },
-  { icon: Wallet, title: "Transparent Pricing", description: "See the price before you book. No hidden fees, no surprises. Pay only for what you need.", highlight: "No Surprises" },
+  { icon: Timer, title: "Fast Local Response", description: "We're launching in Centurion with responders ready to come to you, day or night.", highlight: "Centurion" },
+  { icon: BadgeCheck, title: "Verified Responders", description: "Every responder is vetted before they're dispatched to a customer.", highlight: "Vetted" },
+  { icon: MapPin, title: "WhatsApp First", description: "No app to download. Send one WhatsApp and we take it from there.", highlight: "Easy" },
+  { icon: Wallet, title: "Pay Only When You Need Help", description: "No membership, no monthly fees. Transparent pricing on every call-out.", highlight: "No Fees" },
 ];
 
 const services = [
-  { icon: TyreIcon, name: "Tyre Change", description: "Flat or punctured tyre? We'll swap it with your spare in minutes.", popular: true },
-  { icon: BatteryIcon, name: "Jump Start", description: "Dead battery? We'll get you running again, fast.", popular: true },
+  { icon: TyreIcon, name: "Tyre Change", description: "Flat or punctured tyre? We'll swap it with your spare.", popular: true },
+  { icon: BatteryIcon, name: "Jump Start", description: "Dead battery? We'll get you running again.", popular: true },
   { icon: FuelIcon, name: "Fuel Delivery", description: "Ran out of fuel? We'll bring petrol or diesel to you.", popular: false },
-  { icon: PumpIcon, name: "Tyre Inflate", description: "Low tyre pressure? We'll pump it up to the perfect PSI.", popular: false },
-  { icon: WrenchIcon, name: "Minor Repairs", description: "Small fixes that get you back on the road.", popular: false },
+  { icon: PumpIcon, name: "Tyre Inflate", description: "Low tyre pressure? We'll pump it up.", popular: false },
+  { icon: WrenchIcon, name: "Minor Repairs", description: "Small roadside fixes to get you moving.", popular: false },
 ];
 
 const testimonials = [
-  { name: "Sarah M.", location: "Centurion", rating: 5, text: "Flat tyre at 11pm on the N1. Help arrived in 12 minutes. Absolute lifesaver!", avatar: "SM" },
-  { name: "David K.", location: "Centurion", rating: 5, text: "Battery died in a mall parking lot. Within 15 mins, I was on my way. Incredible service.", avatar: "DK" },
-  { name: "Thandi N.", location: "Centurion", rating: 5, text: "As a woman traveling alone, the live tracking feature made me feel so safe. Highly recommend!", avatar: "TN" },
+  { name: "Sarah M.", location: "Centurion", rating: 5, text: "Flat tyre at night near the N1. The responder was friendly and quick.", avatar: "SM" },
+  { name: "David K.", location: "Centurion", rating: 5, text: "Battery died in a mall parking lot. WhatsApp'd them and was sorted in no time.", avatar: "DK" },
+  { name: "Thandi N.", location: "Centurion", rating: 5, text: "As a woman travelling alone, knowing help was on the way made me feel safe.", avatar: "TN" },
 ];
 
-const stats = [
-  { value: "50,000+", label: "Drivers Helped", icon: Users },
-  { value: "12 min", label: "Avg. Response", icon: Timer },
-  { value: "4.9★", label: "Customer Rating", icon: Star },
-  { value: "500+", label: "Active Responders", icon: BadgeCheck },
+const trustPoints = [
+  { value: "Centurion", label: "Now Launching", icon: MapPin },
+  { value: "Verified", label: "Vetted Responders", icon: BadgeCheck },
+  { value: "No Fees", label: "No Membership", icon: Wallet },
+  { value: "Pay-Per-Use", label: "Only When You Need Help", icon: Timer },
 ];
 
 const howItWorks = [
-  { step: "1", title: "Request Help", description: "Open the app, select your service, and share your location. Takes 30 seconds." },
-  { step: "2", title: "Get Matched", description: "We instantly connect you with the nearest available verified responder." },
-  { step: "3", title: "Track & Relax", description: "Watch your responder approach in real-time. They'll handle everything." },
+  { step: "1", title: "Send a WhatsApp", description: "Tap the button, send us a WhatsApp, tell us what's wrong and where you are." },
+  { step: "2", title: "We Dispatch", description: "We match you with the nearest verified responder in Centurion." },
+  { step: "3", title: "Help Arrives", description: "Your responder confirms ETA and gets you moving again." },
 ];
 
 const container = {
@@ -61,6 +66,8 @@ const item = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0 },
 };
+
+const handleWhatsApp = () => openSupportWhatsApp();
 
 export const LandingPage = () => {
   const navigate = useNavigate();
@@ -95,15 +102,19 @@ export const LandingPage = () => {
         </div>
       </header>
 
-      {/* Hero - Blue gradient bg */}
+      {/* Hero */}
       <section ref={heroRef} className="relative overflow-hidden bg-primary">
         <motion.div style={{ opacity: heroOpacity, scale: heroScale }}>
           <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80" />
           <div className="absolute top-20 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl opacity-50" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-3xl opacity-40" />
-          
+
           <div className="container relative py-16 md:py-24 lg:py-32 text-sm">
             <div className="mx-auto max-w-4xl text-center">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 border border-white/15">
+                <MapPin className="h-4 w-4 text-accent" />
+                <span className="text-sm font-medium text-white">Now launching in Centurion</span>
+              </div>
               <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                 className="mb-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-7xl md:text-4xl">
                 Stuck on the road?<br /><span className="text-accent">We'll be there, now-now.</span>
@@ -111,36 +122,36 @@ export const LandingPage = () => {
 
               <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
                 className="mx-auto mb-8 max-w-2xl text-lg text-white/80 md:text-xl">
-                From flat tyres to dead batteries – request roadside help the same way you request a ride. Our <strong className="text-white">500+ verified responders</strong> across South Africa will be there in minutes!
+                Flat tyre, dead battery, empty tank or locked out? Send us one WhatsApp and a verified responder is on the way. No membership. No app needed. Pay only when you need help.
               </motion.p>
 
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                 className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button variant="amber" size="xl" onClick={() => navigate("/auth")} className="w-full sm:w-auto px-8 md:px-12 shadow-accent animate-pulse-amber text-primary-foreground">
-                  <Zap className="mr-2 h-5 w-5" />Request Assistance
+                <Button variant="amber" size="xl" onClick={handleWhatsApp} className="w-full sm:w-auto px-8 md:px-12 shadow-accent animate-pulse-amber text-primary-foreground">
+                  <MessageCircle className="mr-2 h-5 w-5" />Get Help on WhatsApp
                 </Button>
-                <Button variant="light" size="lg" onClick={() => navigate("/auth")} className="w-full sm:w-auto !text-white !bg-white/20 !border-white/30 hover:!bg-white/30">
-                  <Play className="mr-2 h-4 w-4" />Get Help Now
+                <Button variant="light" size="lg" onClick={handleWhatsApp} className="w-full sm:w-auto !text-white !bg-white/20 !border-white/30 hover:!bg-white/30">
+                  <Zap className="mr-2 h-4 w-4" />Get Help Now
                 </Button>
               </motion.div>
 
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
                 className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-primary-foreground">
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-accent" /><span className="font-medium text-white">No insurance</span></div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-accent" /><span className="font-medium text-white">No membership fee</span></div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-accent" /><span className="font-medium text-white">Pay only when you need us</span></div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-accent" /><span className="font-medium text-white">No membership</span></div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-accent" /><span className="font-medium text-white">Verified responders</span></div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-accent" /><span className="font-medium text-white">Pay only when you need help</span></div>
               </motion.div>
             </div>
           </div>
         </motion.div>
       </section>
 
-      {/* Stats - Blue panel */}
+      {/* Trust strip */}
       <section className="border-y border-primary/10 bg-primary py-8 md:py-12">
         <div className="container">
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }}
             className="grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
-            {stats.map((stat) => (
+            {trustPoints.map((stat) => (
               <motion.div key={stat.label} variants={item} className="text-center">
                 <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/15">
                   <stat.icon className="h-5 w-5 text-white" />
@@ -188,8 +199,8 @@ export const LandingPage = () => {
       <section className="bg-secondary py-16 md:py-24">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Why 50,000+ drivers trust us</h2>
-            <p className="mx-auto max-w-2xl md:text-lg text-primary-foreground">We've reimagined roadside assistance for the modern world. Fast, transparent, and always reliable.</p>
+            <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Built for Centurion drivers</h2>
+            <p className="mx-auto max-w-2xl md:text-lg text-primary-foreground">A simple, local roadside service. WhatsApp us, we respond. No memberships, no admin.</p>
           </motion.div>
 
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid gap-6 md:grid-cols-2">
@@ -226,9 +237,9 @@ export const LandingPage = () => {
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {services.map((service) => (
               <motion.div key={service.name} variants={item}>
-                <div 
+                <div
                   className="h-full relative cursor-pointer rounded-2xl border border-orange-500 ring-2 ring-orange-500 bg-orange-500/5 transition-all hover:scale-105"
-                  onClick={() => navigate("/auth")}
+                  onClick={handleWhatsApp}
                 >
                   {service.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -254,7 +265,7 @@ export const LandingPage = () => {
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Help in 3 simple steps</h2>
-            <p className="mx-auto max-w-2xl text-secondary-foreground/80 md:text-lg">Getting roadside assistance has never been easier. Here's how it works:</p>
+            <p className="mx-auto max-w-2xl text-secondary-foreground/80 md:text-lg">Getting roadside help has never been easier.</p>
           </motion.div>
 
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="mx-auto max-w-4xl">
@@ -281,18 +292,13 @@ export const LandingPage = () => {
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">Real stories from real drivers</h2>
-            <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">Join thousands of satisfied customers who've experienced our service.</p>
+            <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">From our early Centurion community.</p>
           </motion.div>
 
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid gap-6 md:grid-cols-3">
             {testimonials.map((testimonial) => (
               <motion.div key={testimonial.name} variants={item}>
                 <div className="h-full rounded-2xl border border-border bg-card p-6 shadow-sm">
-                  <div className="mb-4 flex items-center gap-1">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-accent text-accent" />
-                    ))}
-                  </div>
                   <Quote className="mb-3 h-8 w-8 text-primary/20" />
                   <p className="mb-6 text-foreground">{testimonial.text}</p>
                   <div className="flex items-center gap-3">
@@ -319,12 +325,12 @@ export const LandingPage = () => {
                   <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-1.5">
                     <Wallet className="h-4 w-4 text-accent-foreground" /><span className="text-sm font-medium text-accent-foreground">Earn Extra Income</span>
                   </div>
-                  <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl">Have a vehicle & want to earn?</h2>
+                  <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl">Have a vehicle &amp; want to earn?</h2>
                   <p className="mb-6 text-white/80 md:text-lg">
-                    Join our network of 500+ responders. Flexible hours, competitive pay, and the satisfaction of helping drivers in need. Earn up to <strong className="text-accent">R8,000+/month</strong> part-time.
+                    Join our growing Centurion responder network. Flexible hours, weekly payouts, and the satisfaction of helping local drivers in need.
                   </p>
                   <ul className="mb-6 space-y-2">
-                    {["Set your own schedule", "Weekly payouts", "Free training & certification", "Dedicated support team"].map((benefit) => (
+                    {["Set your own schedule", "Weekly payouts", "Free onboarding & training", "Dedicated support team"].map((benefit) => (
                       <li key={benefit} className="flex items-center gap-2 text-white"><CheckCircle2 className="h-5 w-5 text-accent" />{benefit}</li>
                     ))}
                   </ul>
@@ -333,9 +339,9 @@ export const LandingPage = () => {
                 <div className="relative hidden md:block">
                   <div className="aspect-square rounded-3xl bg-gradient-to-br from-white/10 to-white/5 p-8">
                     <div className="flex h-full flex-col items-center justify-center text-center">
-                      <div className="mb-4 text-6xl font-extrabold text-accent">R8K+</div>
-                      <p className="text-lg font-medium text-white">Monthly Earnings</p>
-                      <p className="text-sm text-white/70">For active part-time responders</p>
+                      <div className="mb-4 text-6xl font-extrabold text-accent">Centurion</div>
+                      <p className="text-lg font-medium text-white">Now Onboarding</p>
+                      <p className="text-sm text-white/70">Be one of our first verified responders</p>
                     </div>
                   </div>
                 </div>
@@ -359,16 +365,16 @@ export const LandingPage = () => {
                     <Shield className="h-10 w-10 text-white" />
                   </motion.div>
                   <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl lg:text-5xl">Ready for stress-free roadside help?</h2>
-                  <p className="mb-8 text-lg text-white/70 md:text-xl">Join 50,000+ drivers who trust Now-Now Assist. Sign up takes 30 seconds. No credit card required.</p>
+                  <p className="mb-8 text-lg text-white/70 md:text-xl">Send us a WhatsApp and we'll take it from there. No sign-up needed to get help.</p>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Button variant="amber" size="xl" onClick={() => navigate("/auth")} className="w-full sm:w-auto px-12 shadow-accent">
-                      <Zap className="mr-2 h-5 w-5" />Get Started Free
+                    <Button variant="amber" size="xl" onClick={handleWhatsApp} className="w-full sm:w-auto px-12 shadow-accent">
+                      <MessageCircle className="mr-2 h-5 w-5" />Get Help on WhatsApp
                     </Button>
-                    <Button variant="light" size="lg" onClick={() => window.location.href = 'tel:0800000000'} className="w-full sm:w-auto !text-white !bg-white/20 !border-white/30 hover:!bg-white/30">
-                      <Phone className="mr-2 h-4 w-4" />Call Us: 0800 000 000
+                    <Button variant="light" size="lg" onClick={() => window.location.href = `tel:${SUPPORT_PHONE_TEL}`} className="w-full sm:w-auto !text-white !bg-white/20 !border-white/30 hover:!bg-white/30">
+                      <Phone className="mr-2 h-4 w-4" />Call/WhatsApp: {SUPPORT_PHONE_DISPLAY}
                     </Button>
                   </div>
-                  <p className="mt-6 text-sm text-white/50">🔒 Protected by enterprise-grade security. Your data is encrypted and safe.</p>
+                  <p className="mt-6 text-sm text-white/50">🔒 Your data is encrypted and safe.</p>
                 </div>
               </CardContent>
             </Card>
@@ -382,29 +388,30 @@ export const LandingPage = () => {
           <div className="grid gap-8 md:grid-cols-4">
             <div className="md:col-span-2">
               <Logo size="md" className="mb-4" />
-              <p className="mb-4 max-w-sm text-white/80">South Africa's fastest-growing roadside assistance platform. Help when you need it, where you need it.</p>
-              <div className="flex items-center gap-2"><Shield className="h-5 w-5 text-accent" /><span className="text-sm text-white/80">Verified & Trusted</span></div>
+              <p className="mb-4 max-w-sm text-white/80">Centurion's WhatsApp-first roadside assistance. Help when you need it, where you need it.</p>
+              <div className="flex items-center gap-2"><Shield className="h-5 w-5 text-accent" /><span className="text-sm text-white/80">Verified &amp; Trusted</span></div>
+              <p className="mt-4 text-sm text-white/80">Call/WhatsApp: <a href={`tel:${SUPPORT_PHONE_TEL}`} className="font-medium text-white hover:underline">{SUPPORT_PHONE_DISPLAY}</a></p>
             </div>
             <div>
               <h4 className="mb-4 font-semibold text-white">Quick Links</h4>
               <ul className="space-y-2 text-sm text-white/70">
-                <li><button onClick={() => navigate("/auth")} className="hover:text-white transition-colors">Get Help</button></li>
-                <li><button onClick={() => navigate("/auth")} className="hover:text-white transition-colors">Become a Responder</button></li>
-                <li><button className="hover:text-white transition-colors">About Us</button></li>
-                <li><button className="hover:text-white transition-colors">Contact</button></li>
+                <li><button onClick={handleWhatsApp} className="hover:text-white transition-colors">Get Help</button></li>
+                <li><button onClick={() => navigate("/driver/signup")} className="hover:text-white transition-colors">Become a Responder</button></li>
+                <li><button onClick={() => navigate("/about")} className="hover:text-white transition-colors">About Us</button></li>
+                <li><button onClick={() => navigate("/contact")} className="hover:text-white transition-colors">Contact</button></li>
               </ul>
             </div>
             <div>
               <h4 className="mb-4 font-semibold text-white">Legal</h4>
               <ul className="space-y-2 text-sm text-white/70">
-                <li><button className="hover:text-white transition-colors">Privacy Policy</button></li>
-                <li><button className="hover:text-white transition-colors">Terms of Service</button></li>
-                <li><button className="hover:text-white transition-colors">Cookie Policy</button></li>
+                <li><button onClick={() => navigate("/privacy-policy")} className="hover:text-white transition-colors">Privacy Policy</button></li>
+                <li><button onClick={() => navigate("/terms")} className="hover:text-white transition-colors">Terms of Service</button></li>
+                <li><button onClick={() => navigate("/cookie-policy")} className="hover:text-white transition-colors">Cookie Policy</button></li>
               </ul>
             </div>
           </div>
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/15 pt-8 md:flex-row">
-            <p className="text-sm text-white/70">© 2025 Now-Now Assist. All rights reserved.</p>
+            <p className="text-sm text-white/70">© 2026 Now-Now Assist. All rights reserved.</p>
             <div className="flex items-center gap-4"><span className="text-sm text-white/70">🇿🇦 Made in South Africa</span></div>
           </div>
         </div>

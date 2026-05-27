@@ -19,8 +19,9 @@ import {
   validateStrongPassword 
 } from '@/lib/security';
 
-const emailSchema = z.string().trim().email('Please enter a valid email address');
-const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
+const emailSchema = z.string().trim().min(1, 'Email is required.').email('Please enter a valid email address.');
+const passwordSchema = z.string().min(1, 'Password is required.');
+const passwordSignupSchema = z.string().min(8, 'Password must be at least 8 characters.');
 const nameSchema = z.string().trim().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long');
 const phoneSchema = z.string().trim().regex(/^(\+27|0)\d{9}$/, 'Enter a valid SA phone number (e.g. 071 234 5678)');
 
@@ -99,7 +100,7 @@ export default function Auth() {
     const errors: Record<string, string> = {};
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) errors.email = emailResult.error.errors[0].message;
-    const passwordResult = passwordSchema.safeParse(password);
+    const passwordResult = (isLogin ? passwordSchema : passwordSignupSchema).safeParse(password);
     if (!passwordResult.success) errors.password = passwordResult.error.errors[0].message;
     if (!isLogin) {
       const strengthCheck = validateStrongPassword(password);
@@ -197,7 +198,7 @@ export default function Auth() {
         if (error) {
           await recordLoginAttempt(email, false, error.message);
           trackSecurityEvent('login_failed', { email, reason: error.message });
-          setError(error.message.includes('Invalid login credentials') ? 'Invalid email or password. Please try again.' : error.message);
+          setError(error.message.includes('Invalid login credentials') ? 'Invalid email or password.' : error.message);
         } else {
           await recordLoginAttempt(email, true);
           trackSecurityEvent('login_success', { email });

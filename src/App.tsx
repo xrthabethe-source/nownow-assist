@@ -45,6 +45,12 @@ import AdminVerificationQueue from "./pages/admin/AdminVerificationQueue";
 import AdminSecurityMonitoring from "./pages/admin/AdminSecurityMonitoring";
 import DriverSignUp from "./pages/driver/DriverSignUp";
 import AdminWhatsApp from "./pages/admin/AdminWhatsApp";
+import LoginRedirect from "./pages/LoginRedirect";
+import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
+import Terms from "./pages/legal/Terms";
+import CookiePolicy from "./pages/legal/CookiePolicy";
+import Contact from "./pages/Contact";
+import About from "./pages/About";
 
 const queryClient = new QueryClient();
 
@@ -63,7 +69,15 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/welcome" element={<LandingPage />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/login" element={<LoginRedirect />} />
             <Route path="/driver/signup" element={<DriverSignUp />} />
+
+            {/* Legal / informational */}
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/about" element={<About />} />
             
             {/* Customer Routes - Protected for customers */}
             <Route path="/customer" element={

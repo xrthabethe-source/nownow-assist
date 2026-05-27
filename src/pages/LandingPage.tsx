@@ -17,7 +17,7 @@ import {
 } from "@/lib/contact";
 
 const painPoints = [
-  "Stranded on a dark Centurion road at night?",
+  "Stranded on a dark road at night?",
   "Flat tyre with no spare or tools?",
   "Dead battery and nobody to call?",
   "Ran out of fuel kilometres from a station?",

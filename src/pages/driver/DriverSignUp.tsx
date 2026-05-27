@@ -138,8 +138,10 @@ export default function DriverSignUp() {
       });
     } catch (err: any) {
       toast({
-        title: "Signup failed",
-        description: err.message || "Something went wrong. Please try again.",
+        title: "Could not create account",
+        description: err.message?.includes("already registered")
+          ? err.message
+          : "Could not create account. Please check your details or contact support on WhatsApp.",
         variant: "destructive",
       });
     } finally {

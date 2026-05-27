@@ -122,17 +122,19 @@ export const LandingPage = () => {
 
               <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
                 className="mx-auto mb-8 max-w-2xl text-lg text-white/80 md:text-xl">
-                Flat tyre, dead battery, empty tank or locked out? Send us one WhatsApp and a verified responder is on the way. No membership. No app needed. Pay only when you need help.
+                Flat tyre, dead battery, empty tank or locked out? Send us one WhatsApp and a verified responder is on the way. We're launching first in Centurion as we test the market, with plans to expand across South Africa. No membership. No app needed. Pay only when you need help.
               </motion.p>
 
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                 className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button variant="amber" size="xl" onClick={handleWhatsApp} className="w-full sm:w-auto px-8 md:px-12 shadow-accent animate-pulse-amber text-primary-foreground">
+                <a
+                  href="https://wa.me/27613278392?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%20My%20location%20is:"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-full bg-accent px-8 md:px-12 py-4 text-base font-semibold text-primary-foreground shadow-accent animate-pulse-amber w-full sm:w-auto"
+                >
                   <MessageCircle className="mr-2 h-5 w-5" />Get Help on WhatsApp
-                </Button>
-                <Button variant="light" size="lg" onClick={handleWhatsApp} className="w-full sm:w-auto !text-white !bg-white/20 !border-white/30 hover:!bg-white/30">
-                  <Zap className="mr-2 h-4 w-4" />Get Help Now
-                </Button>
+                </a>
               </motion.div>
 
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}

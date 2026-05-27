@@ -17,14 +17,14 @@ import {
 } from "@/lib/contact";
 
 const painPoints = [
-  "Stranded on a dark Centurion road at night?",
+  "Stranded on a dark road at night?",
   "Flat tyre with no spare or tools?",
   "Dead battery and nobody to call?",
   "Ran out of fuel kilometres from a station?",
 ];
 
 const solutions = [
-  { icon: Timer, title: "Fast Local Response", description: "We're launching in Centurion with responders ready to come to you, day or night.", highlight: "Centurion" },
+  { icon: Timer, title: "Fast Local Response", description: "We're launching first in Centurion with responders ready to come to you, day or night.", highlight: "Centurion" },
   { icon: BadgeCheck, title: "Verified Responders", description: "Every responder is vetted before they're dispatched to a customer.", highlight: "Vetted" },
   { icon: MapPin, title: "WhatsApp First", description: "No app to download. Send one WhatsApp and we take it from there.", highlight: "Easy" },
   { icon: Wallet, title: "Pay Only When You Need Help", description: "No membership, no monthly fees. Transparent pricing on every call-out.", highlight: "No Fees" },
@@ -45,15 +45,15 @@ const testimonials = [
 ];
 
 const trustPoints = [
-  { value: "Centurion", label: "Now Launching", icon: MapPin },
-  { value: "Verified", label: "Vetted Responders", icon: BadgeCheck },
+  { value: "Centurion", label: "Starting Here", icon: MapPin },
+  { value: "South Africa", label: "Built For", icon: BadgeCheck },
+  { value: "Verified", label: "Vetted Responders", icon: Shield },
   { value: "No Fees", label: "No Membership", icon: Wallet },
-  { value: "Pay-Per-Use", label: "Only When You Need Help", icon: Timer },
 ];
 
 const howItWorks = [
   { step: "1", title: "Send a WhatsApp", description: "Tap the button, send us a WhatsApp, tell us what's wrong and where you are." },
-  { step: "2", title: "We Dispatch", description: "We match you with the nearest verified responder in Centurion." },
+  { step: "2", title: "We Dispatch", description: "We match you with the nearest verified responder in your area." },
   { step: "3", title: "Help Arrives", description: "Your responder confirms ETA and gets you moving again." },
 ];
 
@@ -122,17 +122,19 @@ export const LandingPage = () => {
 
               <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
                 className="mx-auto mb-8 max-w-2xl text-lg text-white/80 md:text-xl">
-                Flat tyre, dead battery, empty tank or locked out? Send us one WhatsApp and a verified responder is on the way. No membership. No app needed. Pay only when you need help.
+                Flat tyre, dead battery, empty tank or locked out? Send us one WhatsApp and a verified responder is on the way. We're launching first in Centurion as we test the market, with plans to expand across South Africa. No membership. No app needed. Pay only when you need help.
               </motion.p>
 
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                 className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button variant="amber" size="xl" onClick={handleWhatsApp} className="w-full sm:w-auto px-8 md:px-12 shadow-accent animate-pulse-amber text-primary-foreground">
+                <a
+                  href="https://wa.me/27613278392?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%20My%20location%20is:"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-full bg-accent px-8 md:px-12 py-4 text-base font-semibold text-primary-foreground shadow-accent animate-pulse-amber w-full sm:w-auto"
+                >
                   <MessageCircle className="mr-2 h-5 w-5" />Get Help on WhatsApp
-                </Button>
-                <Button variant="light" size="lg" onClick={handleWhatsApp} className="w-full sm:w-auto !text-white !bg-white/20 !border-white/30 hover:!bg-white/30">
-                  <Zap className="mr-2 h-4 w-4" />Get Help Now
-                </Button>
+                </a>
               </motion.div>
 
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
@@ -199,8 +201,8 @@ export const LandingPage = () => {
       <section className="bg-secondary py-16 md:py-24">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Built for Centurion drivers</h2>
-            <p className="mx-auto max-w-2xl md:text-lg text-primary-foreground">A simple, local roadside service. WhatsApp us, we respond. No memberships, no admin.</p>
+            <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Built for South African drivers, launching first in Centurion</h2>
+            <p className="mx-auto max-w-2xl md:text-lg text-primary-foreground">Now-Now Assist is starting in Centurion as our first service area while we test, learn, and grow. The long-term vision is a national roadside assistance network across South Africa. WhatsApp us, we respond. No memberships, no admin.</p>
           </motion.div>
 
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid gap-6 md:grid-cols-2">
@@ -237,9 +239,11 @@ export const LandingPage = () => {
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {services.map((service) => (
               <motion.div key={service.name} variants={item}>
-                <div
-                  className="h-full relative cursor-pointer rounded-2xl border border-orange-500 ring-2 ring-orange-500 bg-orange-500/5 transition-all hover:scale-105"
-                  onClick={handleWhatsApp}
+                <a
+                  href="https://wa.me/27613278392?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%20My%20location%20is:"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-full relative block cursor-pointer rounded-2xl border border-orange-500 ring-2 ring-orange-500 bg-orange-500/5 transition-all hover:scale-105"
                 >
                   {service.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -253,7 +257,7 @@ export const LandingPage = () => {
                     <h3 className="mb-2 text-lg font-bold text-foreground">{service.name}</h3>
                     <p className="text-sm text-muted-foreground">{service.description}</p>
                   </div>
-                </div>
+                </a>
               </motion.div>
             ))}
           </motion.div>
@@ -327,7 +331,7 @@ export const LandingPage = () => {
                   </div>
                   <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl">Have a vehicle &amp; want to earn?</h2>
                   <p className="mb-6 text-white/80 md:text-lg">
-                    Join our growing Centurion responder network. Flexible hours, weekly payouts, and the satisfaction of helping local drivers in need.
+                    Join our first Centurion responder network and grow with us as we expand across South Africa. Flexible hours, weekly payouts, and the satisfaction of helping local drivers in need.
                   </p>
                   <ul className="mb-6 space-y-2">
                     {["Set your own schedule", "Weekly payouts", "Free onboarding & training", "Dedicated support team"].map((benefit) => (
@@ -367,12 +371,20 @@ export const LandingPage = () => {
                   <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl lg:text-5xl">Ready for stress-free roadside help?</h2>
                   <p className="mb-8 text-lg text-white/70 md:text-xl">Send us a WhatsApp and we'll take it from there. No sign-up needed to get help.</p>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Button variant="amber" size="xl" onClick={handleWhatsApp} className="w-full sm:w-auto px-12 shadow-accent">
+                    <a
+                      href="https://wa.me/27613278392?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%20My%20location%20is:"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center rounded-full bg-accent px-12 py-4 text-base font-semibold text-primary-foreground shadow-accent w-full sm:w-auto"
+                    >
                       <MessageCircle className="mr-2 h-5 w-5" />Get Help on WhatsApp
-                    </Button>
-                    <Button variant="light" size="lg" onClick={() => window.location.href = `tel:${SUPPORT_PHONE_TEL}`} className="w-full sm:w-auto !text-white !bg-white/20 !border-white/30 hover:!bg-white/30">
+                    </a>
+                    <a
+                      href={`tel:${SUPPORT_PHONE_TEL}`}
+                      className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/20 px-8 py-4 text-base font-medium text-white hover:bg-white/30 w-full sm:w-auto"
+                    >
                       <Phone className="mr-2 h-4 w-4" />Call/WhatsApp: {SUPPORT_PHONE_DISPLAY}
-                    </Button>
+                    </a>
                   </div>
                   <p className="mt-6 text-sm text-white/50">🔒 Your data is encrypted and safe.</p>
                 </div>
@@ -388,14 +400,14 @@ export const LandingPage = () => {
           <div className="grid gap-8 md:grid-cols-4">
             <div className="md:col-span-2">
               <Logo size="md" className="mb-4" />
-              <p className="mb-4 max-w-sm text-white/80">Centurion's WhatsApp-first roadside assistance. Help when you need it, where you need it.</p>
+              <p className="mb-4 max-w-sm text-white/80">Now-Now Assist is a WhatsApp-first roadside assistance platform, launching first in Centurion and built for South African drivers.</p>
               <div className="flex items-center gap-2"><Shield className="h-5 w-5 text-accent" /><span className="text-sm text-white/80">Verified &amp; Trusted</span></div>
               <p className="mt-4 text-sm text-white/80">Call/WhatsApp: <a href={`tel:${SUPPORT_PHONE_TEL}`} className="font-medium text-white hover:underline">{SUPPORT_PHONE_DISPLAY}</a></p>
             </div>
             <div>
               <h4 className="mb-4 font-semibold text-white">Quick Links</h4>
               <ul className="space-y-2 text-sm text-white/70">
-                <li><button onClick={handleWhatsApp} className="hover:text-white transition-colors">Get Help</button></li>
+                <li><a href="https://wa.me/27613278392?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%20My%20location%20is:" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Get Help</a></li>
                 <li><button onClick={() => navigate("/driver/signup")} className="hover:text-white transition-colors">Become a Responder</button></li>
                 <li><button onClick={() => navigate("/about")} className="hover:text-white transition-colors">About Us</button></li>
                 <li><button onClick={() => navigate("/contact")} className="hover:text-white transition-colors">Contact</button></li>

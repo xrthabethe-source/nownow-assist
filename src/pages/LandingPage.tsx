@@ -35,7 +35,7 @@ const services = [
   { icon: BatteryIcon, name: "Jump Start", description: "Dead battery? We'll get you running again.", popular: true },
   { icon: FuelIcon, name: "Fuel Delivery", description: "Ran out of fuel? We'll bring petrol or diesel to you.", popular: false },
   { icon: PumpIcon, name: "Tyre Inflate", description: "Low tyre pressure? We'll pump it up.", popular: false },
-  { icon: WrenchIcon, name: "Minor Repairs", description: "Small roadside fixes to get you moving.", popular: false },
+  { icon: WrenchIcon, name: "Minor Roadside Assistance", description: "Small roadside fixes to get you moving.", popular: false },
 ];
 
 const testimonials = [
@@ -122,7 +122,7 @@ export const LandingPage = () => {
 
               <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
                 className="mx-auto mb-8 max-w-2xl text-lg text-white/80 md:text-xl">
-                Flat tyre, dead battery, empty tank or locked out? Send us one WhatsApp and a verified responder is on the way. We're launching first in Centurion as we test the market, with plans to expand across South Africa. No membership. No app needed. Pay only when you need help.
+                Flat tyre, dead battery, empty tank or minor roadside issue? Send us one WhatsApp and a verified responder is on the way. We're launching first in Centurion as we test the market, with plans to expand across South Africa. No membership. No app needed. Pay only when you need help.
               </motion.p>
 
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
@@ -233,7 +233,7 @@ export const LandingPage = () => {
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">Services we offer</h2>
-            <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">From flat tyres to empty tanks, we've got every roadside emergency covered.</p>
+            <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">From flat tyres to empty tanks, we've got you covered.</p>
           </motion.div>
 
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -261,6 +261,11 @@ export const LandingPage = () => {
               </motion.div>
             ))}
           </motion.div>
+
+          <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+            className="mt-8 text-center text-sm text-muted-foreground">
+            Please note: vehicle lockout and locksmith services are not currently available.
+          </motion.p>
         </div>
       </section>
 

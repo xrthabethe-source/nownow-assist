@@ -45,6 +45,7 @@ import AdminVerificationQueue from "./pages/admin/AdminVerificationQueue";
 import AdminSecurityMonitoring from "./pages/admin/AdminSecurityMonitoring";
 import DriverSignUp from "./pages/driver/DriverSignUp";
 import AdminWhatsApp from "./pages/admin/AdminWhatsApp";
+import AdminWhatsAppRequests from "./pages/admin/AdminWhatsAppRequests";
 import LoginRedirect from "./pages/LoginRedirect";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import Terms from "./pages/legal/Terms";
@@ -247,6 +248,11 @@ const App = () => (
             <Route path="/admin/whatsapp" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminWhatsApp />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/whatsapp-requests" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminWhatsAppRequests />
               </ProtectedRoute>
             } />
             

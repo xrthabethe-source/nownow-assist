@@ -331,7 +331,7 @@ export const LandingPage = () => {
                   </div>
                   <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl">Have a vehicle &amp; want to earn?</h2>
                   <p className="mb-6 text-white/80 md:text-lg">
-                    Join our growing Centurion responder network. Flexible hours, weekly payouts, and the satisfaction of helping local drivers in need.
+                    Join our first Centurion responder network and grow with us as we expand across South Africa. Flexible hours, weekly payouts, and the satisfaction of helping local drivers in need.
                   </p>
                   <ul className="mb-6 space-y-2">
                     {["Set your own schedule", "Weekly payouts", "Free onboarding & training", "Dedicated support team"].map((benefit) => (

@@ -45,7 +45,14 @@ export default function DriverSignUp() {
   };
 
   const handleSubmit = async () => {
-    if (!validate()) return;
+    if (!validate()) {
+      toast({
+        title: "Please fix the errors below",
+        description: "Some fields are missing or invalid.",
+        variant: "destructive",
+      });
+      return;
+    }
     setSubmitting(true);
 
     try {

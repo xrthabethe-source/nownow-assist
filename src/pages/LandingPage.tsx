@@ -24,7 +24,7 @@ const painPoints = [
 ];
 
 const solutions = [
-  { icon: Timer, title: "Fast Local Response", description: "We're launching in Centurion with responders ready to come to you, day or night.", highlight: "Centurion" },
+  { icon: Timer, title: "Fast Local Response", description: "We're launching first in Centurion with responders ready to come to you, day or night.", highlight: "Centurion" },
   { icon: BadgeCheck, title: "Verified Responders", description: "Every responder is vetted before they're dispatched to a customer.", highlight: "Vetted" },
   { icon: MapPin, title: "WhatsApp First", description: "No app to download. Send one WhatsApp and we take it from there.", highlight: "Easy" },
   { icon: Wallet, title: "Pay Only When You Need Help", description: "No membership, no monthly fees. Transparent pricing on every call-out.", highlight: "No Fees" },

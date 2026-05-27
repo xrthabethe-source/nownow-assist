@@ -267,11 +267,11 @@ export const LandingPage = () => {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="bg-secondary py-16 md:py-24">
+      <section id="how-it-works" className="bg-card py-16 md:py-24">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Help in 3 simple steps</h2>
-            <p className="mx-auto max-w-2xl text-secondary-foreground/80 md:text-lg">Getting roadside help has never been easier.</p>
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">Help in 3 simple steps</h2>
+            <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">Getting roadside help has never been easier.</p>
           </motion.div>
 
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="mx-auto max-w-4xl">

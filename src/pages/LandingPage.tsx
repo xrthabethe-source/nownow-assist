@@ -371,12 +371,20 @@ export const LandingPage = () => {
                   <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl lg:text-5xl">Ready for stress-free roadside help?</h2>
                   <p className="mb-8 text-lg text-white/70 md:text-xl">Send us a WhatsApp and we'll take it from there. No sign-up needed to get help.</p>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Button variant="amber" size="xl" onClick={handleWhatsApp} className="w-full sm:w-auto px-12 shadow-accent">
+                    <a
+                      href="https://wa.me/27613278392?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%20My%20location%20is:"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center rounded-full bg-accent px-12 py-4 text-base font-semibold text-primary-foreground shadow-accent w-full sm:w-auto"
+                    >
                       <MessageCircle className="mr-2 h-5 w-5" />Get Help on WhatsApp
-                    </Button>
-                    <Button variant="light" size="lg" onClick={() => window.location.href = `tel:${SUPPORT_PHONE_TEL}`} className="w-full sm:w-auto !text-white !bg-white/20 !border-white/30 hover:!bg-white/30">
+                    </a>
+                    <a
+                      href={`tel:${SUPPORT_PHONE_TEL}`}
+                      className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/20 px-8 py-4 text-base font-medium text-white hover:bg-white/30 w-full sm:w-auto"
+                    >
                       <Phone className="mr-2 h-4 w-4" />Call/WhatsApp: {SUPPORT_PHONE_DISPLAY}
-                    </Button>
+                    </a>
                   </div>
                   <p className="mt-6 text-sm text-white/50">🔒 Your data is encrypted and safe.</p>
                 </div>

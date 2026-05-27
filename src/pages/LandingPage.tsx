@@ -257,7 +257,7 @@ export const LandingPage = () => {
                     <h3 className="mb-2 text-lg font-bold text-foreground">{service.name}</h3>
                     <p className="text-sm text-muted-foreground">{service.description}</p>
                   </div>
-                </div>
+                </a>
               </motion.div>
             ))}
           </motion.div>

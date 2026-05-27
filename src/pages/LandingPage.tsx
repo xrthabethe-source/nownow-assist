@@ -201,7 +201,7 @@ export const LandingPage = () => {
       <section className="bg-secondary py-16 md:py-24">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Built for Centurion drivers</h2>
+            <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Built for South African drivers, launching first in Centurion</h2>
             <p className="mx-auto max-w-2xl md:text-lg text-primary-foreground">A simple, local roadside service. WhatsApp us, we respond. No memberships, no admin.</p>
           </motion.div>
 

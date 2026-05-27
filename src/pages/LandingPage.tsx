@@ -400,14 +400,14 @@ export const LandingPage = () => {
           <div className="grid gap-8 md:grid-cols-4">
             <div className="md:col-span-2">
               <Logo size="md" className="mb-4" />
-              <p className="mb-4 max-w-sm text-white/80">Centurion's WhatsApp-first roadside assistance. Help when you need it, where you need it.</p>
+              <p className="mb-4 max-w-sm text-white/80">Now-Now Assist is a WhatsApp-first roadside assistance platform, launching first in Centurion and built for South African drivers.</p>
               <div className="flex items-center gap-2"><Shield className="h-5 w-5 text-accent" /><span className="text-sm text-white/80">Verified &amp; Trusted</span></div>
               <p className="mt-4 text-sm text-white/80">Call/WhatsApp: <a href={`tel:${SUPPORT_PHONE_TEL}`} className="font-medium text-white hover:underline">{SUPPORT_PHONE_DISPLAY}</a></p>
             </div>
             <div>
               <h4 className="mb-4 font-semibold text-white">Quick Links</h4>
               <ul className="space-y-2 text-sm text-white/70">
-                <li><button onClick={handleWhatsApp} className="hover:text-white transition-colors">Get Help</button></li>
+                <li><a href="https://wa.me/27613278392?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%20My%20location%20is:" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Get Help</a></li>
                 <li><button onClick={() => navigate("/driver/signup")} className="hover:text-white transition-colors">Become a Responder</button></li>
                 <li><button onClick={() => navigate("/about")} className="hover:text-white transition-colors">About Us</button></li>
                 <li><button onClick={() => navigate("/contact")} className="hover:text-white transition-colors">Contact</button></li>

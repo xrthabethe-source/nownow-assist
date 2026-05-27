@@ -410,17 +410,17 @@ export const LandingPage = () => {
               <h4 className="mb-4 font-semibold text-white">Quick Links</h4>
               <ul className="space-y-2 text-sm text-white/70">
                 <li><a href="https://wa.me/27613278392?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%20My%20location%20is:" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Get Help</a></li>
-                <li><button onClick={() => navigate("/driver/signup")} className="hover:text-white transition-colors">Become a Responder</button></li>
-                <li><button onClick={() => navigate("/about")} className="hover:text-white transition-colors">About Us</button></li>
-                <li><button onClick={() => navigate("/contact")} className="hover:text-white transition-colors">Contact</button></li>
+                <li><a href="/driver/signup" className="hover:text-white transition-colors">Become a Responder</a></li>
+                <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
+                <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
               </ul>
             </div>
             <div>
               <h4 className="mb-4 font-semibold text-white">Legal</h4>
               <ul className="space-y-2 text-sm text-white/70">
-                <li><button onClick={() => navigate("/privacy-policy")} className="hover:text-white transition-colors">Privacy Policy</button></li>
-                <li><button onClick={() => navigate("/terms")} className="hover:text-white transition-colors">Terms of Service</button></li>
-                <li><button onClick={() => navigate("/cookie-policy")} className="hover:text-white transition-colors">Cookie Policy</button></li>
+                <li><a href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
+                <li><a href="/cookie-policy" className="hover:text-white transition-colors">Cookie Policy</a></li>
               </ul>
             </div>
           </div>

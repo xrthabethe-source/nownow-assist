@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Logo } from "@/components/shared/Logo";
@@ -72,9 +72,6 @@ const handleWhatsApp = () => openSupportWhatsApp();
 export const LandingPage = () => {
   const navigate = useNavigate();
   const heroRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -97,14 +94,14 @@ export const LandingPage = () => {
           </nav>
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" className="font-medium" onClick={() => navigate("/auth")}>Log in</Button>
-            <Button variant="amber" size="sm" className="hidden sm:flex font-medium" onClick={() => navigate("/driver/signup")}>Become a Driver</Button>
+            <a href="/driver/signup" className="hidden sm:inline-flex items-center justify-center rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors">Become a Driver</a>
           </div>
         </div>
       </header>
 
       {/* Hero */}
       <section ref={heroRef} className="relative overflow-hidden bg-primary">
-        <motion.div style={{ opacity: heroOpacity, scale: heroScale }}>
+        <div>
           <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80" />
           <div className="absolute top-20 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl opacity-50" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-3xl opacity-40" />
@@ -145,7 +142,7 @@ export const LandingPage = () => {
               </motion.div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </section>
 
       {/* Trust strip */}
@@ -198,11 +195,11 @@ export const LandingPage = () => {
       </section>
 
       {/* Solutions */}
-      <section className="bg-secondary py-16 md:py-24">
+      <section className="bg-card py-16 md:py-24">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Built for South African drivers, launching first in Centurion</h2>
-            <p className="mx-auto max-w-2xl md:text-lg text-primary-foreground">Now-Now Assist is starting in Centurion as our first service area while we test, learn, and grow. The long-term vision is a national roadside assistance network across South Africa. WhatsApp us, we respond. No memberships, no admin.</p>
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">Built for South African drivers, launching first in Centurion</h2>
+            <p className="mx-auto max-w-2xl md:text-lg text-muted-foreground">Now-Now Assist is starting in Centurion as our first service area while we test, learn, and grow. The long-term vision is a national roadside assistance network across South Africa. WhatsApp us, we respond. No memberships, no admin.</p>
           </motion.div>
 
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid gap-6 md:grid-cols-2">
@@ -251,8 +248,8 @@ export const LandingPage = () => {
                     </div>
                   )}
                   <div className="p-6 text-center">
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-green-500/10">
-                      <service.icon className="h-8 w-8 text-green-500" />
+                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent/15">
+                      <service.icon className="h-8 w-8 text-accent" />
                     </div>
                     <h3 className="mb-2 text-lg font-bold text-foreground">{service.name}</h3>
                     <p className="text-sm text-muted-foreground">{service.description}</p>
@@ -270,11 +267,11 @@ export const LandingPage = () => {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="bg-secondary py-16 md:py-24">
+      <section id="how-it-works" className="bg-card py-16 md:py-24">
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Help in 3 simple steps</h2>
-            <p className="mx-auto max-w-2xl text-secondary-foreground/80 md:text-lg">Getting roadside help has never been easier.</p>
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">Help in 3 simple steps</h2>
+            <p className="mx-auto max-w-2xl text-muted-foreground md:text-lg">Getting roadside help has never been easier.</p>
           </motion.div>
 
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="mx-auto max-w-4xl">
@@ -343,7 +340,7 @@ export const LandingPage = () => {
                       <li key={benefit} className="flex items-center gap-2 text-white"><CheckCircle2 className="h-5 w-5 text-accent" />{benefit}</li>
                     ))}
                   </ul>
-                  <Button variant="amber" size="lg" onClick={() => navigate("/driver/signup")}>Apply to Drive<ArrowRight className="ml-2 h-4 w-4" /></Button>
+                  <a href="/driver/signup" className="inline-flex items-center justify-center rounded-md bg-accent px-6 py-3 text-base font-semibold text-accent-foreground hover:bg-accent/90 transition-colors">Apply to Drive<ArrowRight className="ml-2 h-4 w-4" /></a>
                 </div>
                 <div className="relative hidden md:block">
                   <div className="aspect-square rounded-3xl bg-gradient-to-br from-white/10 to-white/5 p-8">
@@ -413,17 +410,17 @@ export const LandingPage = () => {
               <h4 className="mb-4 font-semibold text-white">Quick Links</h4>
               <ul className="space-y-2 text-sm text-white/70">
                 <li><a href="https://wa.me/27613278392?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%20My%20location%20is:" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Get Help</a></li>
-                <li><button onClick={() => navigate("/driver/signup")} className="hover:text-white transition-colors">Become a Responder</button></li>
-                <li><button onClick={() => navigate("/about")} className="hover:text-white transition-colors">About Us</button></li>
-                <li><button onClick={() => navigate("/contact")} className="hover:text-white transition-colors">Contact</button></li>
+                <li><a href="/driver/signup" className="hover:text-white transition-colors">Become a Responder</a></li>
+                <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
+                <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
               </ul>
             </div>
             <div>
               <h4 className="mb-4 font-semibold text-white">Legal</h4>
               <ul className="space-y-2 text-sm text-white/70">
-                <li><button onClick={() => navigate("/privacy-policy")} className="hover:text-white transition-colors">Privacy Policy</button></li>
-                <li><button onClick={() => navigate("/terms")} className="hover:text-white transition-colors">Terms of Service</button></li>
-                <li><button onClick={() => navigate("/cookie-policy")} className="hover:text-white transition-colors">Cookie Policy</button></li>
+                <li><a href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
+                <li><a href="/cookie-policy" className="hover:text-white transition-colors">Cookie Policy</a></li>
               </ul>
             </div>
           </div>

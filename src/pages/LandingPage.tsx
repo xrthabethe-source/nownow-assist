@@ -261,6 +261,11 @@ export const LandingPage = () => {
               </motion.div>
             ))}
           </motion.div>
+
+          <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+            className="mt-8 text-center text-sm text-muted-foreground">
+            Please note: vehicle lockout and locksmith services are not currently available.
+          </motion.p>
         </div>
       </section>
 

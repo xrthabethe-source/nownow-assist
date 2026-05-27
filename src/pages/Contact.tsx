@@ -1,4 +1,4 @@
-import LegalPage from "../legal/LegalPage";
+import LegalPage from "./legal/LegalPage";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Phone, Mail, MapPin } from "lucide-react";
 import {

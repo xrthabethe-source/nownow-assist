@@ -45,10 +45,10 @@ const testimonials = [
 ];
 
 const trustPoints = [
-  { value: "Centurion", label: "Now Launching", icon: MapPin },
-  { value: "Verified", label: "Vetted Responders", icon: BadgeCheck },
+  { value: "Centurion", label: "Starting Here", icon: MapPin },
+  { value: "South Africa", label: "Built For", icon: BadgeCheck },
+  { value: "Verified", label: "Vetted Responders", icon: Shield },
   { value: "No Fees", label: "No Membership", icon: Wallet },
-  { value: "Pay-Per-Use", label: "Only When You Need Help", icon: Timer },
 ];
 
 const howItWorks = [

@@ -94,7 +94,7 @@ export const LandingPage = () => {
           </nav>
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" className="font-medium" onClick={() => navigate("/auth")}>Log in</Button>
-            <Button variant="amber" size="sm" className="hidden sm:flex font-medium" onClick={() => navigate("/driver/signup")}>Become a Driver</Button>
+            <a href="/driver/signup" className="hidden sm:inline-flex items-center justify-center rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent/90 transition-colors">Become a Driver</a>
           </div>
         </div>
       </header>

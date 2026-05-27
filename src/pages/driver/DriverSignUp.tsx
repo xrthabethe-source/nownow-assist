@@ -30,15 +30,16 @@ export default function DriverSignUp() {
     if (!surname.trim()) e.surname = "Surname is required";
     if (!cellphone.trim()) e.cellphone = "Cellphone number is required";
     else if (!/^(\+27|0)\d{9}$/.test(cellphone.replace(/\s/g, "")))
-      e.cellphone = "Enter a valid SA phone number";
-    if (!email.trim()) e.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = "Enter a valid email";
+      e.cellphone = "Enter a valid SA phone number (e.g. 071 234 5678)";
+    if (!email.trim()) e.email = "Email address is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = "Enter a valid email address";
     if (!password) e.password = "Password is required";
-    else if (password.length < 8) e.password = "Min 8 characters";
-    else if (!/[A-Z]/.test(password)) e.password = "Must include an uppercase letter";
-    else if (!/[0-9]/.test(password)) e.password = "Must include a number";
-    else if (!/[!@#$%^&*]/.test(password)) e.password = "Must include a special character";
-    if (password !== confirmPassword) e.confirmPassword = "Passwords do not match";
+    else if (password.length < 8) e.password = "Password must be at least 8 characters";
+    else if (!/[A-Z]/.test(password)) e.password = "Password must include an uppercase letter";
+    else if (!/[0-9]/.test(password)) e.password = "Password must include a number";
+    else if (!/[!@#$%^&*]/.test(password)) e.password = "Password must include a special character";
+    if (!confirmPassword) e.confirmPassword = "Confirm password is required";
+    else if (password !== confirmPassword) e.confirmPassword = "Passwords do not match";
     setErrors(e);
     return Object.keys(e).length === 0;
   };

@@ -100,6 +100,7 @@ const navSections: NavSection[] = [
       { icon: MapPin, label: "Live Jobs", path: "/admin?view=jobs" },
       { icon: Wrench, label: "Services", path: "/admin/services" },
       { icon: MessageCircle, label: "WhatsApp Channel", path: "/admin/whatsapp", badge: "New", badgeVariant: "success" },
+      { icon: MessageCircle, label: "WhatsApp Requests", path: "/admin/whatsapp-requests", badge: "Manual", badgeVariant: "warning" },
       { icon: Clock, label: "Job History", path: "/admin/reports?type=jobs" },
     ],
   },

@@ -1355,6 +1355,66 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_requests: {
+        Row: {
+          assigned_driver_id: string | null
+          created_at: string
+          created_by: string | null
+          customer_name: string
+          customer_phone: string
+          estimated_price: number | null
+          eta_minutes: number | null
+          id: string
+          notes: string | null
+          pickup_address: string | null
+          pickup_lat: number | null
+          pickup_lng: number | null
+          service_id: string | null
+          service_name: string | null
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_driver_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_name: string
+          customer_phone: string
+          estimated_price?: number | null
+          eta_minutes?: number | null
+          id?: string
+          notes?: string | null
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          service_id?: string | null
+          service_name?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_driver_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string
+          customer_phone?: string
+          estimated_price?: number | null
+          eta_minutes?: number | null
+          id?: string
+          notes?: string | null
+          pickup_address?: string | null
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          service_id?: string | null
+          service_name?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

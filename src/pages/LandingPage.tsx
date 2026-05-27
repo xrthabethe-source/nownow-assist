@@ -239,9 +239,11 @@ export const LandingPage = () => {
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {services.map((service) => (
               <motion.div key={service.name} variants={item}>
-                <div
-                  className="h-full relative cursor-pointer rounded-2xl border border-orange-500 ring-2 ring-orange-500 bg-orange-500/5 transition-all hover:scale-105"
-                  onClick={handleWhatsApp}
+                <a
+                  href="https://wa.me/27613278392?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%20My%20location%20is:"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-full relative block cursor-pointer rounded-2xl border border-orange-500 ring-2 ring-orange-500 bg-orange-500/5 transition-all hover:scale-105"
                 >
                   {service.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">

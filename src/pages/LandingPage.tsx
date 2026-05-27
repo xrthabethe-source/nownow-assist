@@ -202,7 +202,7 @@ export const LandingPage = () => {
         <div className="container">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold text-secondary-foreground md:text-4xl">Built for South African drivers, launching first in Centurion</h2>
-            <p className="mx-auto max-w-2xl md:text-lg text-primary-foreground">A simple, local roadside service. WhatsApp us, we respond. No memberships, no admin.</p>
+            <p className="mx-auto max-w-2xl md:text-lg text-primary-foreground">Now-Now Assist is starting in Centurion as our first service area while we test, learn, and grow. The long-term vision is a national roadside assistance network across South Africa. WhatsApp us, we respond. No memberships, no admin.</p>
           </motion.div>
 
           <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid gap-6 md:grid-cols-2">

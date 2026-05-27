@@ -53,7 +53,7 @@ const trustPoints = [
 
 const howItWorks = [
   { step: "1", title: "Send a WhatsApp", description: "Tap the button, send us a WhatsApp, tell us what's wrong and where you are." },
-  { step: "2", title: "We Dispatch", description: "We match you with the nearest verified responder in Centurion." },
+  { step: "2", title: "We Dispatch", description: "We match you with the nearest verified responder in your area." },
   { step: "3", title: "Help Arrives", description: "Your responder confirms ETA and gets you moving again." },
 ];
 

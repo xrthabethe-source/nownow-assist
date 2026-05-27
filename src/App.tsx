@@ -250,6 +250,11 @@ const App = () => (
                 <AdminWhatsApp />
               </ProtectedRoute>
             } />
+            <Route path="/admin/whatsapp-requests" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminWhatsAppRequests />
+              </ProtectedRoute>
+            } />
             
             {/* Export Route */}
             <Route path="/export-ai-prompt" element={<ExportAIPrompt />} />

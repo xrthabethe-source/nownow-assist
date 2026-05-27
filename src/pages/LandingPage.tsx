@@ -101,7 +101,7 @@ export const LandingPage = () => {
 
       {/* Hero */}
       <section ref={heroRef} className="relative overflow-hidden bg-primary">
-        <motion.div style={{ opacity: heroOpacity, scale: heroScale }}>
+        <div>
           <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80" />
           <div className="absolute top-20 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl opacity-50" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-3xl opacity-40" />
@@ -142,7 +142,7 @@ export const LandingPage = () => {
               </motion.div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </section>
 
       {/* Trust strip */}

@@ -97,24 +97,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // THEN check for existing session AND revalidate it server-side.
+    // getSession() only reads local storage; getUser() forces a round-trip
+    // to the Auth server so a tampered/expired/revoked token cannot grant access.
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
 
       if (session?.user) {
-        loadRolesForUser(session.user.id);
+        const { data: { user: verifiedUser }, error } = await supabase.auth.getUser();
+        if (error || !verifiedUser) {
+          await supabase.auth.signOut();
+          setSession(null);
+          setUser(null);
+          setRole(null);
+          setAllRoles([]);
+          setRoleLoading(false);
+          setLoading(false);
+          return;
+        }
+        setSession(session);
+        setUser(verifiedUser);
+        loadRolesForUser(verifiedUser.id);
       } else {
+        setSession(null);
+        setUser(null);
         setRole(null);
         setAllRoles([]);
         setRoleLoading(false);
       }
 
       setLoading(false);
-    });
+    })();
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Inactivity timeout — sign the user out after 30 minutes of no interaction.
+  useEffect(() => {
+    if (!user) return;
+    const TIMEOUT_MS = 30 * 60 * 1000;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const logoutForIdle = async () => {
+      await supabase.auth.signOut();
+      try {
+        Object.keys(localStorage)
+          .filter((k) => k.startsWith('sb-') || k.includes('supabase.auth'))
+          .forEach((k) => localStorage.removeItem(k));
+      } catch {}
+      window.location.assign('/auth?reason=timeout');
+    };
+
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(logoutForIdle, TIMEOUT_MS);
+    };
+
+    const events = ['mousemove', 'keydown', 'click', 'touchstart', 'scroll'];
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    reset();
+
+    return () => {
+      clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, reset));
+    };
+  }, [user]);
 
   const signUp = async (email: string, password: string, fullName?: string, accountType?: 'customer' | 'driver') => {
     const redirectUrl = `${window.location.origin}/`;

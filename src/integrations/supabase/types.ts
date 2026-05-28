@@ -1428,6 +1428,7 @@ export type Database = {
         Args: { check_email: string; check_ip: unknown }
         Returns: number
       }
+      get_job_wa_phone: { Args: { p_job_id: string }; Returns: string }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

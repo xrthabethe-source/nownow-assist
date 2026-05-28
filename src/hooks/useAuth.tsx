@@ -191,12 +191,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {}
+    try {
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith('sb-') || k.includes('supabase.auth'))
+        .forEach((k) => localStorage.removeItem(k));
+      sessionStorage.clear();
+    } catch {}
     setUser(null);
     setSession(null);
     setRole(null);
     setAllRoles([]);
     setRoleLoading(false);
+    // Hard navigation prevents back-button restore of protected pages.
+    window.location.replace('/auth');
   };
 
   return (

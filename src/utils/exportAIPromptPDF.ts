@@ -170,12 +170,11 @@ export const exportAIPromptPDF = () => {
   addPage();
   addTitle('Services Offered');
   addDivider();
-  addBullet('Flat Tyre Change - Professional tyre replacement');
-  addBullet('Battery Jump Start - Dead battery assistance');
+  addBullet('Jump Start - Battery jump start assistance');
+  addBullet('Tyre Change - Flat tyre replacement');
   addBullet('Fuel Delivery - Emergency fuel delivery');
-  addBullet('Towing - Vehicle towing services');
-  addBullet('Locksmith Services - Vehicle lockout assistance');
-  addBullet('Mechanical Assistance - On-site mechanical help');
+  addBullet('Tyre Inflate - Tyre inflation assistance');
+  addBullet('Minor Roadside Assistance - On-site minor mechanical help');
   addSpacer(5);
 
   addSubtitle('Service Attributes');

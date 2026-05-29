@@ -109,7 +109,25 @@ export default function AdminWhatsApp() {
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Save failed"),
   });
 
+  const sendTemplateMutation = useMutation({
+    mutationFn: async ({ to, template }: { to: string; template: string }) => {
+      const { data, error } = await supabase.functions.invoke("whatsapp-send-template", {
+        body: { to, template },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(typeof data.error === "string" ? data.error : JSON.stringify(data));
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Template reply sent");
+      queryClient.invalidateQueries({ queryKey: ["wa-messages", selectedPhone] });
+    },
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Failed to send template"),
+  });
+
   const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/whatsapp-webhook`;
+
 
   return (
     <AdminLayout>

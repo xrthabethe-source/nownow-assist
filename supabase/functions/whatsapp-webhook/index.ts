@@ -13,11 +13,11 @@ const corsHeaders = {
 const GRAPH = "https://graph.facebook.com/v20.0";
 
 const SERVICES = [
-  { key: "jump_start", label: "Jump start", matchName: "Battery" },
-  { key: "tyre_change", label: "Tyre change", matchName: "Tyre" },
-  { key: "fuel_delivery", label: "Fuel delivery", matchName: "Fuel" },
-  { key: "tyre_inflate", label: "Tyre inflate", matchName: "Tyre" },
-  { key: "minor_roadside_assistance", label: "Minor roadside assistance", matchName: "Tow" },
+  { key: "jump_start", label: "Jump start" },
+  { key: "tyre_change", label: "Tyre change" },
+  { key: "fuel_delivery", label: "Fuel delivery" },
+  { key: "tyre_inflate", label: "Tyre inflate" },
+  { key: "minor_roadside_assistance", label: "Minor roadside assistance" },
 ];
 
 const FALLBACK_PRICES: Record<string, number> = {
@@ -422,17 +422,18 @@ async function handleInbound(
       channel: "whatsapp",
     });
 
-    // 3. Match service — prefer exact label match against seeded services catalog
+    // 3. Match service — STRICT exact name match against active catalog. No fallback to services[0].
     const serviceLabel = draft.service_label as string;
     const { data: services } = await supabase
       .from("services")
       .select("id, name, base_price")
       .eq("is_active", true);
-    const matchName = SERVICES.find((s) => s.label === serviceLabel)?.matchName || serviceLabel;
-    const matched =
-      (services || []).find((s: { name: string }) => s.name.toLowerCase() === serviceLabel.toLowerCase()) ||
-      (services || []).find((s: { name: string }) => s.name.toLowerCase().includes(matchName.toLowerCase())) ||
-      services?.[0];
+    const matched = (services || []).find(
+      (s: { name: string }) => s.name.toLowerCase() === serviceLabel.toLowerCase()
+    ) || null;
+    if (!matched) {
+      console.error("WhatsApp service match FAILED", { serviceLabel, dbServiceType, availableServices: (services || []).map((s: { name: string }) => s.name) });
+    }
 
     const requestAuditPayload = {
       customer_profile_id: profileId,

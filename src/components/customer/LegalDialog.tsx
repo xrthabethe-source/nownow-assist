@@ -20,7 +20,7 @@ Last Updated: January 2025
 By accessing or using the Now-Now Assist mobile application and services, you agree to be bound by these Terms of Service.
 
 2. SERVICE DESCRIPTION
-Now-Now Assist provides on-demand roadside assistance services connecting customers with service providers for tire changes, battery jumpstarts, fuel delivery, and towing services.
+Now-Now Assist provides on-demand roadside assistance services connecting customers with service providers for jump starts, tyre changes, fuel delivery, tyre inflation, and minor roadside assistance. We do not offer vehicle lockout, locksmith, key replacement, standalone towing, or accident assist services.
 
 3. USER ACCOUNTS
 - You must be at least 18 years old to use our services

@@ -50,7 +50,7 @@ const faqs = [
   },
   {
     question: "What services do you offer?",
-    answer: "We offer flat tyre change, battery jump start, fuel delivery, towing services, locksmith assistance, and general mechanical help for common roadside issues.",
+    answer: "We offer jump start, tyre change, fuel delivery, tyre inflate, and minor roadside assistance. We do not offer vehicle lockout, locksmith, key replacement, standalone towing, or accident assist.",
   },
   {
     question: "How do I track my responder?",

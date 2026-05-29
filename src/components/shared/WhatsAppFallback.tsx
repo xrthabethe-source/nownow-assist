@@ -31,7 +31,7 @@ export function WhatsAppFallback({ visible, serviceName, location }: WhatsAppFal
         onClick={() => window.open(whatsappUrl, '_blank')}
       >
         <MessageCircle className="h-5 w-5" />
-        Request help on WhatsApp
+        Request Help on WhatsApp
       </Button>
       <p className="text-xs text-muted-foreground text-center mt-2">
         Having trouble submitting? Get help directly via WhatsApp.

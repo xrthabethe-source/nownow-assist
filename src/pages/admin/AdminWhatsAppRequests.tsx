@@ -308,7 +308,7 @@ export default function AdminWhatsAppRequests() {
               <Inbox className="h-12 w-12 text-muted-foreground" />
               <h3 className="text-lg font-semibold">No WhatsApp requests yet</h3>
               <p className="max-w-sm text-sm text-muted-foreground">
-                When a customer messages +27 61 327 8392, log it here so it can be tracked
+                When a customer messages +27 65 663 6685, log it here so it can be tracked
                 and dispatched.
               </p>
               <Button

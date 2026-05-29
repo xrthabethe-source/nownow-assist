@@ -379,6 +379,7 @@ async function handleInbound(
       await reply(supabase, phone, conv.profile_id, `We're missing: ${missing.join(", ")}. Reply *MENU* to restart.`);
       return;
     }
+    const dbServiceType = serviceType as string;
 
     // 1. Profile
     let profileId = conv.profile_id;
@@ -420,7 +421,7 @@ async function handleInbound(
     const requestAuditPayload = {
       customer_profile_id: profileId,
       phone_number: phone,
-      service_type: serviceType,
+      service_type: dbServiceType,
       location_text: locationText,
       location_latitude: loc.lat ?? null,
       location_longitude: loc.lng ?? null,
@@ -439,9 +440,9 @@ async function handleInbound(
       pickup_address: locationText,
       pickup_lat: loc.lat ?? null,
       pickup_lng: loc.lng ?? null,
-      estimated_price: matched?.base_price ?? FALLBACK_PRICES[serviceType] ?? 349,
+      estimated_price: matched?.base_price ?? FALLBACK_PRICES[dbServiceType] ?? 349,
       notes:
-        `WhatsApp request — ${serviceLabel} (${serviceType})\n` +
+        `WhatsApp request — ${serviceLabel} (${dbServiceType})\n` +
         `Payment: ${paymentStatus}\n` +
         `Safety: ${draft.safety_status}\n` +
         `Vehicle/contact: ${draft.vehicle_details}`,

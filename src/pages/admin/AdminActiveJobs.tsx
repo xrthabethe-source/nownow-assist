@@ -143,6 +143,28 @@ export default function AdminActiveJobs() {
     refetchInterval: 30000, // Auto-refresh every 30 seconds
   });
 
+  // Detect newly added jobs and beep (skip first load to avoid noise)
+  useEffect(() => {
+    if (!jobs) return;
+    const currentIds = new Set(jobs.map((j) => j.id as string));
+    if (seenJobIdsRef.current === null) {
+      seenJobIdsRef.current = currentIds;
+      return;
+    }
+    const previous = seenJobIdsRef.current;
+    const newOnes = jobs.filter((j) => !previous.has(j.id as string));
+    if (newOnes.length > 0) {
+      newOnes.forEach((j) => {
+        const who = (j as { customer?: { full_name?: string } }).customer?.full_name || "WhatsApp customer";
+        toast.success(`New customer request received — ${who}`);
+      });
+      if (soundEnabled) playBeep();
+    }
+    seenJobIdsRef.current = currentIds;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobs, soundEnabled]);
+
+
   const cancelJobMutation = useMutation({
     mutationFn: async (jobId: string) => {
       const { error } = await supabase

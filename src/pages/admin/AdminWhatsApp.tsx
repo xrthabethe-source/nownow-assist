@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, ArrowDownLeft, ArrowUpRight, Save, Send, Code2 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
 
 
 interface Conversation {

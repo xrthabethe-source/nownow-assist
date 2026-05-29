@@ -32,7 +32,7 @@ interface SecureChatDialogProps {
   sending: boolean;
   rateLimited: boolean;
   onSendMessage: (text: string) => Promise<{ error: string | null }>;
-  onCallClick: () => void;
+  onCallClick?: () => void;
   onReportClick: () => void;
   onBlockClick: () => void;
   currentUserId?: string;
@@ -119,9 +119,11 @@ export const SecureChatDialog = ({
             </DialogTitle>
 
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" onClick={onCallClick}>
-                <Phone className="h-5 w-5 text-primary" />
-              </Button>
+              {onCallClick && (
+                <Button variant="ghost" size="icon" onClick={onCallClick}>
+                  <Phone className="h-5 w-5 text-primary" />
+                </Button>
+              )}
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { TyreIcon, FuelIcon, BatteryIcon, MechanicIcon } from "@/components/icons/ServiceIcons";
-import { Phone, MessageCircle, AlertTriangle, Star, Car, Check, X, MapPin, Loader2 } from "lucide-react";
+import { MessageCircle, AlertTriangle, Star, Car, Check, X, MapPin, Loader2, Phone } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
@@ -19,7 +19,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { SecureChatDialog } from "@/components/shared/SecureChatDialog";
-import { SecureCallDialog } from "@/components/shared/SecureCallDialog";
 import { ReportAbuseDialog } from "@/components/shared/ReportAbuseDialog";
 import { useSecureMessaging } from "@/hooks/useSecureMessaging";
 import { useQuery } from "@tanstack/react-query";
@@ -59,7 +58,6 @@ export const LiveTracking = () => {
   const [showSOSDialog, setShowSOSDialog] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showChatDialog, setShowChatDialog] = useState(false);
-  const [showCallDialog, setShowCallDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
 
   // Get address and job ID from navigation state
@@ -172,9 +170,6 @@ export const LiveTracking = () => {
   const ServiceIcon = serviceIcons[serviceId || "tyre"] || TyreIcon;
   const serviceName = serviceNames[serviceId || "tyre"] || "Service Request";
 
-  const handleCallDriver = () => {
-    setShowCallDialog(true);
-  };
 
   const handleMessageDriver = () => {
     setShowChatDialog(true);
@@ -363,10 +358,6 @@ export const LiveTracking = () => {
                       </span>
                     )}
                   </Button>
-                  <Button variant="amber" className="flex-1" onClick={handleCallDriver}>
-                    <Phone className="mr-2 h-4 w-4" />
-                    Call
-                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -501,29 +492,12 @@ export const LiveTracking = () => {
           sending={sending}
           rateLimited={rateLimited}
           onSendMessage={sendMessage}
-          onCallClick={() => {
-            setShowChatDialog(false);
-            setShowCallDialog(true);
-          }}
           onReportClick={() => {
             setShowChatDialog(false);
             setShowReportDialog(true);
           }}
           onBlockClick={() => blockUser(driverUserId)}
           currentUserId={user?.id}
-        />
-      )}
-
-      {/* Secure Call Dialog */}
-      {actualJobId && driver && (
-        <SecureCallDialog
-          open={showCallDialog}
-          onOpenChange={setShowCallDialog}
-          jobId={actualJobId}
-          receiverId={driverUserId}
-          receiverType="driver"
-          receiverName={driverName}
-          receiverPhone={driverPhone}
         />
       )}
 

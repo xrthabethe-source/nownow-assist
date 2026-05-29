@@ -565,6 +565,7 @@ async function handleInbound(
         `WhatsApp request — ${serviceLabel} (${dbServiceType})\n` +
         `Payment: ${paymentStatus}\n` +
         `Safety: ${draft.safety_status}\n` +
+        (draft.fuel_type ? `Fuel type: ${draft.fuel_type}\n` : "") +
         `Vehicle/contact: ${draft.vehicle_details}`,
       source: "whatsapp",
       wa_phone: phone,
@@ -583,20 +584,46 @@ async function handleInbound(
       return;
     }
 
+    // Generate PayFast link (service-role; no customer JWT needed)
+    const amount = Number(job.estimated_price ?? matched?.base_price ?? FALLBACK_PRICES[dbServiceType] ?? 349);
+    const itemName = draft.fuel_type ? `${serviceLabel} (${draft.fuel_type})` : serviceLabel;
+    const paymentLink = await buildPayfastLink({
+      amount,
+      itemName,
+      jobId: job.id,
+      customerName: name,
+      phone,
+    });
+
     await updateConversation(supabase, conv.id, {
-      step: "awaiting_dispatch",
+      step: "awaiting_payment",
       profile_id: profileId,
       draft: { ...draft, job_id: job.id },
     });
 
-    const greetName = name ? `${name.split(" ")[0]}, ` : "";
-    await reply(
-      supabase,
-      phone,
-      profileId,
-      `Thanks ${greetName}your Now-Now Assist request has been received. We are reviewing your location and service details now.`,
-      job.id,
-    );
+    const greetName = name ? name.split(" ")[0] : "there";
+    if (paymentLink) {
+      await reply(
+        supabase,
+        phone,
+        profileId,
+        `Thanks ${greetName}, your Now-Now Assist request has been created.\n\n` +
+        `Service: ${itemName}\n` +
+        `Amount: R${amount.toFixed(2)}\n\n` +
+        `Please pay here to confirm your request:\n${paymentLink}\n\n` +
+        `After payment, we'll assign a responder.`,
+        job.id,
+      );
+    } else {
+      await reply(
+        supabase,
+        phone,
+        profileId,
+        `Thanks ${greetName}, your Now-Now Assist request has been created (R${amount.toFixed(2)}).\n\n` +
+        `We're preparing your payment link — our team will message it shortly.`,
+        job.id,
+      );
+    }
     return;
   }
 

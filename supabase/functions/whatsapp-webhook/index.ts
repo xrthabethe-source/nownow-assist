@@ -13,11 +13,11 @@ const corsHeaders = {
 const GRAPH = "https://graph.facebook.com/v20.0";
 
 const SERVICES = [
-  { key: "jump_start", label: "Jump start", matchName: "Battery" },
-  { key: "tyre_change", label: "Tyre change", matchName: "Tyre" },
-  { key: "fuel_delivery", label: "Fuel delivery", matchName: "Fuel" },
-  { key: "tyre_inflate", label: "Tyre inflate", matchName: "Tyre" },
-  { key: "minor_roadside_assistance", label: "Minor roadside assistance", matchName: "Tow" },
+  { key: "jump_start", label: "Jump start" },
+  { key: "tyre_change", label: "Tyre change" },
+  { key: "fuel_delivery", label: "Fuel delivery" },
+  { key: "tyre_inflate", label: "Tyre inflate" },
+  { key: "minor_roadside_assistance", label: "Minor roadside assistance" },
 ];
 
 const FALLBACK_PRICES: Record<string, number> = {

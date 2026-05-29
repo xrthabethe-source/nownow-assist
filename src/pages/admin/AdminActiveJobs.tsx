@@ -252,6 +252,14 @@ export default function AdminActiveJobs() {
             <Button variant="outline" asChild>
               <Link to="/admin">← Back to Dashboard</Link>
             </Button>
+            <Button
+              variant={soundEnabled ? "secondary" : "outline"}
+              onClick={soundEnabled ? () => setSoundEnabled(false) : enableSound}
+              title={soundEnabled ? "Disable sound alerts" : "Enable sound alerts for new jobs"}
+            >
+              {soundEnabled ? <Volume2 className="mr-2 h-4 w-4" /> : <VolumeX className="mr-2 h-4 w-4" />}
+              {soundEnabled ? "Sound on" : "Enable sound"}
+            </Button>
             <Button onClick={() => {
               refetch();
               toast.success("Jobs refreshed");
@@ -260,6 +268,7 @@ export default function AdminActiveJobs() {
               Refresh
             </Button>
           </div>
+
         </div>
 
         {/* Stats */}

@@ -105,22 +105,41 @@ export default function AdminWhatsApp() {
     onSuccess: () => {
       toast.success("WhatsApp settings saved");
       queryClient.invalidateQueries({ queryKey: ["wa-config"] });
-    },
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Save failed"),
-  });
-
   const sendTemplateMutation = useMutation({
     mutationFn: async ({ to, template }: { to: string; template: string }) => {
       const { data, error } = await supabase.functions.invoke("whatsapp-send-template", {
         body: { to, template },
       });
-      if (error) throw error;
-      if (data?.error) throw new Error(typeof data.error === "string" ? data.error : JSON.stringify(data));
+      if (error) {
+        // FunctionsHttpError - try to read response body for meta detail
+        const ctx = (error as { context?: Response }).context;
+        if (ctx && typeof ctx.text === "function") {
+          try {
+            const txt = await ctx.text();
+            throw new Error(txt || error.message);
+          } catch {
+            throw error;
+          }
+        }
+        throw error;
+      }
+      if (data?.error) {
+        const detail = data.meta_error || (data.response_body && JSON.stringify(data.response_body)) || "";
+        throw new Error(`${data.error}${detail ? `: ${detail}` : ""} (HTTP ${data.http_status_code ?? "?"})`);
+      }
       return data;
     },
     onSuccess: () => {
       toast.success("Template reply sent");
       queryClient.invalidateQueries({ queryKey: ["wa-messages", selectedPhone] });
+    },
+    onError: (e: unknown) => {
+      const msg = e instanceof Error ? e.message : "Failed to send template";
+      toast.error(msg, { duration: 10000, description: "Check edge function logs for full Meta API response." });
+      console.error("WA template send failed", e);
+    },
+  });
+
     },
     onError: (e: unknown) =>
       toast.error(e instanceof Error ? e.message : "Failed to send template"),

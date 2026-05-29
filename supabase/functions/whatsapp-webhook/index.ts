@@ -312,6 +312,28 @@ function logDbError(label: string, table: string, payload: Record<string, unknow
   });
 }
 
+async function sendConfirmation(
+  supabase: ReturnType<typeof createClient>,
+  convId: string,
+  phone: string,
+  profileId: string | null,
+  draft: Record<string, unknown>,
+) {
+  const loc = draft.location as { address: string; shared?: boolean };
+  const locDisplay = loc.shared ? "Shared location" : loc.address;
+  const fuelLine = draft.fuel_type ? `Fuel type: ${draft.fuel_type}\n` : "";
+  const confirm =
+    `Thanks. Please confirm:\n\n` +
+    `Service: ${draft.service_label}\n` +
+    `Location: ${locDisplay}\n` +
+    `Safety: ${draft.safety_status === "safe" ? "Safe" : "Not safe"}\n` +
+    `Vehicle/contact: ${draft.vehicle_details}\n` +
+    fuelLine +
+    `\nReply *YES* to continue (you agree to our Terms: https://nownowassist.co.za/terms), or *EDIT* to change.`;
+  await updateConversation(supabase, convId, { step: "awaiting_confirm", draft });
+  await reply(supabase, phone, profileId, confirm);
+}
+
 async function handleInbound(
   supabase: ReturnType<typeof createClient>,
   phone: string,

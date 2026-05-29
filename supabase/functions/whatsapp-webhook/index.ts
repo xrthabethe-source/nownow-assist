@@ -116,9 +116,10 @@ async function reply(
   phone: string,
   profile_id: string | null,
   text: string,
+  job_id: string | null = null,
 ) {
   await sendWhatsApp(phone, text);
-  await logMessage(supabase, { phone, profile_id, direction: "out", body: text });
+  await logMessage(supabase, { phone, profile_id, direction: "out", body: text, job_id });
 }
 
 async function getOrCreateConversation(
@@ -489,6 +490,7 @@ async function handleInbound(
       phone,
       profileId,
       `Thanks ${greetName}your Now-Now Assist request has been received. We are reviewing your location and service details now.`,
+      job.id,
     );
     return;
   }

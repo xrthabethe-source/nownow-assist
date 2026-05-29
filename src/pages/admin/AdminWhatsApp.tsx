@@ -28,7 +28,11 @@ interface WaMessage {
   body: string | null;
   created_at: string;
   job_id: string | null;
-}
+  payload?: unknown;
+  wa_message_id?: string | null;
+  message_type?: string | null;
+  status?: string | null;
+
 
 interface WhatsAppConfig {
   business_number?: string;

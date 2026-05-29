@@ -386,6 +386,19 @@ async function handleInbound(
     let profileId = conv.profile_id;
     const name = (draft.customer_name as string) || "WhatsApp Customer";
     if (!profileId) {
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .eq("phone", phone)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (existingProfile?.id) {
+        profileId = existingProfile.id;
+        if (!existingProfile.full_name) await supabase.from("profiles").update({ full_name: name }).eq("id", profileId);
+      }
+    }
+    if (!profileId) {
       const newId = crypto.randomUUID();
       const profilePayload = { id: newId, full_name: name, phone, email: null };
       const { error: pErr } = await supabase.from("profiles").insert(profilePayload);

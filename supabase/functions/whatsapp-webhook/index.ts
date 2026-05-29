@@ -15,10 +15,18 @@ const GRAPH = "https://graph.facebook.com/v20.0";
 const SERVICES = [
   { key: "jump_start", label: "Jump start", matchName: "Battery" },
   { key: "tyre_change", label: "Tyre change", matchName: "Tyre" },
-  { key: "fuel", label: "Fuel delivery", matchName: "Fuel" },
+  { key: "fuel_delivery", label: "Fuel delivery", matchName: "Fuel" },
   { key: "tyre_inflate", label: "Tyre inflate", matchName: "Tyre" },
-  { key: "minor_roadside", label: "Minor roadside assistance", matchName: "Tow" },
+  { key: "minor_roadside_assistance", label: "Minor roadside assistance", matchName: "Tow" },
 ];
+
+const FALLBACK_PRICES: Record<string, number> = {
+  jump_start: 349,
+  tyre_change: 349,
+  fuel_delivery: 299,
+  tyre_inflate: 199,
+  minor_roadside_assistance: 399,
+};
 
 const WELCOME =
   "Hi, welcome to Now-Now Assist 🚗\n\n" +
@@ -108,9 +116,10 @@ async function reply(
   phone: string,
   profile_id: string | null,
   text: string,
+  job_id: string | null = null,
 ) {
   await sendWhatsApp(phone, text);
-  await logMessage(supabase, { phone, profile_id, direction: "out", body: text });
+  await logMessage(supabase, { phone, profile_id, direction: "out", body: text, job_id });
 }
 
 async function getOrCreateConversation(
@@ -162,6 +171,17 @@ function parseServiceChoice(input: string): typeof SERVICES[number] | null {
   return null;
 }
 
+function normalizeServiceType(raw: unknown, label: unknown): string | null {
+  const legacyMap: Record<string, string> = {
+    fuel: "fuel_delivery",
+    minor_roadside: "minor_roadside_assistance",
+  };
+  const fromRaw = typeof raw === "string" ? raw.trim() : "";
+  if (fromRaw) return legacyMap[fromRaw] || fromRaw;
+  if (typeof label === "string") return SERVICES.find((s) => s.label === label)?.key ?? null;
+  return null;
+}
+
 // Strip emoji / pictographs / symbols to detect emoji-only inputs like 👆🏾
 function stripEmoji(s: string): string {
   return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Modifier}\p{Emoji_Component}\u200d\ufe0f]/gu, "").trim();
@@ -197,6 +217,25 @@ function parseName(vehicleDetails: string): string | null {
     return first;
   }
   return null;
+}
+
+function maskPayload<T>(payload: T): T {
+  return JSON.parse(JSON.stringify(payload, (key, value) => {
+    if (/token|secret|key|signature|passphrase|authorization/i.test(key)) return "[masked]";
+    return value;
+  }));
+}
+
+function logDbError(label: string, table: string, payload: Record<string, unknown>, error: unknown) {
+  const err = error as { code?: string; message?: string; details?: string; hint?: string } | null;
+  console.error(label, {
+    table,
+    code: err?.code ?? null,
+    message: err?.message ?? String(error),
+    details: err?.details ?? null,
+    hint: err?.hint ?? null,
+    payload: maskPayload(payload),
+  });
 }
 
 async function handleInbound(
@@ -321,34 +360,51 @@ async function handleInbound(
 
     // Validate required fields before insert
     const loc = draft.location as { lat?: number; lng?: number; address: string; shared?: boolean } | undefined;
+    const serviceType = normalizeServiceType(draft.service_key, draft.service_label);
+    const locationText = loc?.shared ? "WhatsApp shared location" : loc?.address;
+    const requestStatus = "pending";
+    const paymentStatus = "unpaid";
+    const createdAt = new Date().toISOString();
     const missing: string[] = [];
     if (!draft.service_label) missing.push("service");
+    if (!serviceType) missing.push("service_type");
     if (!draft.safety_status) missing.push("safety");
-    if (!loc || (!loc.address && loc.lat == null)) missing.push("location");
+    if (!loc || (!locationText && (loc.lat == null || loc.lng == null))) missing.push("location");
     if (!draft.vehicle_details) missing.push("vehicle details");
     if (!phone) missing.push("phone");
+    if (!requestStatus) missing.push("request_status");
+    if (!paymentStatus) missing.push("payment_status");
+    if (!createdAt) missing.push("created_at");
     if (missing.length) {
-      console.error("validation failed", { missing, draft });
+      console.error("request validation failed", { missing, draft: maskPayload(draft) });
       await reply(supabase, phone, conv.profile_id, `We're missing: ${missing.join(", ")}. Reply *MENU* to restart.`);
       return;
     }
+    const dbServiceType = serviceType as string;
+    const dbLocationText = locationText || "WhatsApp shared location";
 
     // 1. Profile
     let profileId = conv.profile_id;
     const name = (draft.customer_name as string) || "WhatsApp Customer";
     if (!profileId) {
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .eq("phone", phone)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (existingProfile?.id) {
+        profileId = existingProfile.id;
+        if (!existingProfile.full_name) await supabase.from("profiles").update({ full_name: name }).eq("id", profileId);
+      }
+    }
+    if (!profileId) {
       const newId = crypto.randomUUID();
       const profilePayload = { id: newId, full_name: name, phone, email: null };
       const { error: pErr } = await supabase.from("profiles").insert(profilePayload);
       if (pErr) {
-        console.error("profile insert FAILED", {
-          table: "profiles",
-          payload: profilePayload,
-          code: pErr.code,
-          message: pErr.message,
-          details: pErr.details,
-          hint: pErr.hint,
-        });
+        logDbError("profile insert FAILED", "profiles", profilePayload, pErr);
         await reply(supabase, phone, null, `Sorry, we couldn't create your profile (${pErr.code || "DB"}). Please try again or reply MENU.`);
         return;
       }
@@ -377,89 +433,65 @@ async function handleInbound(
       s.name.toLowerCase().includes(matchKey),
     ) || services?.[0];
 
-    // loc already validated above
+    const requestAuditPayload = {
+      customer_profile_id: profileId,
+      phone_number: phone,
+      service_type: dbServiceType,
+      location_text: dbLocationText,
+      location_latitude: loc.lat ?? null,
+      location_longitude: loc.lng ?? null,
+      safety_status: draft.safety_status,
+      vehicle_details: draft.vehicle_details,
+      request_status: requestStatus,
+      payment_status: paymentStatus,
+      created_at: createdAt,
+    };
 
-    // 4. Create job
+    // 4. Create job (roadside request table used by admin active jobs)
+    const jobPayload = {
+      customer_id: profileId,
+      service_id: matched?.id ?? null,
+      status: requestStatus,
+      pickup_address: dbLocationText,
+      pickup_lat: loc.lat ?? null,
+      pickup_lng: loc.lng ?? null,
+      estimated_price: matched?.base_price ?? FALLBACK_PRICES[dbServiceType] ?? 349,
+      notes:
+        `WhatsApp request — ${serviceLabel} (${dbServiceType})\n` +
+        `Payment: ${paymentStatus}\n` +
+        `Safety: ${draft.safety_status}\n` +
+        `Vehicle/contact: ${draft.vehicle_details}`,
+      source: "whatsapp",
+      wa_phone: phone,
+      created_at: createdAt,
+    };
+    console.log("creating WhatsApp roadside request", maskPayload({ table: "jobs", request: requestAuditPayload, insert: jobPayload }));
     const { data: job, error: jobErr } = await supabase
       .from("jobs")
-      .insert({
-        customer_id: profileId,
-        service_id: matched?.id ?? null,
-        status: "pending",
-        pickup_address: loc.address,
-        pickup_lat: loc.lat ?? null,
-        pickup_lng: loc.lng ?? null,
-        estimated_price: matched?.base_price ?? null,
-        notes:
-          `WhatsApp request — ${serviceLabel}\n` +
-          `Safety: ${draft.safety_status}\n` +
-          `Vehicle/contact: ${draft.vehicle_details}`,
-        source: "whatsapp",
-        wa_phone: phone,
-      })
+      .insert(jobPayload)
       .select()
       .single();
 
     if (jobErr || !job) {
-      console.error("job insert error", jobErr);
+      logDbError("job insert FAILED", "jobs", jobPayload, jobErr || { message: "No job row returned" });
       await reply(supabase, phone, profileId, "Sorry, we couldn't create your request. Please try again or reply HELP.");
       return;
     }
 
-    // 5. PayFast link
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    let paymentLink: string | null = null;
-    try {
-      const payRes = await fetch(`${SUPABASE_URL}/functions/v1/payfast-payment`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${SERVICE_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: matched?.base_price || 349,
-          item_name: serviceLabel,
-          job_id: job.id,
-        }),
-      });
-      const payData = await payRes.json();
-      if (payRes.ok && payData?.payment_url && payData?.payment_data) {
-        const qs = new URLSearchParams(payData.payment_data as Record<string, string>).toString();
-        paymentLink = `${payData.payment_url}?${qs}`;
-      } else {
-        console.error("payfast-payment failed", payRes.status, payData);
-      }
-    } catch (e) {
-      console.error("payfast-payment fetch error", e);
-    }
-
     await updateConversation(supabase, conv.id, {
-      step: paymentLink ? "awaiting_payment" : "awaiting_dispatch",
+      step: "awaiting_dispatch",
       profile_id: profileId,
       draft: { ...draft, job_id: job.id },
     });
 
     const greetName = name ? `${name.split(" ")[0]}, ` : "";
-    if (paymentLink) {
-      await reply(
-        supabase,
-        phone,
-        profileId,
-        `✅ Thanks ${greetName}your request *${job.job_number}* is in.\n` +
-        `Service: ${serviceLabel}\n` +
-        `📍 ${loc.address}\n` +
-        `💳 Estimated: R${matched?.base_price ?? 349}\n\n` +
-        `To dispatch a responder, please complete secure payment:\n${paymentLink}`,
-      );
-    } else {
-      await reply(
-        supabase,
-        phone,
-        profileId,
-        `Thanks ${greetName}your request *${job.job_number}* has been received. Our team will confirm pricing/payment with you shortly.`,
-      );
-    }
+    await reply(
+      supabase,
+      phone,
+      profileId,
+      `Thanks ${greetName}your Now-Now Assist request has been received. We are reviewing your location and service details now.`,
+      job.id,
+    );
     return;
   }
 

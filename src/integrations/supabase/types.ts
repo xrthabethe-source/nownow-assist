@@ -839,6 +839,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "jobs_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "jobs_driver_id_fkey"
             columns: ["driver_id"]
             isOneToOne: false

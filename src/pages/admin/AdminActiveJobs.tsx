@@ -154,6 +154,12 @@ export default function AdminActiveJobs() {
     }
   };
 
+  const getServiceLabel = (job: { services?: { name?: string | null } | null; notes?: string | null }) => {
+    if (job.services?.name) return job.services.name;
+    const whatsappLine = job.notes?.split("\n").find((line) => line.startsWith("WhatsApp request — "));
+    return whatsappLine?.replace("WhatsApp request — ", "").replace(/\s+\([^)]*\)$/, "") || "Unknown";
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -300,7 +306,7 @@ export default function AdminActiveJobs() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{job.services?.name || "Unknown"}</span>
+                          <span className="font-medium">{getServiceLabel(job)}</span>
                           {(job as { source?: string }).source === "whatsapp" && (
                             <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-success">
                               WhatsApp

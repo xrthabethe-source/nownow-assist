@@ -406,18 +406,25 @@ async function handleInbound(
     if (parsedName) draft.customer_name = parsedName;
     else if (!draft.customer_name) draft.customer_name = "WhatsApp Customer";
 
-    const loc = draft.location as { address: string; shared?: boolean };
-    const locDisplay = loc.shared ? "Shared location" : loc.address;
-    const confirm =
-      `Thanks. Please confirm:\n\n` +
-      `Service: ${draft.service_label}\n` +
-      `Location: ${locDisplay}\n` +
-      `Safety: ${draft.safety_status === "safe" ? "Safe" : "Not safe"}\n` +
-      `Vehicle/contact: ${draft.vehicle_details}\n\n` +
-      `Reply *YES* to continue (you agree to our Terms: https://nownowassist.co.za/terms), or *EDIT* to change.`;
+    // For fuel delivery, ask which fuel before confirmation
+    if (draft.service_key === "fuel_delivery") {
+      await updateConversation(supabase, conv.id, { step: "awaiting_fuel_type", draft });
+      await reply(supabase, phone, conv.profile_id, ASK_FUEL);
+      return;
+    }
 
-    await updateConversation(supabase, conv.id, { step: "awaiting_confirm", draft });
-    await reply(supabase, phone, conv.profile_id, confirm);
+    await sendConfirmation(supabase, conv.id, phone, conv.profile_id, draft);
+    return;
+  }
+
+  if (step === "awaiting_fuel_type") {
+    const fuel = parseFuelChoice(text);
+    if (!fuel) {
+      await reply(supabase, phone, conv.profile_id, `Please reply 1, 2 or 3.\n\n${ASK_FUEL}`);
+      return;
+    }
+    draft.fuel_type = fuel;
+    await sendConfirmation(supabase, conv.id, phone, conv.profile_id, draft);
     return;
   }
 

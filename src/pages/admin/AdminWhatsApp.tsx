@@ -7,9 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, ArrowDownLeft, ArrowUpRight, Save } from "lucide-react";
+import { MessageCircle, ArrowDownLeft, ArrowUpRight, Save, Send, Code2 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+
 
 interface Conversation {
   id: string;
@@ -26,7 +28,12 @@ interface WaMessage {
   body: string | null;
   created_at: string;
   job_id: string | null;
+  payload?: unknown;
+  wa_message_id?: string | null;
+  message_type?: string | null;
+  status?: string | null;
 }
+
 
 interface WhatsAppConfig {
   business_number?: string;
@@ -102,7 +109,25 @@ export default function AdminWhatsApp() {
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Save failed"),
   });
 
+  const sendTemplateMutation = useMutation({
+    mutationFn: async ({ to, template }: { to: string; template: string }) => {
+      const { data, error } = await supabase.functions.invoke("whatsapp-send-template", {
+        body: { to, template },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(typeof data.error === "string" ? data.error : JSON.stringify(data));
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Template reply sent");
+      queryClient.invalidateQueries({ queryKey: ["wa-messages", selectedPhone] });
+    },
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Failed to send template"),
+  });
+
   const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/whatsapp-webhook`;
+
 
   return (
     <AdminLayout>
@@ -199,10 +224,23 @@ export default function AdminWhatsApp() {
           </Card>
 
           <Card className="h-[600px]">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
               <CardTitle className="text-base">
                 {selectedPhone ? `Messages with ${selectedPhone}` : "Select a conversation"}
               </CardTitle>
+              {selectedPhone && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={sendTemplateMutation.isPending}
+                  onClick={() =>
+                    sendTemplateMutation.mutate({ to: selectedPhone, template: "request_received" })
+                  }
+                >
+                  <Send className="mr-2 h-3 w-3" />
+                  Send request_received template
+                </Button>
+              )}
             </CardHeader>
             <CardContent className="p-0">
               <ScrollArea className="h-[520px] p-4">
@@ -230,11 +268,25 @@ export default function AdminWhatsApp() {
                                 <><ArrowDownLeft className="h-3 w-3" /> Received</>
                               )}
                               <span>· {formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}</span>
+                              {m.status && <span>· {m.status}</span>}
                             </div>
                             <div className="whitespace-pre-wrap">{m.body || "(no text)"}</div>
+                            {m.payload != null && (
+                              <Collapsible className="mt-2">
+                                <CollapsibleTrigger className="flex items-center gap-1 text-[10px] underline opacity-75 hover:opacity-100">
+                                  <Code2 className="h-3 w-3" /> Raw payload
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                  <pre className="mt-1 max-h-48 overflow-auto rounded bg-background/40 p-2 text-[10px] leading-tight text-foreground/80">
+                                    {JSON.stringify(m.payload, null, 2)}
+                                  </pre>
+                                </CollapsibleContent>
+                              </Collapsible>
+                            )}
                           </div>
                         </li>
                       ))}
+
                     </ul>
                   )
                 ) : (

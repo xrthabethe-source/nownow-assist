@@ -284,8 +284,9 @@ export default function AdminWhatsApp() {
                               </Collapsible>
                             )}
                           </div>
-
+                        </li>
                       ))}
+
                     </ul>
                   )
                 ) : (

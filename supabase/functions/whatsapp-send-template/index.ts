@@ -15,6 +15,22 @@ const corsHeaders = {
 
 const GRAPH = "https://graph.facebook.com/v20.0";
 
+function mask(v: string | null | undefined, keep = 4): string {
+  if (!v) return "(empty)";
+  if (v.length <= keep) return "*".repeat(v.length);
+  return `${v.slice(0, keep)}…(${v.length} chars)`;
+}
+
+// Normalize to digits-only E.164 without leading '+'.
+// South African local format (0XXXXXXXXX) is converted to 27XXXXXXXXX.
+function normalizeMsisdn(raw: string): string {
+  const digits = (raw || "").replace(/\D/g, "");
+  if (digits.startsWith("0") && digits.length === 10) {
+    return `27${digits.slice(1)}`;
+  }
+  return digits;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") {
@@ -62,7 +78,7 @@ Deno.serve(async (req) => {
   }
 
   if (!PHONE_ID || !TOKEN) {
-    console.error("WhatsApp credentials missing");
+    console.error("WhatsApp credentials missing", { PHONE_ID: !!PHONE_ID, TOKEN: !!TOKEN });
     return new Response(JSON.stringify({ error: "WhatsApp credentials not configured" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -84,9 +100,10 @@ Deno.serve(async (req) => {
     });
   }
 
-  const to = (body.to || "").trim();
-  if (!/^\+?\d{8,15}$/.test(to)) {
-    return new Response(JSON.stringify({ error: "Invalid 'to' phone number" }), {
+  const rawTo = (body.to || "").trim();
+  const to = normalizeMsisdn(rawTo);
+  if (!/^\d{8,15}$/.test(to)) {
+    return new Response(JSON.stringify({ error: "Invalid 'to' phone number", to_raw: rawTo, to_normalized: to }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
@@ -96,7 +113,7 @@ Deno.serve(async (req) => {
 
   const wabaBody = {
     messaging_product: "whatsapp",
-    to: to.replace(/^\+/, ""),
+    to,
     type: "template",
     template: {
       name: template,
@@ -105,8 +122,21 @@ Deno.serve(async (req) => {
     },
   };
 
-  let waResponse: unknown;
+  const sendContext = {
+    recipient_phone: to,
+    recipient_phone_raw: rawTo,
+    template,
+    language,
+    phone_number_id: mask(PHONE_ID),
+    token: mask(TOKEN, 6),
+    url: `${GRAPH}/${mask(PHONE_ID)}/messages`,
+  };
+  console.log("WA template send attempt", sendContext);
+
+  let waResponse: unknown = null;
   let waStatus = 0;
+  let waRawText = "";
+  let networkError: string | null = null;
   try {
     const res = await fetch(`${GRAPH}/${PHONE_ID}/messages`, {
       method: "POST",
@@ -117,34 +147,71 @@ Deno.serve(async (req) => {
       body: JSON.stringify(wabaBody),
     });
     waStatus = res.status;
-    waResponse = await res.json();
+    waRawText = await res.text();
+    try {
+      waResponse = JSON.parse(waRawText);
+    } catch {
+      waResponse = { raw: waRawText };
+    }
   } catch (e) {
+    networkError = String(e);
     console.error("WhatsApp template send network error", e);
-    return new Response(JSON.stringify({ error: "Network error contacting WhatsApp API", detail: String(e) }), {
-      status: 502,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
   }
 
-  if (waStatus < 200 || waStatus >= 300) {
-    console.error("WhatsApp template send failed", waStatus, waResponse);
-    return new Response(JSON.stringify({ error: "WhatsApp API error", status: waStatus, detail: waResponse }), {
-      status: 502,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+  console.log("WA template send response", {
+    ...sendContext,
+    http_status_code: waStatus,
+    response_body: waResponse,
+    network_error: networkError,
+  });
+
+  const phoneE164 = `+${to}`;
+  const ok = !networkError && waStatus >= 200 && waStatus < 300;
+
+  if (!ok) {
+    const errMsg =
+      networkError ||
+      (waResponse as { error?: { message?: string } })?.error?.message ||
+      `HTTP ${waStatus}`;
+
+    // Store failure
+    await admin.from("whatsapp_messages").insert({
+      phone: phoneE164,
+      direction: "out",
+      message_type: "template",
+      body: `[template:${template}] FAILED: ${errMsg}`,
+      payload: { request: wabaBody, response: waResponse, http_status: waStatus, network_error: networkError },
+      status: "failed",
     });
+
+    console.error("WhatsApp template send failed", { status: waStatus, error: errMsg });
+    return new Response(
+      JSON.stringify({
+        error: "WhatsApp API error",
+        meta_error: errMsg,
+        http_status_code: waStatus,
+        response_body: waResponse,
+        network_error: networkError,
+        recipient_phone: to,
+        template,
+        language,
+      }),
+      {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 
   const wamid =
     (waResponse as { messages?: Array<{ id?: string }> })?.messages?.[0]?.id ?? null;
 
-  // Log outbound
-  const phoneE164 = to.startsWith("+") ? to : `+${to}`;
   await admin.from("whatsapp_messages").insert({
     phone: phoneE164,
     direction: "out",
     message_type: "template",
     body: `[template:${template}]`,
-    payload: wabaBody,
+    payload: { request: wabaBody, response: waResponse },
     wa_message_id: wamid,
     status: "sent",
   });

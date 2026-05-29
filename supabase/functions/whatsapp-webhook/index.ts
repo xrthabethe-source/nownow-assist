@@ -377,7 +377,7 @@ async function handleInbound(
       s.name.toLowerCase().includes(matchKey),
     ) || services?.[0];
 
-    const loc = draft.location as { lat?: number; lng?: number; address: string };
+    // loc already validated above
 
     // 4. Create job
     const { data: job, error: jobErr } = await supabase

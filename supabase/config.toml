@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.whatsapp-notify]
 verify_jwt = false
+
+[functions.whatsapp-send-template]
+verify_jwt = false

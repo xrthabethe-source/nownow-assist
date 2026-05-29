@@ -16,12 +16,7 @@ interface WhatsAppFallbackProps {
 export function WhatsAppFallback({ visible, serviceName, location }: WhatsAppFallbackProps) {
   if (!visible) return null;
 
-  const message = encodeURIComponent(
-    `🚨 Emergency roadside help needed!\n\nService: ${serviceName || 'Roadside Assistance'}\nLocation: ${location || 'Unknown'}\n\nPlease send help as soon as possible.`
-  );
-
-  // South African WhatsApp number — replace with actual support number
-  const whatsappUrl = `https://wa.me/27600000000?text=${message}`;
+  const whatsappUrl = "https://wa.me/27656636685?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%0A%0AService%3A%0ALocation%3A%0ACar%3A%0AIssue%3A";
 
   return (
     <motion.div
@@ -36,7 +31,7 @@ export function WhatsAppFallback({ visible, serviceName, location }: WhatsAppFal
         onClick={() => window.open(whatsappUrl, '_blank')}
       >
         <MessageCircle className="h-5 w-5" />
-        Request help on WhatsApp
+        Request Help on WhatsApp
       </Button>
       <p className="text-xs text-muted-foreground text-center mt-2">
         Having trouble submitting? Get help directly via WhatsApp.

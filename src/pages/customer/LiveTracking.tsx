@@ -492,10 +492,6 @@ export const LiveTracking = () => {
           sending={sending}
           rateLimited={rateLimited}
           onSendMessage={sendMessage}
-          onCallClick={() => {
-            setShowChatDialog(false);
-            setShowCallDialog(true);
-          }}
           onReportClick={() => {
             setShowChatDialog(false);
             setShowReportDialog(true);

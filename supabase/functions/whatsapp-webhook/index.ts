@@ -50,6 +50,80 @@ const ASK_VEHICLE =
   "Name, car, colour, registration if available.\n\n" +
   "Example:\nAdmire, white Toyota Hilux, AB 12 CD GP";
 
+const ASK_FUEL =
+  "Which fuel do you need?\n\n" +
+  "1. Petrol 93\n" +
+  "2. Petrol 95\n" +
+  "3. Diesel";
+
+const FUEL_TYPES = ["Petrol 93", "Petrol 95", "Diesel"];
+
+function parseFuelChoice(input: string): string | null {
+  const t = input.trim().toLowerCase();
+  const num = parseInt(t, 10);
+  if (num >= 1 && num <= 3) return FUEL_TYPES[num - 1];
+  if (/diesel/.test(t)) return "Diesel";
+  if (/95/.test(t)) return "Petrol 95";
+  if (/93|petrol/.test(t)) return "Petrol 93";
+  return null;
+}
+
+// ---- PayFast helpers (service-role flow for WhatsApp customers; no user JWT) ----
+const PAYFAST_SANDBOX_URL = "https://sandbox.payfast.co.za/eng/process";
+const PAYFAST_LIVE_URL = "https://www.payfast.co.za/eng/process";
+
+async function md5Hex(input: string): Promise<string> {
+  const { Md5 } = await import("https://deno.land/std@0.119.0/hash/md5.ts");
+  const m = new Md5();
+  m.update(input);
+  return m.toString();
+}
+
+function pfEncode(v: string): string {
+  return encodeURIComponent(v.trim()).replace(/%20/g, "+");
+}
+
+async function buildPayfastLink(args: {
+  amount: number;
+  itemName: string;
+  jobId: string;
+  customerName: string;
+  phone: string;
+}): Promise<string | null> {
+  const MERCHANT_ID = Deno.env.get("PAYFAST_MERCHANT_ID");
+  const MERCHANT_KEY = Deno.env.get("PAYFAST_MERCHANT_KEY");
+  const PASSPHRASE = Deno.env.get("PAYFAST_PASSPHRASE");
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+  if (!MERCHANT_ID || !MERCHANT_KEY || !PASSPHRASE || !SUPABASE_URL) {
+    console.error("PayFast env missing for WhatsApp payment link");
+    return null;
+  }
+  const isSandbox = MERCHANT_ID === "10000100";
+  const base = isSandbox ? PAYFAST_SANDBOX_URL : PAYFAST_LIVE_URL;
+  const [first, ...rest] = (args.customerName || "WhatsApp Customer").split(" ");
+  const data: Record<string, string> = {
+    merchant_id: MERCHANT_ID,
+    merchant_key: MERCHANT_KEY,
+    return_url: `https://nownowassist.co.za/?payment=success&job=${args.jobId}`,
+    cancel_url: `https://nownowassist.co.za/?payment=cancelled&job=${args.jobId}`,
+    notify_url: `${SUPABASE_URL}/functions/v1/payfast-webhook`,
+    name_first: first || "WhatsApp",
+    name_last: rest.join(" ") || "Customer",
+    m_payment_id: args.jobId,
+    amount: Number(args.amount).toFixed(2),
+    item_name: args.itemName,
+    item_description: `NowNow Assist - ${args.itemName}`,
+    custom_str2: args.jobId,
+    custom_str3: args.phone,
+  };
+  const paramString = Object.entries(data)
+    .filter(([_, v]) => v !== "")
+    .map(([k, v]) => `${k}=${pfEncode(v)}`)
+    .join("&");
+  const signature = await md5Hex(`${paramString}&passphrase=${pfEncode(PASSPHRASE)}`);
+  return `${base}?${paramString}&signature=${signature}`;
+}
+
 interface Conv {
   id: string;
   phone: string;
@@ -238,6 +312,28 @@ function logDbError(label: string, table: string, payload: Record<string, unknow
   });
 }
 
+async function sendConfirmation(
+  supabase: ReturnType<typeof createClient>,
+  convId: string,
+  phone: string,
+  profileId: string | null,
+  draft: Record<string, unknown>,
+) {
+  const loc = draft.location as { address: string; shared?: boolean };
+  const locDisplay = loc.shared ? "Shared location" : loc.address;
+  const fuelLine = draft.fuel_type ? `Fuel type: ${draft.fuel_type}\n` : "";
+  const confirm =
+    `Thanks. Please confirm:\n\n` +
+    `Service: ${draft.service_label}\n` +
+    `Location: ${locDisplay}\n` +
+    `Safety: ${draft.safety_status === "safe" ? "Safe" : "Not safe"}\n` +
+    `Vehicle/contact: ${draft.vehicle_details}\n` +
+    fuelLine +
+    `\nReply *YES* to continue (you agree to our Terms: https://nownowassist.co.za/terms), or *EDIT* to change.`;
+  await updateConversation(supabase, convId, { step: "awaiting_confirm", draft });
+  await reply(supabase, phone, profileId, confirm);
+}
+
 async function handleInbound(
   supabase: ReturnType<typeof createClient>,
   phone: string,
@@ -332,18 +428,25 @@ async function handleInbound(
     if (parsedName) draft.customer_name = parsedName;
     else if (!draft.customer_name) draft.customer_name = "WhatsApp Customer";
 
-    const loc = draft.location as { address: string; shared?: boolean };
-    const locDisplay = loc.shared ? "Shared location" : loc.address;
-    const confirm =
-      `Thanks. Please confirm:\n\n` +
-      `Service: ${draft.service_label}\n` +
-      `Location: ${locDisplay}\n` +
-      `Safety: ${draft.safety_status === "safe" ? "Safe" : "Not safe"}\n` +
-      `Vehicle/contact: ${draft.vehicle_details}\n\n` +
-      `Reply *YES* to continue (you agree to our Terms: https://nownowassist.co.za/terms), or *EDIT* to change.`;
+    // For fuel delivery, ask which fuel before confirmation
+    if (draft.service_key === "fuel_delivery") {
+      await updateConversation(supabase, conv.id, { step: "awaiting_fuel_type", draft });
+      await reply(supabase, phone, conv.profile_id, ASK_FUEL);
+      return;
+    }
 
-    await updateConversation(supabase, conv.id, { step: "awaiting_confirm", draft });
-    await reply(supabase, phone, conv.profile_id, confirm);
+    await sendConfirmation(supabase, conv.id, phone, conv.profile_id, draft);
+    return;
+  }
+
+  if (step === "awaiting_fuel_type") {
+    const fuel = parseFuelChoice(text);
+    if (!fuel) {
+      await reply(supabase, phone, conv.profile_id, `Please reply 1, 2 or 3.\n\n${ASK_FUEL}`);
+      return;
+    }
+    draft.fuel_type = fuel;
+    await sendConfirmation(supabase, conv.id, phone, conv.profile_id, draft);
     return;
   }
 
@@ -462,6 +565,7 @@ async function handleInbound(
         `WhatsApp request — ${serviceLabel} (${dbServiceType})\n` +
         `Payment: ${paymentStatus}\n` +
         `Safety: ${draft.safety_status}\n` +
+        (draft.fuel_type ? `Fuel type: ${draft.fuel_type}\n` : "") +
         `Vehicle/contact: ${draft.vehicle_details}`,
       source: "whatsapp",
       wa_phone: phone,
@@ -480,20 +584,46 @@ async function handleInbound(
       return;
     }
 
+    // Generate PayFast link (service-role; no customer JWT needed)
+    const amount = Number(job.estimated_price ?? matched?.base_price ?? FALLBACK_PRICES[dbServiceType] ?? 349);
+    const itemName = draft.fuel_type ? `${serviceLabel} (${draft.fuel_type})` : serviceLabel;
+    const paymentLink = await buildPayfastLink({
+      amount,
+      itemName,
+      jobId: job.id,
+      customerName: name,
+      phone,
+    });
+
     await updateConversation(supabase, conv.id, {
-      step: "awaiting_dispatch",
+      step: "awaiting_payment",
       profile_id: profileId,
       draft: { ...draft, job_id: job.id },
     });
 
-    const greetName = name ? `${name.split(" ")[0]}, ` : "";
-    await reply(
-      supabase,
-      phone,
-      profileId,
-      `Thanks ${greetName}your Now-Now Assist request has been received. We are reviewing your location and service details now.`,
-      job.id,
-    );
+    const greetName = name ? name.split(" ")[0] : "there";
+    if (paymentLink) {
+      await reply(
+        supabase,
+        phone,
+        profileId,
+        `Thanks ${greetName}, your Now-Now Assist request has been created.\n\n` +
+        `Service: ${itemName}\n` +
+        `Amount: R${amount.toFixed(2)}\n\n` +
+        `Please pay here to confirm your request:\n${paymentLink}\n\n` +
+        `After payment, we'll assign a responder.`,
+        job.id,
+      );
+    } else {
+      await reply(
+        supabase,
+        phone,
+        profileId,
+        `Thanks ${greetName}, your Now-Now Assist request has been created (R${amount.toFixed(2)}).\n\n` +
+        `We're preparing your payment link — our team will message it shortly.`,
+        job.id,
+      );
+    }
     return;
   }
 

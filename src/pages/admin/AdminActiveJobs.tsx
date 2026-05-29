@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -40,7 +41,63 @@ import { Link } from "react-router-dom";
 export default function AdminActiveJobs() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const seenJobIdsRef = useRef<Set<string> | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
   const queryClient = useQueryClient();
+
+  const playBeep = () => {
+    try {
+      if (!audioCtxRef.current) {
+        const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        audioCtxRef.current = new Ctx();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") ctx.resume();
+      const beep = (freq: number, start: number, dur: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        gain.gain.setValueAtTime(0, ctx.currentTime + start);
+        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + start + 0.02);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + start + dur - 0.05);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + start + dur);
+        osc.start(ctx.currentTime + start);
+        osc.stop(ctx.currentTime + start + dur);
+      };
+      beep(880, 0, 0.18);
+      beep(660, 0.22, 0.18);
+    } catch (e) {
+      console.warn("Beep failed", e);
+    }
+  };
+
+  const enableSound = async () => {
+    try {
+      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      audioCtxRef.current = audioCtxRef.current || new Ctx();
+      await audioCtxRef.current.resume();
+      setSoundEnabled(true);
+      // Tiny confirmation tick so admin knows it works
+      const ctx = audioCtxRef.current;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 880;
+      gain.gain.value = 0.15;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+      toast.success("Sound alerts enabled");
+    } catch {
+      toast.error("Could not enable sound");
+    }
+  };
+
 
   const { data: jobs, isLoading, refetch } = useQuery({
     queryKey: ["admin-active-jobs"],
@@ -85,6 +142,28 @@ export default function AdminActiveJobs() {
     },
     refetchInterval: 30000, // Auto-refresh every 30 seconds
   });
+
+  // Detect newly added jobs and beep (skip first load to avoid noise)
+  useEffect(() => {
+    if (!jobs) return;
+    const currentIds = new Set(jobs.map((j) => j.id as string));
+    if (seenJobIdsRef.current === null) {
+      seenJobIdsRef.current = currentIds;
+      return;
+    }
+    const previous = seenJobIdsRef.current;
+    const newOnes = jobs.filter((j) => !previous.has(j.id as string));
+    if (newOnes.length > 0) {
+      newOnes.forEach((j) => {
+        const who = (j as { customer?: { full_name?: string } }).customer?.full_name || "WhatsApp customer";
+        toast.success(`New customer request received — ${who}`);
+      });
+      if (soundEnabled) playBeep();
+    }
+    seenJobIdsRef.current = currentIds;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobs, soundEnabled]);
+
 
   const cancelJobMutation = useMutation({
     mutationFn: async (jobId: string) => {
@@ -173,6 +252,14 @@ export default function AdminActiveJobs() {
             <Button variant="outline" asChild>
               <Link to="/admin">← Back to Dashboard</Link>
             </Button>
+            <Button
+              variant={soundEnabled ? "secondary" : "outline"}
+              onClick={soundEnabled ? () => setSoundEnabled(false) : enableSound}
+              title={soundEnabled ? "Disable sound alerts" : "Enable sound alerts for new jobs"}
+            >
+              {soundEnabled ? <Volume2 className="mr-2 h-4 w-4" /> : <VolumeX className="mr-2 h-4 w-4" />}
+              {soundEnabled ? "Sound on" : "Enable sound"}
+            </Button>
             <Button onClick={() => {
               refetch();
               toast.success("Jobs refreshed");
@@ -181,6 +268,7 @@ export default function AdminActiveJobs() {
               Refresh
             </Button>
           </div>
+
         </div>
 
         {/* Stats */}

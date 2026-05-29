@@ -380,6 +380,7 @@ async function handleInbound(
       return;
     }
     const dbServiceType = serviceType as string;
+    const dbLocationText = locationText || "WhatsApp shared location";
 
     // 1. Profile
     let profileId = conv.profile_id;
@@ -422,7 +423,7 @@ async function handleInbound(
       customer_profile_id: profileId,
       phone_number: phone,
       service_type: dbServiceType,
-      location_text: locationText,
+      location_text: dbLocationText,
       location_latitude: loc.lat ?? null,
       location_longitude: loc.lng ?? null,
       safety_status: draft.safety_status,
@@ -437,7 +438,7 @@ async function handleInbound(
       customer_id: profileId,
       service_id: matched?.id ?? null,
       status: requestStatus,
-      pickup_address: locationText,
+      pickup_address: dbLocationText,
       pickup_lat: loc.lat ?? null,
       pickup_lng: loc.lng ?? null,
       estimated_price: matched?.base_price ?? FALLBACK_PRICES[dbServiceType] ?? 349,

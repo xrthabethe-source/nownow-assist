@@ -348,14 +348,23 @@ async function handleInbound(
 
     // Validate required fields before insert
     const loc = draft.location as { lat?: number; lng?: number; address: string; shared?: boolean } | undefined;
+    const serviceType = (draft.service_key as string) || SERVICES.find((s) => s.label === draft.service_label)?.key;
+    const locationText = loc?.shared ? "WhatsApp shared location" : loc?.address;
+    const requestStatus = "pending";
+    const paymentStatus = "unpaid";
+    const createdAt = new Date().toISOString();
     const missing: string[] = [];
     if (!draft.service_label) missing.push("service");
+    if (!serviceType) missing.push("service_type");
     if (!draft.safety_status) missing.push("safety");
-    if (!loc || (!loc.address && loc.lat == null)) missing.push("location");
+    if (!loc || (!locationText && (loc.lat == null || loc.lng == null))) missing.push("location");
     if (!draft.vehicle_details) missing.push("vehicle details");
     if (!phone) missing.push("phone");
+    if (!requestStatus) missing.push("request_status");
+    if (!paymentStatus) missing.push("payment_status");
+    if (!createdAt) missing.push("created_at");
     if (missing.length) {
-      console.error("validation failed", { missing, draft });
+      console.error("request validation failed", { missing, draft: maskPayload(draft) });
       await reply(supabase, phone, conv.profile_id, `We're missing: ${missing.join(", ")}. Reply *MENU* to restart.`);
       return;
     }
@@ -368,14 +377,7 @@ async function handleInbound(
       const profilePayload = { id: newId, full_name: name, phone, email: null };
       const { error: pErr } = await supabase.from("profiles").insert(profilePayload);
       if (pErr) {
-        console.error("profile insert FAILED", {
-          table: "profiles",
-          payload: profilePayload,
-          code: pErr.code,
-          message: pErr.message,
-          details: pErr.details,
-          hint: pErr.hint,
-        });
+        logDbError("profile insert FAILED", "profiles", profilePayload, pErr);
         await reply(supabase, phone, null, `Sorry, we couldn't create your profile (${pErr.code || "DB"}). Please try again or reply MENU.`);
         return;
       }
@@ -404,31 +406,47 @@ async function handleInbound(
       s.name.toLowerCase().includes(matchKey),
     ) || services?.[0];
 
-    // loc already validated above
+    const requestAuditPayload = {
+      customer_profile_id: profileId,
+      phone_number: phone,
+      service_type: serviceType,
+      location_text: locationText,
+      location_latitude: loc.lat ?? null,
+      location_longitude: loc.lng ?? null,
+      safety_status: draft.safety_status,
+      vehicle_details: draft.vehicle_details,
+      request_status: requestStatus,
+      payment_status: paymentStatus,
+      created_at: createdAt,
+    };
 
-    // 4. Create job
+    // 4. Create job (roadside request table used by admin active jobs)
+    const jobPayload = {
+      customer_id: profileId,
+      service_id: matched?.id ?? null,
+      status: requestStatus,
+      pickup_address: locationText,
+      pickup_lat: loc.lat ?? null,
+      pickup_lng: loc.lng ?? null,
+      estimated_price: matched?.base_price ?? FALLBACK_PRICES[serviceType] ?? 349,
+      notes:
+        `WhatsApp request — ${serviceLabel} (${serviceType})\n` +
+        `Payment: ${paymentStatus}\n` +
+        `Safety: ${draft.safety_status}\n` +
+        `Vehicle/contact: ${draft.vehicle_details}`,
+      source: "whatsapp",
+      wa_phone: phone,
+      created_at: createdAt,
+    };
+    console.log("creating WhatsApp roadside request", maskPayload({ table: "jobs", request: requestAuditPayload, insert: jobPayload }));
     const { data: job, error: jobErr } = await supabase
       .from("jobs")
-      .insert({
-        customer_id: profileId,
-        service_id: matched?.id ?? null,
-        status: "pending",
-        pickup_address: loc.address,
-        pickup_lat: loc.lat ?? null,
-        pickup_lng: loc.lng ?? null,
-        estimated_price: matched?.base_price ?? null,
-        notes:
-          `WhatsApp request — ${serviceLabel}\n` +
-          `Safety: ${draft.safety_status}\n` +
-          `Vehicle/contact: ${draft.vehicle_details}`,
-        source: "whatsapp",
-        wa_phone: phone,
-      })
+      .insert(jobPayload)
       .select()
       .single();
 
     if (jobErr || !job) {
-      console.error("job insert error", jobErr);
+      logDbError("job insert FAILED", "jobs", jobPayload, jobErr || { message: "No job row returned" });
       await reply(supabase, phone, profileId, "Sorry, we couldn't create your request. Please try again or reply HELP.");
       return;
     }

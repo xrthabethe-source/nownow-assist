@@ -105,13 +105,16 @@ export default function AdminWhatsApp() {
     onSuccess: () => {
       toast.success("WhatsApp settings saved");
       queryClient.invalidateQueries({ queryKey: ["wa-config"] });
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Save failed"),
+  });
+
   const sendTemplateMutation = useMutation({
     mutationFn: async ({ to, template }: { to: string; template: string }) => {
       const { data, error } = await supabase.functions.invoke("whatsapp-send-template", {
         body: { to, template },
       });
       if (error) {
-        // FunctionsHttpError - try to read response body for meta detail
         const ctx = (error as { context?: Response }).context;
         if (ctx && typeof ctx.text === "function") {
           try {
@@ -140,10 +143,6 @@ export default function AdminWhatsApp() {
     },
   });
 
-    },
-    onError: (e: unknown) =>
-      toast.error(e instanceof Error ? e.message : "Failed to send template"),
-  });
 
   const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/whatsapp-webhook`;
 

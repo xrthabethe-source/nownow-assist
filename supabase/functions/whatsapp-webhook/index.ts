@@ -170,6 +170,17 @@ function parseServiceChoice(input: string): typeof SERVICES[number] | null {
   return null;
 }
 
+function normalizeServiceType(raw: unknown, label: unknown): string | null {
+  const legacyMap: Record<string, string> = {
+    fuel: "fuel_delivery",
+    minor_roadside: "minor_roadside_assistance",
+  };
+  const fromRaw = typeof raw === "string" ? raw.trim() : "";
+  if (fromRaw) return legacyMap[fromRaw] || fromRaw;
+  if (typeof label === "string") return SERVICES.find((s) => s.label === label)?.key ?? null;
+  return null;
+}
+
 // Strip emoji / pictographs / symbols to detect emoji-only inputs like 👆🏾
 function stripEmoji(s: string): string {
   return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Modifier}\p{Emoji_Component}\u200d\ufe0f]/gu, "").trim();
@@ -348,7 +359,7 @@ async function handleInbound(
 
     // Validate required fields before insert
     const loc = draft.location as { lat?: number; lng?: number; address: string; shared?: boolean } | undefined;
-    const serviceType = (draft.service_key as string) || SERVICES.find((s) => s.label === draft.service_label)?.key;
+    const serviceType = normalizeServiceType(draft.service_key, draft.service_label);
     const locationText = loc?.shared ? "WhatsApp shared location" : loc?.address;
     const requestStatus = "pending";
     const paymentStatus = "unpaid";

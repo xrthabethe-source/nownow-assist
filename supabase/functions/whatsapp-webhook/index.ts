@@ -15,10 +15,18 @@ const GRAPH = "https://graph.facebook.com/v20.0";
 const SERVICES = [
   { key: "jump_start", label: "Jump start", matchName: "Battery" },
   { key: "tyre_change", label: "Tyre change", matchName: "Tyre" },
-  { key: "fuel", label: "Fuel delivery", matchName: "Fuel" },
+  { key: "fuel_delivery", label: "Fuel delivery", matchName: "Fuel" },
   { key: "tyre_inflate", label: "Tyre inflate", matchName: "Tyre" },
-  { key: "minor_roadside", label: "Minor roadside assistance", matchName: "Tow" },
+  { key: "minor_roadside_assistance", label: "Minor roadside assistance", matchName: "Tow" },
 ];
+
+const FALLBACK_PRICES: Record<string, number> = {
+  jump_start: 349,
+  tyre_change: 349,
+  fuel_delivery: 299,
+  tyre_inflate: 199,
+  minor_roadside_assistance: 399,
+};
 
 const WELCOME =
   "Hi, welcome to Now-Now Assist 🚗\n\n" +
@@ -197,6 +205,25 @@ function parseName(vehicleDetails: string): string | null {
     return first;
   }
   return null;
+}
+
+function maskPayload<T>(payload: T): T {
+  return JSON.parse(JSON.stringify(payload, (key, value) => {
+    if (/token|secret|key|signature|passphrase|authorization/i.test(key)) return "[masked]";
+    return value;
+  }));
+}
+
+function logDbError(label: string, table: string, payload: Record<string, unknown>, error: unknown) {
+  const err = error as { code?: string; message?: string; details?: string; hint?: string } | null;
+  console.error(label, {
+    table,
+    code: err?.code ?? null,
+    message: err?.message ?? String(error),
+    details: err?.details ?? null,
+    hint: err?.hint ?? null,
+    payload: maskPayload(payload),
+  });
 }
 
 async function handleInbound(

@@ -32,6 +32,7 @@ interface WaMessage {
   wa_message_id?: string | null;
   message_type?: string | null;
   status?: string | null;
+}
 
 
 interface WhatsAppConfig {

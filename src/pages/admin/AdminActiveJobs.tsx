@@ -41,7 +41,63 @@ import { Link } from "react-router-dom";
 export default function AdminActiveJobs() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const seenJobIdsRef = useRef<Set<string> | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
   const queryClient = useQueryClient();
+
+  const playBeep = () => {
+    try {
+      if (!audioCtxRef.current) {
+        const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        audioCtxRef.current = new Ctx();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") ctx.resume();
+      const beep = (freq: number, start: number, dur: number) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        gain.gain.setValueAtTime(0, ctx.currentTime + start);
+        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + start + 0.02);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + start + dur - 0.05);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + start + dur);
+        osc.start(ctx.currentTime + start);
+        osc.stop(ctx.currentTime + start + dur);
+      };
+      beep(880, 0, 0.18);
+      beep(660, 0.22, 0.18);
+    } catch (e) {
+      console.warn("Beep failed", e);
+    }
+  };
+
+  const enableSound = async () => {
+    try {
+      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      audioCtxRef.current = audioCtxRef.current || new Ctx();
+      await audioCtxRef.current.resume();
+      setSoundEnabled(true);
+      // Tiny confirmation tick so admin knows it works
+      const ctx = audioCtxRef.current;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 880;
+      gain.gain.value = 0.15;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+      toast.success("Sound alerts enabled");
+    } catch {
+      toast.error("Could not enable sound");
+    }
+  };
+
 
   const { data: jobs, isLoading, refetch } = useQuery({
     queryKey: ["admin-active-jobs"],

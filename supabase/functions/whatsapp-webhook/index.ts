@@ -462,60 +462,19 @@ async function handleInbound(
       return;
     }
 
-    // 5. PayFast link
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    let paymentLink: string | null = null;
-    try {
-      const payRes = await fetch(`${SUPABASE_URL}/functions/v1/payfast-payment`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${SERVICE_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: matched?.base_price || 349,
-          item_name: serviceLabel,
-          job_id: job.id,
-        }),
-      });
-      const payData = await payRes.json();
-      if (payRes.ok && payData?.payment_url && payData?.payment_data) {
-        const qs = new URLSearchParams(payData.payment_data as Record<string, string>).toString();
-        paymentLink = `${payData.payment_url}?${qs}`;
-      } else {
-        console.error("payfast-payment failed", payRes.status, payData);
-      }
-    } catch (e) {
-      console.error("payfast-payment fetch error", e);
-    }
-
     await updateConversation(supabase, conv.id, {
-      step: paymentLink ? "awaiting_payment" : "awaiting_dispatch",
+      step: "awaiting_dispatch",
       profile_id: profileId,
       draft: { ...draft, job_id: job.id },
     });
 
     const greetName = name ? `${name.split(" ")[0]}, ` : "";
-    if (paymentLink) {
-      await reply(
-        supabase,
-        phone,
-        profileId,
-        `✅ Thanks ${greetName}your request *${job.job_number}* is in.\n` +
-        `Service: ${serviceLabel}\n` +
-        `📍 ${loc.address}\n` +
-        `💳 Estimated: R${matched?.base_price ?? 349}\n\n` +
-        `To dispatch a responder, please complete secure payment:\n${paymentLink}`,
-      );
-    } else {
-      await reply(
-        supabase,
-        phone,
-        profileId,
-        `Thanks ${greetName}your request *${job.job_number}* has been received. Our team will confirm pricing/payment with you shortly.`,
-      );
-    }
+    await reply(
+      supabase,
+      phone,
+      profileId,
+      `Thanks ${greetName}your Now-Now Assist request has been received. We are reviewing your location and service details now.`,
+    );
     return;
   }
 

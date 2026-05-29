@@ -50,6 +50,80 @@ const ASK_VEHICLE =
   "Name, car, colour, registration if available.\n\n" +
   "Example:\nAdmire, white Toyota Hilux, AB 12 CD GP";
 
+const ASK_FUEL =
+  "Which fuel do you need?\n\n" +
+  "1. Petrol 93\n" +
+  "2. Petrol 95\n" +
+  "3. Diesel";
+
+const FUEL_TYPES = ["Petrol 93", "Petrol 95", "Diesel"];
+
+function parseFuelChoice(input: string): string | null {
+  const t = input.trim().toLowerCase();
+  const num = parseInt(t, 10);
+  if (num >= 1 && num <= 3) return FUEL_TYPES[num - 1];
+  if (/diesel/.test(t)) return "Diesel";
+  if (/95/.test(t)) return "Petrol 95";
+  if (/93|petrol/.test(t)) return "Petrol 93";
+  return null;
+}
+
+// ---- PayFast helpers (service-role flow for WhatsApp customers; no user JWT) ----
+const PAYFAST_SANDBOX_URL = "https://sandbox.payfast.co.za/eng/process";
+const PAYFAST_LIVE_URL = "https://www.payfast.co.za/eng/process";
+
+async function md5Hex(input: string): Promise<string> {
+  const { Md5 } = await import("https://deno.land/std@0.119.0/hash/md5.ts");
+  const m = new Md5();
+  m.update(input);
+  return m.toString();
+}
+
+function pfEncode(v: string): string {
+  return encodeURIComponent(v.trim()).replace(/%20/g, "+");
+}
+
+async function buildPayfastLink(args: {
+  amount: number;
+  itemName: string;
+  jobId: string;
+  customerName: string;
+  phone: string;
+}): Promise<string | null> {
+  const MERCHANT_ID = Deno.env.get("PAYFAST_MERCHANT_ID");
+  const MERCHANT_KEY = Deno.env.get("PAYFAST_MERCHANT_KEY");
+  const PASSPHRASE = Deno.env.get("PAYFAST_PASSPHRASE");
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+  if (!MERCHANT_ID || !MERCHANT_KEY || !PASSPHRASE || !SUPABASE_URL) {
+    console.error("PayFast env missing for WhatsApp payment link");
+    return null;
+  }
+  const isSandbox = MERCHANT_ID === "10000100";
+  const base = isSandbox ? PAYFAST_SANDBOX_URL : PAYFAST_LIVE_URL;
+  const [first, ...rest] = (args.customerName || "WhatsApp Customer").split(" ");
+  const data: Record<string, string> = {
+    merchant_id: MERCHANT_ID,
+    merchant_key: MERCHANT_KEY,
+    return_url: `https://nownowassist.co.za/?payment=success&job=${args.jobId}`,
+    cancel_url: `https://nownowassist.co.za/?payment=cancelled&job=${args.jobId}`,
+    notify_url: `${SUPABASE_URL}/functions/v1/payfast-webhook`,
+    name_first: first || "WhatsApp",
+    name_last: rest.join(" ") || "Customer",
+    m_payment_id: args.jobId,
+    amount: Number(args.amount).toFixed(2),
+    item_name: args.itemName,
+    item_description: `NowNow Assist - ${args.itemName}`,
+    custom_str2: args.jobId,
+    custom_str3: args.phone,
+  };
+  const paramString = Object.entries(data)
+    .filter(([_, v]) => v !== "")
+    .map(([k, v]) => `${k}=${pfEncode(v)}`)
+    .join("&");
+  const signature = await md5Hex(`${paramString}&passphrase=${pfEncode(PASSPHRASE)}`);
+  return `${base}?${paramString}&signature=${signature}`;
+}
+
 interface Conv {
   id: string;
   phone: string;

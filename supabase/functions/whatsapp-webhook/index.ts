@@ -422,16 +422,17 @@ async function handleInbound(
       channel: "whatsapp",
     });
 
-    // 3. Match service
+    // 3. Match service — prefer exact label match against seeded services catalog
     const serviceLabel = draft.service_label as string;
     const { data: services } = await supabase
       .from("services")
       .select("id, name, base_price")
       .eq("is_active", true);
-    const matchKey = (SERVICES.find((s) => s.label === serviceLabel)?.matchName || serviceLabel).toLowerCase();
-    const matched = (services || []).find((s: { name: string }) =>
-      s.name.toLowerCase().includes(matchKey),
-    ) || services?.[0];
+    const matchName = SERVICES.find((s) => s.label === serviceLabel)?.matchName || serviceLabel;
+    const matched =
+      (services || []).find((s: { name: string }) => s.name.toLowerCase() === serviceLabel.toLowerCase()) ||
+      (services || []).find((s: { name: string }) => s.name.toLowerCase().includes(matchName.toLowerCase())) ||
+      services?.[0];
 
     const requestAuditPayload = {
       customer_profile_id: profileId,

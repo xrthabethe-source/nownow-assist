@@ -224,10 +224,23 @@ export default function AdminWhatsApp() {
           </Card>
 
           <Card className="h-[600px]">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
               <CardTitle className="text-base">
                 {selectedPhone ? `Messages with ${selectedPhone}` : "Select a conversation"}
               </CardTitle>
+              {selectedPhone && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={sendTemplateMutation.isPending}
+                  onClick={() =>
+                    sendTemplateMutation.mutate({ to: selectedPhone, template: "request_received" })
+                  }
+                >
+                  <Send className="mr-2 h-3 w-3" />
+                  Send request_received template
+                </Button>
+              )}
             </CardHeader>
             <CardContent className="p-0">
               <ScrollArea className="h-[520px] p-4">
@@ -255,10 +268,23 @@ export default function AdminWhatsApp() {
                                 <><ArrowDownLeft className="h-3 w-3" /> Received</>
                               )}
                               <span>· {formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}</span>
+                              {m.status && <span>· {m.status}</span>}
                             </div>
                             <div className="whitespace-pre-wrap">{m.body || "(no text)"}</div>
+                            {m.payload != null && (
+                              <Collapsible className="mt-2">
+                                <CollapsibleTrigger className="flex items-center gap-1 text-[10px] underline opacity-75 hover:opacity-100">
+                                  <Code2 className="h-3 w-3" /> Raw payload
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                  <pre className="mt-1 max-h-48 overflow-auto rounded bg-background/40 p-2 text-[10px] leading-tight text-foreground/80">
+                                    {JSON.stringify(m.payload, null, 2)}
+                                  </pre>
+                                </CollapsibleContent>
+                              </Collapsible>
+                            )}
                           </div>
-                        </li>
+
                       ))}
                     </ul>
                   )

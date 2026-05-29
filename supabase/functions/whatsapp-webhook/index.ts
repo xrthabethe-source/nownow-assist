@@ -162,16 +162,22 @@ function parseServiceChoice(input: string): typeof SERVICES[number] | null {
   return null;
 }
 
+// Strip emoji / pictographs / symbols to detect emoji-only inputs like 👆🏾
+function stripEmoji(s: string): string {
+  return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Modifier}\p{Emoji_Component}\u200d\ufe0f]/gu, "").trim();
+}
+
 function parseLocation(msg: {
   type: string;
   text?: { body: string };
   location?: { latitude: number; longitude: number; address?: string; name?: string };
-}): { lat?: number; lng?: number; address: string } | null {
+}): { lat?: number; lng?: number; address: string; shared?: boolean } | null {
   if (msg.type === "location" && msg.location) {
     return {
       lat: msg.location.latitude,
       lng: msg.location.longitude,
-      address: msg.location.address || msg.location.name || `${msg.location.latitude}, ${msg.location.longitude}`,
+      address: msg.location.address || msg.location.name || "Shared location",
+      shared: true,
     };
   }
   const body = msg.text?.body?.trim() || "";
@@ -179,7 +185,9 @@ function parseLocation(msg: {
             body.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/) ||
             body.match(/(-?\d{1,2}\.\d+)[,\s]+(-?\d{1,3}\.\d+)/);
   if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]), address: body };
-  if (body.length >= 3) return { address: body };
+  // Reject emoji-only or too-short text (e.g. 👆🏾)
+  const cleaned = stripEmoji(body);
+  if (cleaned.length >= 3 && /[a-zA-Z0-9]/.test(cleaned)) return { address: body };
   return null;
 }
 

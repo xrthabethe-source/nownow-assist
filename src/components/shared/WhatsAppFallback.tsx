@@ -6,6 +6,7 @@
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SUPPORT_WHATSAPP_URL } from '@/lib/contact';
 
 interface WhatsAppFallbackProps {
   visible: boolean;
@@ -16,7 +17,7 @@ interface WhatsAppFallbackProps {
 export function WhatsAppFallback({ visible, serviceName, location }: WhatsAppFallbackProps) {
   if (!visible) return null;
 
-  const whatsappUrl = "https://wa.me/27656636685?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%0A%0AService%3A%0ALocation%3A%0ACar%3A%0AIssue%3A";
+  const whatsappUrl = SUPPORT_WHATSAPP_URL;
 
   return (
     <motion.div

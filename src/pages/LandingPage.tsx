@@ -13,6 +13,7 @@ import { exportAIPromptPDF } from "@/utils/exportAIPromptPDF";
 import {
   SUPPORT_PHONE_DISPLAY,
   SUPPORT_PHONE_TEL,
+  SUPPORT_WHATSAPP_URL,
   openSupportWhatsApp,
 } from "@/lib/contact";
 
@@ -125,7 +126,7 @@ export const LandingPage = () => {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                 className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a
-                  href="https://wa.me/27656636685?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%0A%0AService%3A%0ALocation%3A%0ACar%3A%0AIssue%3A"
+                  href={SUPPORT_WHATSAPP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center rounded-full bg-accent px-8 md:px-12 py-4 text-base font-semibold text-primary-foreground shadow-accent animate-pulse-amber w-full sm:w-auto"
@@ -237,7 +238,7 @@ export const LandingPage = () => {
             {services.map((service) => (
               <motion.div key={service.name} variants={item}>
                 <a
-                  href="https://wa.me/27656636685?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%0A%0AService%3A%0ALocation%3A%0ACar%3A%0AIssue%3A"
+                  href={SUPPORT_WHATSAPP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="h-full relative block cursor-pointer rounded-2xl border border-orange-500 ring-2 ring-orange-500 bg-orange-500/5 transition-all hover:scale-105"
@@ -261,7 +262,7 @@ export const LandingPage = () => {
 
           <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
             className="mt-8 text-center text-sm text-muted-foreground">
-            Please note: vehicle lockout and locksmith services are not currently available.
+            Tap any service above to request help on WhatsApp.
           </motion.p>
         </div>
       </section>
@@ -345,9 +346,9 @@ export const LandingPage = () => {
                 <div className="relative hidden md:block">
                   <div className="aspect-square rounded-3xl bg-gradient-to-br from-white/10 to-white/5 p-8">
                     <div className="flex h-full flex-col items-center justify-center text-center">
-                      <div className="mb-4 text-6xl font-extrabold text-accent">Centurion</div>
+                      <div className="mb-4 text-6xl font-extrabold text-accent">Gauteng</div>
                       <p className="text-lg font-medium text-white">Now Onboarding</p>
-                      <p className="text-sm text-white/70">Be one of our first verified responders</p>
+                      <p className="text-sm text-white/70">Starting in Centurion — be one of our first verified responders</p>
                     </div>
                   </div>
                 </div>
@@ -374,7 +375,7 @@ export const LandingPage = () => {
                   <p className="mb-8 text-lg text-white/70 md:text-xl">Send us a WhatsApp and we'll take it from there. No sign-up needed to get help.</p>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <a
-                      href="https://wa.me/27656636685?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%0A%0AService%3A%0ALocation%3A%0ACar%3A%0AIssue%3A"
+                      href={SUPPORT_WHATSAPP_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center justify-center rounded-full bg-accent px-12 py-4 text-base font-semibold text-primary-foreground shadow-accent w-full sm:w-auto"
@@ -409,7 +410,7 @@ export const LandingPage = () => {
             <div>
               <h4 className="mb-4 font-semibold text-white">Quick Links</h4>
               <ul className="space-y-2 text-sm text-white/70">
-                <li><a href="https://wa.me/27656636685?text=Hi%20Now-Now%20Assist%2C%20I%20need%20roadside%20help.%0A%0AService%3A%0ALocation%3A%0ACar%3A%0AIssue%3A" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Get Help</a></li>
+                <li><a href={SUPPORT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Get Help</a></li>
                 <li><a href="/driver/signup" className="hover:text-white transition-colors">Become a Responder</a></li>
                 <li><a href="/about" className="hover:text-white transition-colors">About Us</a></li>
                 <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>

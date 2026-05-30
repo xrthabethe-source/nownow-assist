@@ -54,6 +54,7 @@ import CookiePolicy from "./pages/legal/CookiePolicy";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
 import RedirectShort from "./pages/RedirectShort";
+import PaymentStatus from "./pages/PaymentStatus";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,7 @@ const App = () => (
             <Route path="/login" element={<LoginRedirect />} />
             <Route path="/driver/signup" element={<DriverSignUp />} />
             <Route path="/r/:code" element={<RedirectShort />} />
+            <Route path="/payment-status" element={<PaymentStatus />} />
 
             {/* Legal / informational */}
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />

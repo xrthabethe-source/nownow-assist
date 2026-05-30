@@ -623,13 +623,15 @@ async function handleInbound(
     // Generate PayFast link (service-role; no customer JWT needed)
     const amount = Number(job.estimated_price ?? matched?.base_price ?? FALLBACK_PRICES[dbServiceType] ?? 349);
     const itemName = draft.fuel_type ? `${serviceLabel} (${draft.fuel_type})` : serviceLabel;
-    const paymentLink = await buildPayfastLink({
+    const fullPaymentLink = await buildPayfastLink({
       amount,
       itemName,
       jobId: job.id,
       customerName: name,
       phone,
     });
+    // Shorten so WhatsApp messages stay tidy (e.g. https://nownowassist.co.za/r/aB3xK9)
+    const paymentLink = fullPaymentLink ? await shortenLink(supabase, fullPaymentLink, job.id) : null;
 
     await updateConversation(supabase, conv.id, {
       step: "awaiting_payment",

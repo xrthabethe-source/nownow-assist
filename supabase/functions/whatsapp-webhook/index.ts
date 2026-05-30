@@ -104,8 +104,8 @@ async function buildPayfastLink(args: {
   const data: Record<string, string> = {
     merchant_id: MERCHANT_ID,
     merchant_key: MERCHANT_KEY,
-    return_url: `https://nownowassist.co.za/?payment=success&job=${args.jobId}`,
-    cancel_url: `https://nownowassist.co.za/?payment=cancelled&job=${args.jobId}`,
+    return_url: `https://nownowassist.co.za/payment-status?payment=success&job=${args.jobId}`,
+    cancel_url: `https://nownowassist.co.za/payment-status?payment=cancelled&job=${args.jobId}`,
     notify_url: `${SUPABASE_URL}/functions/v1/payfast-webhook`,
     name_first: first || "WhatsApp",
     name_last: rest.join(" ") || "Customer",

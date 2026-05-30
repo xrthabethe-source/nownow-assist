@@ -54,6 +54,7 @@ import CookiePolicy from "./pages/legal/CookiePolicy";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
 import RedirectShort from "./pages/RedirectShort";
+import PaymentStatus from "./pages/PaymentStatus";
 
 const queryClient = new QueryClient();
 

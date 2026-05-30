@@ -53,6 +53,7 @@ import Terms from "./pages/legal/Terms";
 import CookiePolicy from "./pages/legal/CookiePolicy";
 import Contact from "./pages/Contact";
 import About from "./pages/About";
+import RedirectShort from "./pages/RedirectShort";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +74,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/login" element={<LoginRedirect />} />
             <Route path="/driver/signup" element={<DriverSignUp />} />
+            <Route path="/r/:code" element={<RedirectShort />} />
 
             {/* Legal / informational */}
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />

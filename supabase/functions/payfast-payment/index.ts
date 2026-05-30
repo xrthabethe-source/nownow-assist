@@ -84,8 +84,8 @@ Deno.serve(async (req) => {
     const paymentData: Record<string, string> = {
       merchant_id: MERCHANT_ID,
       merchant_key: MERCHANT_KEY,
-      return_url: return_url || `https://nownowassist.co.za/payment-status?payment=success&job=${paymentId}`,
-      cancel_url: cancel_url || `https://nownowassist.co.za/payment-status?payment=cancelled&job=${paymentId}`,
+      return_url: return_url || `https://nownowassist.co.za/payment-result?status=success&job=${paymentId}`,
+      cancel_url: cancel_url || `https://nownowassist.co.za/payment-result?status=cancelled&job=${paymentId}`,
       notify_url: notifyUrl,
       name_first: user.user_metadata?.full_name?.split(" ")[0] || "",
       name_last: user.user_metadata?.full_name?.split(" ").slice(1).join(" ") || "",

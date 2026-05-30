@@ -319,7 +319,7 @@ export const exportAIPromptPDF = () => {
   addBullet('Document verification workflow');
   addBullet('Audit logging for admin actions');
   addBullet('Login attempt tracking');
-  addBullet('Account lockout protection');
+  addBullet('Account lock after failed login attempts');
   addSpacer(10);
 
   // AI Integration

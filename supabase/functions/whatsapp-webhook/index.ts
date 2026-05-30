@@ -124,6 +124,42 @@ async function buildPayfastLink(args: {
   return `${base}?${paramString}&signature=${signature}`;
 }
 
+// Short-link site base. Falls back to live domain.
+const SHORT_LINK_BASE = Deno.env.get("PUBLIC_SITE_URL") || "https://nownowassist.co.za";
+
+function randomCode(len = 6): string {
+  const alphabet = "abcdefghijkmnpqrstuvwxyz23456789"; // no 0/1/l/o ambiguity
+  let out = "";
+  const bytes = new Uint8Array(len);
+  crypto.getRandomValues(bytes);
+  for (let i = 0; i < len; i++) out += alphabet[bytes[i] % alphabet.length];
+  return out;
+}
+
+async function shortenLink(
+  supabase: ReturnType<typeof createClient>,
+  targetUrl: string,
+  jobId: string | null,
+): Promise<string> {
+  // Try up to 5 times in case of code collision
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const code = randomCode(6);
+    const { error } = await supabase.from("short_links").insert({
+      code,
+      target_url: targetUrl,
+      job_id: jobId,
+      // Payment links expire after 24h
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    });
+    if (!error) return `${SHORT_LINK_BASE}/r/${code}`;
+    if (!String(error.message || "").toLowerCase().includes("duplicate")) {
+      console.error("short_links insert failed", error);
+      return targetUrl; // fall back to full URL
+    }
+  }
+  return targetUrl;
+}
+
 interface Conv {
   id: string;
   phone: string;

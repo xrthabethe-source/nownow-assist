@@ -33,7 +33,7 @@ export default function Contact() {
       </div>
 
       <h2>Service area</h2>
-      <p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Now launching in Centurion, Gauteng.</p>
+      <p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Now launching in Centurion, Gauteng. Expanding across South Africa soon.</p>
     </LegalPage>
   );
 }

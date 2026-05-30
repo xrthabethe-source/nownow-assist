@@ -256,6 +256,13 @@ const App = () => (
                 <AdminWhatsAppRequests />
               </ProtectedRoute>
             } />
+
+            {/* TEMP: Live PayFast R5 ITN test — remove after go-live verification */}
+            <Route path="/admin/payfast-test" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminPayfastTest />
+              </ProtectedRoute>
+            } />
             
             {/* Export Route */}
             <Route path="/export-ai-prompt" element={<ExportAIPrompt />} />

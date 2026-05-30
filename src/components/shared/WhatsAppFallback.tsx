@@ -14,10 +14,8 @@ interface WhatsAppFallbackProps {
   location?: string;
 }
 
-export function WhatsAppFallback({ visible, serviceName, location }: WhatsAppFallbackProps) {
+export function WhatsAppFallback({ visible }: WhatsAppFallbackProps) {
   if (!visible) return null;
-
-  const whatsappUrl = SUPPORT_WHATSAPP_URL;
 
   return (
     <motion.div
@@ -26,13 +24,15 @@ export function WhatsAppFallback({ visible, serviceName, location }: WhatsAppFal
       className="mt-4"
     >
       <Button
+        asChild
         variant="success"
         size="lg"
         className="w-full gap-2 text-base font-semibold"
-        onClick={() => window.open(whatsappUrl, '_blank')}
       >
-        <MessageCircle className="h-5 w-5" />
-        Request Help on WhatsApp
+        <a href={SUPPORT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+          <MessageCircle className="h-5 w-5" />
+          Request Help on WhatsApp
+        </a>
       </Button>
       <p className="text-xs text-muted-foreground text-center mt-2">
         Having trouble submitting? Get help directly via WhatsApp.

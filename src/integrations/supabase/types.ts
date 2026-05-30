@@ -1167,6 +1167,33 @@ export type Database = {
         }
         Relationships: []
       }
+      short_links: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string | null
+          hits: number
+          job_id: string | null
+          target_url: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string | null
+          hits?: number
+          job_id?: string | null
+          target_url: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string | null
+          hits?: number
+          job_id?: string | null
+          target_url?: string
+        }
+        Relationships: []
+      }
       support_tickets: {
         Row: {
           category: string

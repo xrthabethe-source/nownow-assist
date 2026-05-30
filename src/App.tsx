@@ -46,6 +46,7 @@ import AdminSecurityMonitoring from "./pages/admin/AdminSecurityMonitoring";
 import DriverSignUp from "./pages/driver/DriverSignUp";
 import AdminWhatsApp from "./pages/admin/AdminWhatsApp";
 import AdminWhatsAppRequests from "./pages/admin/AdminWhatsAppRequests";
+import AdminPayfastTest from "./pages/admin/AdminPayfastTest"; // TEMP: live PayFast R5 test
 import LoginRedirect from "./pages/LoginRedirect";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import Terms from "./pages/legal/Terms";
@@ -253,6 +254,13 @@ const App = () => (
             <Route path="/admin/whatsapp-requests" element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <AdminWhatsAppRequests />
+              </ProtectedRoute>
+            } />
+
+            {/* TEMP: Live PayFast R5 ITN test — remove after go-live verification */}
+            <Route path="/admin/payfast-test" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminPayfastTest />
               </ProtectedRoute>
             } />
             

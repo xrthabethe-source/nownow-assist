@@ -1,9 +1,98 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Md5 } from "https://deno.land/std@0.119.0/hash/md5.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+// PayFast servers (per https://developers.payfast.co.za/documentation/#confirm-payment).
+// Resolved at runtime; static fallback used if DNS fails.
+const PAYFAST_HOSTS = [
+  "www.payfast.co.za",
+  "sandbox.payfast.co.za",
+  "w1w.payfast.co.za",
+  "w2w.payfast.co.za",
+];
+const PAYFAST_STATIC_IPS = new Set<string>([
+  // Documented PayFast notify IPs (kept as fallback; DNS check is primary)
+  "197.97.145.144", "197.97.145.145", "197.97.145.146", "197.97.145.147",
+  "41.74.179.194", "41.74.179.195", "41.74.179.196", "41.74.179.197",
+  "41.74.179.200", "41.74.179.201", "41.74.179.203", "41.74.179.204",
+  "41.74.179.210", "41.74.179.211",
+]);
+
+function pfEncode(v: string): string {
+  return encodeURIComponent(v.trim()).replace(/%20/g, "+");
+}
+
+function md5Hex(input: string): string {
+  const md5 = new Md5();
+  md5.update(input);
+  return md5.toString();
+}
+
+// 1) Re-hash the signature using the same field order PayFast posted, excluding `signature`.
+function verifySignature(rawBody: string, passphrase: string, postedSignature: string): boolean {
+  const pairs: string[] = [];
+  for (const pair of rawBody.split("&")) {
+    const eq = pair.indexOf("=");
+    if (eq === -1) continue;
+    const key = decodeURIComponent(pair.slice(0, eq).replace(/\+/g, " "));
+    if (key === "signature") continue;
+    const valRaw = pair.slice(eq + 1);
+    const val = decodeURIComponent(valRaw.replace(/\+/g, " "));
+    pairs.push(`${key}=${pfEncode(val)}`);
+  }
+  const base = pairs.join("&");
+  const withPass = passphrase && passphrase.length > 0
+    ? `${base}&passphrase=${pfEncode(passphrase)}`
+    : base;
+  const computed = md5Hex(withPass);
+  return computed.toLowerCase() === (postedSignature || "").toLowerCase();
+}
+
+// 2) Source-IP validation against resolved PayFast hosts (with static fallback).
+async function isValidPayfastSourceIp(ip: string | null): Promise<boolean> {
+  if (!ip) return false;
+  const resolved = new Set<string>(PAYFAST_STATIC_IPS);
+  try {
+    const results = await Promise.allSettled(
+      PAYFAST_HOSTS.map((h) => Deno.resolveDns(h, "A"))
+    );
+    for (const r of results) {
+      if (r.status === "fulfilled") r.value.forEach((a) => resolved.add(a));
+    }
+  } catch (e) {
+    console.warn("PayFast DNS resolution failed, using static list", e);
+  }
+  return resolved.has(ip);
+}
+
+function getClientIp(req: Request): string | null {
+  const xff = req.headers.get("x-forwarded-for");
+  if (xff) return xff.split(",")[0].trim();
+  return req.headers.get("x-real-ip") || req.headers.get("cf-connecting-ip");
+}
+
+// 3) Server-to-server validation: POST the raw ITN back to PayFast.
+async function validateWithPayfast(rawBody: string, isSandbox: boolean): Promise<boolean> {
+  const url = isSandbox
+    ? "https://sandbox.payfast.co.za/eng/query/validate"
+    : "https://www.payfast.co.za/eng/query/validate";
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: rawBody,
+    });
+    const text = (await res.text()).trim();
+    return text.split(/\r?\n/)[0].trim().toUpperCase() === "VALID";
+  } catch (e) {
+    console.error("PayFast server validation request failed", e);
+    return false;
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -13,6 +102,9 @@ Deno.serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const PASSPHRASE = Deno.env.get("PAYFAST_PASSPHRASE") || "";
+    const MERCHANT_ID = Deno.env.get("PAYFAST_MERCHANT_ID") || "";
+    const ITN_STRICT = (Deno.env.get("PAYFAST_ITN_STRICT") || "true").toLowerCase() !== "false";
 
     if (!SUPABASE_URL) throw new Error("SUPABASE_URL is not configured");
     if (!SUPABASE_SERVICE_ROLE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not configured");
@@ -20,8 +112,33 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Payfast sends ITN (Instant Transaction Notification) as form-encoded POST
-    const formData = await req.text();
-    const params = new URLSearchParams(formData);
+    const rawBody = await req.text();
+    const params = new URLSearchParams(rawBody);
+    const isSandbox = MERCHANT_ID === "10000100";
+
+    // ---- ITN security checks (additive) ----
+    const postedSignature = params.get("signature") || "";
+    const postedMerchantId = params.get("merchant_id") || "";
+    const sourceIp = getClientIp(req);
+
+    const sigOk = PASSPHRASE
+      ? verifySignature(rawBody, PASSPHRASE, postedSignature)
+      : !!postedSignature; // if no passphrase configured, skip rehash but still require signature field
+    const merchantOk = MERCHANT_ID ? postedMerchantId === MERCHANT_ID : true;
+    const ipOk = await isValidPayfastSourceIp(sourceIp);
+    const serverOk = await validateWithPayfast(rawBody, isSandbox);
+
+    console.log("PayFast ITN security checks:", {
+      sigOk, merchantOk, ipOk, serverOk, sourceIp, isSandbox, strict: ITN_STRICT,
+    });
+
+    if (!sigOk || !merchantOk || !serverOk || (ITN_STRICT && !ipOk)) {
+      console.error("PayFast ITN rejected", { sigOk, merchantOk, ipOk, serverOk });
+      // Return 200 so PayFast does not endlessly retry a forged request, but do not process.
+      return new Response("Invalid ITN", { status: 200 });
+    }
+    // ---- end ITN security checks ----
+
 
     const paymentStatus = params.get("payment_status");
     const paymentId = params.get("m_payment_id"); // our payment/job ID

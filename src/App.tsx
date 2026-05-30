@@ -78,6 +78,7 @@ const App = () => (
             <Route path="/driver/signup" element={<DriverSignUp />} />
             <Route path="/r/:code" element={<RedirectShort />} />
             <Route path="/payment-status" element={<PaymentStatus />} />
+            <Route path="/payment-result" element={<PaymentResult />} />
 
             {/* Legal / informational */}
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />

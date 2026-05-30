@@ -32,12 +32,12 @@ const PaymentStatus = () => {
     if (!jobId) return;
     (async () => {
       const { data } = await supabase
-        .from("service_requests")
-        .select("status, payment_status")
+        .from("jobs")
+        .select("status")
         .eq("id", jobId)
         .maybeSingle();
       if (!active) return;
-      setJobStatus(data?.payment_status || data?.status || null);
+      setJobStatus(data?.status ?? null);
       setLoadingJob(false);
     })();
     return () => {

@@ -13,5 +13,19 @@ export const buildWhatsAppUrl = (message: string = SUPPORT_WHATSAPP_DEFAULT_MESS
 export const SUPPORT_WHATSAPP_URL = buildWhatsAppUrl();
 
 export const openSupportWhatsApp = (message?: string) => {
-  window.open(buildWhatsAppUrl(message), "_blank", "noopener,noreferrer");
+  const url = buildWhatsAppUrl(message);
+  try {
+    // Use a real anchor click so sandboxed iframes (Lovable preview) and mobile
+    // browsers treat it as a user-initiated navigation instead of a blocked popup.
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch {
+    // Fallback: top-level navigation
+    window.top ? (window.top.location.href = url) : (window.location.href = url);
+  }
 };

@@ -13,6 +13,7 @@ import { exportAIPromptPDF } from "@/utils/exportAIPromptPDF";
 import {
   SUPPORT_PHONE_DISPLAY,
   SUPPORT_PHONE_TEL,
+  SUPPORT_WHATSAPP_URL,
   openSupportWhatsApp,
 } from "@/lib/contact";
 
@@ -261,7 +262,7 @@ export const LandingPage = () => {
 
           <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
             className="mt-8 text-center text-sm text-muted-foreground">
-            Please note: vehicle lockout and locksmith services are not currently available.
+            Tap any service above to request help on WhatsApp.
           </motion.p>
         </div>
       </section>
@@ -345,9 +346,9 @@ export const LandingPage = () => {
                 <div className="relative hidden md:block">
                   <div className="aspect-square rounded-3xl bg-gradient-to-br from-white/10 to-white/5 p-8">
                     <div className="flex h-full flex-col items-center justify-center text-center">
-                      <div className="mb-4 text-6xl font-extrabold text-accent">Centurion</div>
+                      <div className="mb-4 text-6xl font-extrabold text-accent">Gauteng</div>
                       <p className="text-lg font-medium text-white">Now Onboarding</p>
-                      <p className="text-sm text-white/70">Be one of our first verified responders</p>
+                      <p className="text-sm text-white/70">Starting in Centurion — be one of our first verified responders</p>
                     </div>
                   </div>
                 </div>

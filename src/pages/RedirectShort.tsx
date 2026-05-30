@@ -27,8 +27,6 @@ export default function RedirectShort() {
         setError("This link has expired. Please request a new one on WhatsApp.");
         return;
       }
-      // Fire-and-forget hit increment (best effort; ignore failures)
-      supabase.rpc as unknown;
       window.location.replace(data.target_url);
     })();
     return () => {

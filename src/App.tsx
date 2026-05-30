@@ -55,6 +55,7 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import RedirectShort from "./pages/RedirectShort";
 import PaymentStatus from "./pages/PaymentStatus";
+import PaymentResult from "./pages/PaymentResult";
 
 const queryClient = new QueryClient();
 

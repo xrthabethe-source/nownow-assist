@@ -112,7 +112,7 @@ const PaymentStatus = () => {
                 {isSuccess ? (
                   <Button
                     className="w-full"
-                    onClick={openSupportWhatsApp}
+                    onClick={() => openSupportWhatsApp()}
                   >
                     <MessageCircle className="mr-2 h-4 w-4" />
                     Open WhatsApp chat
@@ -120,7 +120,7 @@ const PaymentStatus = () => {
                 ) : (
                   <Button
                     className="w-full"
-                    onClick={openSupportWhatsApp}
+                    onClick={() => openSupportWhatsApp()}
                   >
                     <MessageCircle className="mr-2 h-4 w-4" />
                     Retry on WhatsApp
